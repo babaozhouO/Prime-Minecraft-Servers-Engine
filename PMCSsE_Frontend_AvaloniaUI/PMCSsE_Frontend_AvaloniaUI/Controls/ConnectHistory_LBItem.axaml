@@ -1,0 +1,37 @@
+﻿<!--Copyright 2025 【Babao Zhou (Legal Name: RenJie Zhou) <Contact: 1749861851@qq.com>】
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.-->
+<UserControl xmlns="https://github.com/avaloniaui"
+			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			 xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			 xmlns:local="using:PMCSsE_Frontend_AvaloniaUI.Controls"
+			 xmlns:vm="using:PMCSsE_Frontend_AvaloniaUI.ViewModels"
+			 xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			 mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="70"
+			 x:Class="PMCSsE_Frontend_AvaloniaUI.Controls.ConnectHistory_LBItem"
+			 x:DataType="local:ConnectHistory_LBItem" Name="P">
+	<Grid Margin="3" ColumnDefinitions="65,1*,2,32,2,32,2,32" RowDefinitions="*,32">
+		<TextBlock Text="{Binding #P.DisplayText}" VerticalAlignment="Top" HorizontalAlignment="Left" Grid.ColumnSpan="8"/>
+		<TextBlock Text="访问密钥:" IsVisible="{Binding #P.SetControlVisibility}" Grid.Row="1" VerticalAlignment="Center"/>
+		<TextBox Text="{Binding #P.Password}" IsVisible="{Binding #P.SetControlVisibility}" PasswordChar="*" RevealPassword="True" Grid.Row="1" Grid.Column="1"/>
+		<local:ImageButton Command="{Binding #P.ConnectCommand}" CommandParameter="{Binding #P.MyNativeServerHistory}" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Link.png" Grid.Column="3" Grid.Row="1"/>
+		<local:ImageButton Click="Set_Click" Image_IB="{Binding #P.SetButtonImage}" Grid.Column="5" Grid.Row="1"/>
+		<local:ImageButton Click="Delete_Click" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Cancel.png" Grid.Column="7" Grid.Row="1"/>
+	</Grid>
+	<UserControl.Background>
+		<SolidColorBrush Color="White" Opacity="0.4"/>
+	</UserControl.Background>
+	<UserControl.BorderBrush>
+		<SolidColorBrush Color="White" Opacity="0.6"/>
+	</UserControl.BorderBrush>
+</UserControl>

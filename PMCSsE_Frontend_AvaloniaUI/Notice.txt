@@ -1,0 +1,5 @@
+PMCSsE_Frontend_AvaloniaUI
+Copyright (c) 2025 【Babao Zhou (Legal Name: RenJie Zhou) <Contact: 1749861851@qq.com>】
+
+This product includes software developed by third parties:
+

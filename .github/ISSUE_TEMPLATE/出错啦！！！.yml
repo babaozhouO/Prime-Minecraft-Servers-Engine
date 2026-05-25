@@ -1,0 +1,44 @@
+name: 出错啦！！！
+description: 告诉我们你遇到的程序崩溃或错误
+title: 我遇到了一个错误
+labels: ["BUG"]
+body:
+- type: checkboxes
+  attributes:
+    label: "检查项"
+    description: "请检查下列项目，并勾选确认。"
+    options:
+    - label: "我确认使用的时最新预览版本"
+      required: true
+    - label: "我确认是此软件的问题而非服务端bug/网络不畅/爆内存/无管理员权限/未允许程序通过防火墙"
+      required: true
+    - label: "我确认在 Issues 列表中并无其他人已经提出过与此问题相同或相似的问题"
+      required: true
+- type: textarea
+  attributes:
+    label: 崩溃/报错前 你在 做什么/做了什么？ 
+    placeholder: "例如：启动服务端"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: 系统环境 
+    placeholder: "例如：Windows 11 专业版 64位 24H2"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: 报错信息 
+    placeholder: "若没有可以不用填"
+- type: textarea
+  attributes:
+    label: 堆栈跟踪 
+    placeholder: "若没有可以不用填"
+- type: textarea
+  attributes:
+    label: 您对可能造成问题的原因的猜测 
+    placeholder: "如果你毫无头绪，请跳过此问题"
+- type: textarea
+  attributes:
+    label: 你还有什么补充信息吗？
+    placeholder: "在这里说些可能对我们的改进有帮助的信息"

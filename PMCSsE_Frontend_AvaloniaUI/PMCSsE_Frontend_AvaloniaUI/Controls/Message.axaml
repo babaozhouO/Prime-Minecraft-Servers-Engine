@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d" d:DesignWidth="160" d:DesignHeight="30"
+             x:Class="PMCSsE_Frontend_AvaloniaUI.Controls.Message"
+             FontSize="16" CornerRadius="0,10,10,0" Background="#B800FF00"
+             Name="root">
+    <Panel Classes="p">
+        <TextBlock HorizontalAlignment="Left" VerticalAlignment="Center" Text="{Binding #root.MessageString}" Margin="0,0,5,4" Background="Transparent"/>
+        <ProgressBar VerticalAlignment="Bottom" Height="4" Background="Transparent" Foreground="#21DEF2"/>
+    </Panel>
+    <UserControl.Styles>
+        <Style Selector="ProgressBar">
+            <Style.Animations>
+                <Animation Duration="0:0:0:10" Easing="CircularEaseOut">
+                    <KeyFrame Cue="0%">
+                        <Setter Property="Value" Value="100.0" />
+                    </KeyFrame>
+                    <KeyFrame Cue="100%">
+                        <Setter Property="Value" Value="0.0" />
+                    </KeyFrame>
+                </Animation>
+            </Style.Animations>
+        </Style>
+    </UserControl.Styles>
+</UserControl>

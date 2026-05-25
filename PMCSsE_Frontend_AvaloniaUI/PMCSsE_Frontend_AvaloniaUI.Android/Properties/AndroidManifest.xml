@@ -1,0 +1,5 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android" android:installLocation="auto" package="com.BaBaoZhou_s_Team.PMCSsE_Frontend_AvaloniaUI" android:versionCode="1" android:versionName="1.0.4.0">
+	<uses-permission android:name="android.permission.INTERNET" />
+	<application android:label="PMCSsE_Frontend_AvaloniaUI" android:icon="@drawable/pmcsse" />
+</manifest>

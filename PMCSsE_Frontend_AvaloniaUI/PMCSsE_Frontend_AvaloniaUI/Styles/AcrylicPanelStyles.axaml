@@ -1,0 +1,108 @@
+﻿<!--Copyright 2025 【Babao Zhou (Legal Name: RenJie Zhou) <Contact: 1749861851@qq.com>】
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.-->
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+					xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+	<Design.PreviewWith>
+		<Panel Width="800" Height="450">
+			<Panel.Background>
+				<ImageBrush Source="Images/Background.png"/>
+			</Panel.Background>
+			<Border Margin="20" Theme="{StaticResource ResourceKey=AcrylicBackground_verylight}"/>
+		</Panel>
+	</Design.PreviewWith>
+	<ControlTheme x:Key="AcrylicBackground_verylight" TargetType="Border">
+		<Setter Property="BorderBrush">
+			<Setter.Value>
+				<SolidColorBrush Color="White" Opacity="0.4"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="Background">
+			<Setter.Value>
+				<SolidColorBrush Color="White" Opacity="0.3"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="BorderThickness" Value="2"/>
+		<Setter Property="CornerRadius" Value="5"/>
+		<Setter Property="Effect">
+			<Setter.Value>
+				<BlurEffect Radius="0.05"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="UseLayoutRounding" Value="True"/>
+	</ControlTheme>
+
+	<ControlTheme x:Key="AcrylicBackground_light" TargetType="Border">
+		<Setter Property="BorderBrush">
+			<Setter.Value>
+				<SolidColorBrush Color="White" Opacity="0.6"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="Background">
+			<Setter.Value>
+				<SolidColorBrush Color="White" Opacity="0.35"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="BorderThickness" Value="2"/>
+		<Setter Property="CornerRadius" Value="6"/>
+		<Setter Property="Effect">
+			<Setter.Value>
+				<BlurEffect Radius="0.05"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="UseLayoutRounding" Value="True"/>
+	</ControlTheme>
+
+	<ControlTheme x:Key="AcrylicBackground_middle" TargetType="Border">
+		<Setter Property="BorderBrush">
+			<Setter.Value>
+				<SolidColorBrush Color="White" Opacity="0.8"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="Background">
+			<Setter.Value>
+				<SolidColorBrush Color="White" Opacity="0.60"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="BorderThickness" Value="2"/>
+		<Setter Property="CornerRadius" Value="6"/>
+		<Setter Property="Effect">
+			<Setter.Value>
+				<BlurEffect Radius="0.05"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="UseLayoutRounding" Value="True"/>
+	</ControlTheme>
+
+	<ControlTheme x:Key="AcrylicBackground_heavy" TargetType="Border">
+		<Setter Property="BorderBrush">
+			<Setter.Value>
+				<SolidColorBrush Color="White" Opacity="0.9"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="Background">
+			<Setter.Value>
+				<SolidColorBrush Color="White" Opacity="0.8"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="BorderThickness" Value="2"/>
+		<Setter Property="CornerRadius" Value="6"/>
+		<Setter Property="Effect">
+			<Setter.Value>
+				<BlurEffect Radius="0.05"/>
+			</Setter.Value>
+		</Setter>
+		<Setter Property="UseLayoutRounding" Value="True"/>
+	</ControlTheme>
+
+</ResourceDictionary>

@@ -1,0 +1,21 @@
+PMCSsE_FrontendAndBackendCommunicator
+Copyright (c) 2025 【Babao Zhou (Legal Name: RenJie Zhou) <Contact: 1749861851@qq.com>】
+
+This product includes software developed by third parties:
+
+----------------------------------------------------------------------
+Component: Newtonsoft.Json
+Version: 13.0.4
+License: MIT
+Location: /Licenses/Newtonsoft.Json-13.0.4-LICENSE.md
+----------------------------------------------------------------------
+Component: Google.Protobuf
+Version: 3.33.2
+License: BSD-3-Clause
+Location: /Licenses/Google.Protobuf-3.33.2-LICENSE.txt
+----------------------------------------------------------------------
+Component: Grpc.Tools
+Version: 2.76.0
+License: Apache-2.0
+Location: /Licenses/Grpc.Tools-2.76.0-LICENSE.txt
+----------------------------------------------------------------------

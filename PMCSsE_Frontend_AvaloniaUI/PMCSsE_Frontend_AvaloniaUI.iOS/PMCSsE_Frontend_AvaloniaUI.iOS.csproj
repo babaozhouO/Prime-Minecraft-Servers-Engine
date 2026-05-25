@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0-ios26.2</TargetFramework>
+    <SupportedOSPlatformVersion>13.0</SupportedOSPlatformVersion>
+    <Nullable>enable</Nullable>
+    <BaseOutputPath>.\..\..\生成\PMCSsE_Frontend_AvaloniaUI.IOS</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia.iOS" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PMCSsE_Frontend_AvaloniaUI\PMCSsE_Frontend_AvaloniaUI.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,115 @@
+﻿<!--   Copyright 2025 八宝粥(1749861851@qq.com)
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.-->
+<localWin:CustomWindow x:Class="PMCSsE_Frontend_WPF.Windows.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:localWin="clr-namespace:PMCSsE_Frontend_WPF.Windows"
+        xmlns:local="clr-namespace:PMCSsE_Frontend_WPF.Controls"
+        mc:Ignorable="d"
+        Title="PMCSsE——管理器启动器"
+        Height="576"
+        Width="1024"
+        FontSize="15"
+        Closing="MainWindow_Closing">
+    <localWin:CustomWindow.Background>
+        <ImageBrush ImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/Image/AppImage_Background2.jpg"/>
+    </localWin:CustomWindow.Background>
+
+
+    <Grid Grid.Row="2" Grid.Column="1">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="280*"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="140*"/>
+            <RowDefinition Height="15"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="15"/>
+            <ColumnDefinition Width="575*"/>
+            <ColumnDefinition Width="15"/>
+            <ColumnDefinition Width="225*"/>
+            <ColumnDefinition Width="15"/>
+        </Grid.ColumnDefinitions>
+        <Grid Grid.Row="1" Grid.Column="1" Grid.RowSpan="3">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="25.4"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition/>
+                <RowDefinition Height="10"/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="10"/>
+            </Grid.ColumnDefinitions>
+            <Border Grid.RowSpan="5" Grid.ColumnSpan="3" Style="{StaticResource AcrylicPanelStyle0.6 0.35}"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" FontSize="20" Text="MC服务端管理器列表"/>
+            <Border Grid.Row="3" Grid.Column="1" BorderBrush="LightGray" BorderThickness="3" CornerRadius="6">
+                <ListBox Name="MCServersListPanel" Background="Transparent" ScrollViewer.VerticalScrollBarVisibility="Visible" ScrollViewer.HorizontalScrollBarVisibility="Disabled" VirtualizingStackPanel.IsVirtualizing="False">
+
+                </ListBox>
+            </Border>
+        </Grid>
+        <Grid Grid.Row="1" Grid.Column="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="10"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="10"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="25.4"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="25*"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="25*"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="25*"/>
+                <RowDefinition Height="5"/>
+                <RowDefinition Height="25*"/>
+                <RowDefinition Height="10"/>
+            </Grid.RowDefinitions>
+            <Border Grid.RowSpan="11" Grid.ColumnSpan="3" Style="{StaticResource AcrylicPanelStyle0.6 0.35}"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" FontSize="20" Text="管理器操作"/>
+            <local:CustomButton Grid.Row="3" Grid.Column="1" CustomButtonText="添加新的管理器" Click="AddNewServerButton_Click" Style="{StaticResource AcrylicCustomButtonStyle}" CustomButtonBorderBackground="#CCFFFFFF" CustomButtonBorderBrush="#E47DA4C4" CustomButtonDisplayImage="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_AddNewMCServer.png"/>
+            <local:CustomButton Grid.Row="5" Grid.Column="1" CustomButtonText="打开管理面板" Click="OpenThisServerManagerWindow_Click" Style="{StaticResource AcrylicCustomButtonStyle}" CustomButtonBorderBackground="#CCFFFFFF" CustomButtonBorderBrush="#E47DA4C4" CustomButtonDisplayImage="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_OpenManager.png"/>
+            <local:CustomButton Grid.Row="7" Grid.Column="1" CustomButtonText="删除此管理器" Click="RemoveThisServerManager_Click" Style="{StaticResource AcrylicCustomButtonStyle}" CustomButtonBorderBackground="#CCFFFFFF" CustomButtonBorderBrush="#E47DA4C4" CustomButtonDisplayImage="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_RemoveMCServer.png"/>
+        </Grid>
+        <Grid Grid.Row="3" Grid.Column="3">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="15"/>
+                <ColumnDefinition/>
+                <ColumnDefinition Width="15"/>
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="25.4"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="5*"/>
+                <RowDefinition Height="10"/>
+                <RowDefinition Height="5*"/>
+                <RowDefinition Height="10"/>
+            </Grid.RowDefinitions>
+            <Border Grid.RowSpan="7" Grid.ColumnSpan="3" Style="{StaticResource AcrylicPanelStyle0.6 0.35}"/>
+            <TextBlock Grid.Row="1" Grid.Column="1" Text="应用" FontSize="20"/>
+            <local:CustomButton Grid.Column="1" Grid.Row="3" Style="{StaticResource AcrylicCustomButtonStyle}" CustomButtonBorderBackground="#CCFFFFFF" CustomButtonBorderBrush="#E47DA4C4" CustomButtonDisplayImage="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_ExitApp.png" CustomButtonText="退出应用" Click="ExitButton_Click"/>
+            <local:CustomButton Grid.Column="1" Grid.Row="5" Style="{StaticResource AcrylicCustomButtonStyle}" CustomButtonBorderBackground="#CCFFFFFF" CustomButtonBorderBrush="#E47DA4C4" CustomButtonDisplayImage="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_About.png" CustomButtonText="关于此应用" Click="AboutThisApp_Click"/>
+        </Grid>
+    </Grid>
+
+</localWin:CustomWindow>

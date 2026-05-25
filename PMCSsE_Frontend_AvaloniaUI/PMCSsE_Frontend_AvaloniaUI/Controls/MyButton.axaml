@@ -1,0 +1,70 @@
+﻿<!--Copyright 2025 【Babao Zhou (Legal Name: RenJie Zhou) <Contact: 1749861851@qq.com>】
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.-->
+<Button xmlns="https://github.com/avaloniaui"
+		xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+		xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+		xmlns:local="using:PMCSsE_Frontend_AvaloniaUI.Controls"
+		xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+		mc:Ignorable="d" d:DesignWidth="180" d:DesignHeight="60"
+		x:Class="PMCSsE_Frontend_AvaloniaUI.Controls.MyButton" x:DataType="local:MyButton"
+		CornerRadius="8"
+		BorderThickness="3"
+		BorderBrush="#7DA4C4">
+	<Grid RowDefinitions="*,2" ColumnDefinitions="auto,*" Margin="5">
+		<Image HorizontalAlignment="Left" Source="{Binding Image ,RelativeSource={RelativeSource AncestorType={x:Type local:MyButton}}}"/>
+		<TextBlock Grid.Column="1" Margin="0,0,5,0" Text="{Binding Text,  RelativeSource={RelativeSource AncestorType={x:Type local:MyButton}}}" VerticalAlignment="Bottom" HorizontalAlignment="Right"/>
+		<Line Grid.ColumnSpan="2" Grid.Row="1" StartPoint="0,0" EndPoint="1,0" Stretch="Fill" Stroke="darkgray" StrokeThickness="2" VerticalAlignment="Bottom"/>
+	</Grid>
+	<Button.Styles>
+		<Style Selector="local|MyButton">
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+			<Setter Property="Background" Value="white"/>
+			<Setter Property="IsVisible" Value="True"/>
+		</Style>
+
+		<Style Selector="local|MyButton:disabled">
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+			<Setter Property="Background" Value="gray"/>
+			<Setter Property="IsVisible" Value="False"/>
+		</Style>
+
+		<Style Selector="local|MyButton:pointerover">
+			<Setter Property="Transitions">
+				<Transitions>
+					<BrushTransition Property="Background" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+			<Setter Property="Background" Value="#807DA4C4"/>
+			<Setter Property="IsVisible" Value="True"/>
+		</Style>
+
+		<Style Selector="local|MyButton:pressed">
+			<Setter Property="Transitions">
+				<Transitions>
+					<ThicknessTransition Property="Padding" Duration="0:0:0.1"/>
+				</Transitions>
+			</Setter>
+			<Setter Property="Padding" Value="3"/>
+			<Setter Property="IsVisible" Value="True"/>
+		</Style>
+	</Button.Styles>
+</Button>

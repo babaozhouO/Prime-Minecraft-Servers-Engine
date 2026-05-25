@@ -1,0 +1,322 @@
+﻿<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:controls="using:PMCSsE_Frontend_AvaloniaUI.Controls"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="using:PMCSsE_Frontend_AvaloniaUI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="PMCSsE_Frontend_AvaloniaUI.Views.MainView"
+             Name="root" x:DataType="vm:MainViewModel" Foreground="Black">
+    <Design.DataContext>
+        <vm:MainViewModel/>
+    </Design.DataContext>
+    <Panel>
+        <Image Stretch="UniformToFill" Opacity="0.9" Source="avares://PMCSsE_Frontend_AvaloniaUI/Images/Background.png">
+            <Image.Effect>
+                <BlurEffect Radius="6"/>
+            </Image.Effect>
+        </Image>
+        <TabControl Padding="0" SelectedIndex="{Binding FirstTabControlPage}">
+            <TabItem Classes="fir">
+                <TabItem.Header>
+                    <Panel Width="60">
+                        <TextBlock Classes="fir" Text="连接"/>
+                        <Image Classes="fir" Source="{Binding ConnectionStateImage}"/>
+                    </Panel>
+                </TabItem.Header>
+                <Panel>
+                    <Line Classes="fir"/>
+                    <TabControl Classes="sec" SelectedIndex="{Binding ConnectPageIndex}">
+                        <TabItem Header="添加" Classes="sec">
+                            <Grid RowDefinitions="25,27,*,27,*,27,*,45,5"
+                                  ColumnDefinitions="80,*,100">
+                                <Line Classes="sec" Grid.RowSpan="9"/>
+                                <TextBlock Grid.ColumnSpan="2" Text="后端信息" HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                                <Line Classes="fir" Grid.ColumnSpan="3" VerticalAlignment="Bottom"/>
+
+                                <TextBlock Grid.Row="1" Text="主机名/IP:"/>
+                                <TextBox Grid.Row="1" Text="{Binding DisplayingIP}"/>
+                                <Line Grid.Row="1" Classes="tbul"/>
+
+                                <TextBlock Grid.Row="3" Text="端口号:"/>
+                                <TextBox Grid.Row="3" Text="{Binding DisplayingPort}"/>
+                                <Line Grid.Row="3" Classes="tbul"/>
+
+                                <TextBlock Grid.Row="5" Text="访问密钥:"/>
+                                <TextBox Grid.Row="5" Text="{Binding DisplayingPassword}" RevealPassword="True" PasswordChar="*"/>
+                                <Line Grid.Row="5" Classes="tbul"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" Grid.ColumnSpan="3" Text="留空则需在连接时手动输入访问密钥" FontSize="13" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+
+                                <controls:MyButton Grid.Column="2" Grid.Row="7" Text="添加" Command="{Binding AddNewBackendCommand}" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Finish.png"/>
+                                <Grid.Styles>
+                                    <Style Selector="Line.tbul">
+                                        <Setter Property="Grid.Column" Value="1"/>
+                                        <Setter Property="Grid.ColumnSpan" Value="2"/>
+                                        <Setter Property="StartPoint" Value="0,0"/>
+                                        <Setter Property="EndPoint" Value="1,0"/>
+                                        <Setter Property="Stretch" Value="Fill"/>
+                                        <Setter Property="Stroke" Value="SkyBlue"/>
+                                        <Setter Property="StrokeThickness" Value="2"/>
+                                        <Setter Property="VerticalAlignment" Value="Bottom"/>
+                                    </Style>
+                                    <Style Selector="TextBlock">
+                                        <Setter Property="TextAlignment" Value="Center"/>
+                                    </Style>
+                                    <Style Selector="TextBox">
+                                        <Setter Property="Grid.Column" Value="1"/>
+                                        <Setter Property="Grid.ColumnSpan" Value="2"/>
+                                        <Setter Property="Background" Value="Transparent"/>
+                                        <Setter Property="BorderBrush" Value="Transparent"/>
+                                        <Setter Property="VerticalAlignment" Value="Bottom"/>
+                                    </Style>
+                                </Grid.Styles>
+                            </Grid>
+                        </TabItem>
+                        <TabItem Header="后端列表" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                                <ListBox Margin="7,5,0,5"  Background="Transparent" ItemsSource="{Binding Histories_IS}" BorderThickness="0" BorderBrush="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible" >
+                                    <ListBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <controls:ConnectHistory_LBItem
+                                            ConnectCommand="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).ConnectCommand}"
+                                            MyNativeServerHistory="{Binding MyNativeServerHistory}"
+                                            DisplayText="{Binding DisplayText}" />
+                                        </DataTemplate>
+                                    </ListBox.ItemTemplate>
+                                    <ListBox.Styles>
+                                        <Style Selector="ListBoxItem">
+                                            <Setter Property="Padding" Value="1"/>
+                                        </Style>
+                                        <Style Selector="controls|ConnectHistory_LBItem">
+                                            <Setter Property="Height" Value="60"/>
+                                        </Style>
+                                    </ListBox.Styles>
+                                </ListBox>
+                            </Panel>
+                        </TabItem>
+                        <TabItem Header="连接日志" Classes="sec">
+                            <Grid ColumnDefinitions="2,5,65,*,5,140,5,100" RowDefinitions="5,*,5,40,5">
+                                <Line Classes="sec" Grid.RowSpan="4"/>
+                                <TextBox IsReadOnly="True" Text="{Binding ConnectLogs}" Grid.Column="2" Grid.Row="1" Grid.ColumnSpan="9"/>
+                                <TextBlock Text="访问密钥:" IsVisible="{Binding PasswordEnterControlVisibility}" Grid.Column="2" Grid.Row="3" VerticalAlignment="Center"/>
+                                <TextBox Text="{Binding Password}" RevealPassword="True" PasswordChar="*" IsVisible="{Binding PasswordEnterControlVisibility}" Grid.Column="3" Grid.Row="3" VerticalAlignment="Center"/>
+                                <controls:MyButton Grid.Column="5" Grid.Row="3" Text="RSA公钥一致" Command="{Binding VerifyCommand}" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Login.png"/>
+                                <controls:MyButton Grid.Column="5" Grid.Row="3" Text="确认访问密钥" Command="{Binding SendPasswordCommand}" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Login.png"/>
+                                <controls:MyButton Grid.Column="7" Grid.Row="3" Text="断开连接" Command="{Binding DisconnectCommand}" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Unlink.png"/>
+
+                            </Grid>
+                        </TabItem>
+                    </TabControl>
+                </Panel>
+            </TabItem>
+            <TabItem Classes="fir">
+                <TabItem.Header>
+                    <Panel Width="120">
+                        <TextBlock Classes="fir" Text="所有管理器"/>
+                        <Image Classes="fir" Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Store.png"/>
+                    </Panel>
+                </TabItem.Header>
+                <Panel>
+                    <Line Classes="fir"/>
+                    <ListBox SelectedItem="{Binding SelectedMCServerManager_LBItem}" ItemsSource="{Binding AllMCServerManagers_IS}" Margin="7,5,110,5"  Background="Transparent" BorderThickness="0" BorderBrush="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <controls:MCServerManager_LBItem ManagerID="{Binding ManagerID}" ServerName="{Binding ServerName}" MCServerType="{Binding MCServerType}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Padding" Value="2,3,2,3"/>
+                            </Style>
+                        </ListBox.Styles>
+                    </ListBox>
+                    <Line StartPoint="0,0" EndPoint="0,1" Stretch="Fill" Stroke="gray" StrokeThickness="2" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,106,0"/>
+                    <StackPanel Spacing="3" Width="106" HorizontalAlignment="Right" VerticalAlignment="Top">
+                        <TextBlock Text="操作" HorizontalAlignment="Center"/>
+                        <controls:MyButton Text="刷新" Command="{Binding RefreshAllMCServerManagerListCommand}"/>
+                        <controls:MyButton Text="新建" Command="{Binding CreateNewMCServerManagerCommand}"/>
+                        <controls:MyButton Text="启动" Command="{Binding LoadNewMCServerManagerCommand}"/>
+                        <controls:MyButton Text="停止" Command="{Binding StopNewMCServerManagerCommand}"/>
+                        <controls:MyButton Text="删除" Command="{Binding DeleteMCServerManagerCommand}"/>
+                        <StackPanel.Styles>
+                            <Style Selector="controls|MyButton">
+                                <Setter Property="Width" Value="100"/>
+                                <Setter Property="Height" Value="40"/>
+                                <Setter Property="CornerRadius" Value="1"/>
+                            </Style>
+                        </StackPanel.Styles>
+                    </StackPanel>
+                </Panel>
+            </TabItem>
+            <TabItem Classes="fir">
+                <TabItem.Header>
+                    <Panel Width="160">
+                        <TextBlock Classes="fir" Text="运行中的管理器"/>
+                        <Image Classes="fir" Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Machine.png"/>
+                    </Panel>
+                </TabItem.Header>
+                <Panel>
+                    <Line Classes="hor"/>
+                    <TabControl Classes="sec">
+                        <TabItem Header="还在制作" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                        <TabItem Header="" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                        <TabItem Header="" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                    </TabControl>
+                </Panel>
+            </TabItem>
+            <TabItem Classes="fir">
+                <TabItem.Header>
+                    <Panel Width="80">
+                        <TextBlock Classes="fir" Text="工具箱"/>
+                        <Image Classes="fir" Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Tools.png"/>
+                    </Panel>
+                </TabItem.Header>
+                <Panel>
+                    <Line Classes="fir"/>
+                    <TabControl Classes="sec">
+                        <TabItem Header="暂时没有哦" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                        <TabItem Header="" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                        <TabItem Header="" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                    </TabControl>
+                </Panel>
+            </TabItem>
+            <TabItem Classes="fir">
+                <TabItem.Header>
+                    <Panel Width="60">
+                        <TextBlock Classes="fir" Text="设置"/>
+                        <Image Classes="fir" Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Settings.png"/>
+                    </Panel>
+                </TabItem.Header>
+                <Panel>
+                    <Line Classes="fir"/>
+                    <TabControl Classes="sec">
+                        <TabItem Header="暂时没有哦" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                        <TabItem Header="" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                        <TabItem Header="" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                    </TabControl>
+                </Panel>
+            </TabItem>
+            <TabItem Classes="fir">
+                <TabItem.Header>
+                    <Panel Width="60">
+                        <TextBlock Classes="fir" Text="关于"/>
+                        <Image Classes="fir" Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/About.png"/>
+                    </Panel>
+                </TabItem.Header>
+                <Panel>
+                    <Line Classes="fir"/>
+                    <TabControl Classes="sec">
+                        <TabItem Header="软件信息" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                        <TabItem Header="更新日志" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                        <TabItem Header="引用清单" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/>
+                            </Panel>
+                        </TabItem>
+                    </TabControl>
+                </Panel>
+            </TabItem>
+            <TabControl.Styles>
+                <Style Selector="TabItem.fir">
+                    <Setter Property="Padding" Value="5,0,5,0"/>
+                    <Setter Property="FontSize" Value="20"/>
+                </Style>
+                <Style Selector="TextBlock.fir">
+                    <Setter Property="HorizontalAlignment" Value="Left"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="FontSize" Value="20"/>
+                </Style>
+                <Style Selector="Image.fir">
+                    <Setter Property="HorizontalAlignment" Value="Right"/>
+                    <Setter Property="VerticalAlignment" Value="Center"/>
+                    <Setter Property="Height" Value="18"/>
+                </Style>
+                <Style Selector="Line.fir">
+                    <Setter Property="StartPoint" Value="0,0"/>
+                    <Setter Property="EndPoint" Value="1,0"/>
+                    <Setter Property="Stretch" Value="Fill"/>
+                    <Setter Property="Stroke" Value="gray"/>
+                    <Setter Property="StrokeThickness" Value="2"/>
+                </Style>
+                <Style Selector="TabControl.sec">
+                    <Setter Property="Margin" Value="0,2,0,0"/>
+                    <Setter Property="FontSize" Value="15"/>
+                    <Setter Property="TabStripPlacement" Value="Left"/>
+                </Style>
+                <Style Selector="TabItem.sec">
+                    <Setter Property="FontSize" Value="16"/>
+                    <Setter Property="Padding" Value="1,0,0,0"/>
+                </Style>
+                <Style Selector="Line.sec">
+                    <Setter Property="StartPoint" Value="0,0"/>
+                    <Setter Property="EndPoint" Value="0,1"/>
+                    <Setter Property="Stretch" Value="Fill"/>
+                    <Setter Property="Stroke" Value="gray"/>
+                    <Setter Property="StrokeThickness" Value="2"/>
+                </Style>
+                <Style Selector="Panel.sec">
+                    <Setter Property="Margin" Value="2,0,0,0"/>
+                </Style>
+            </TabControl.Styles>
+        </TabControl>
+        <ListBox ItemsSource="{Binding Messages_IS}" MaxHeight="260" Background="Transparent" VerticalAlignment="Bottom" HorizontalAlignment="Left"><!--消息列表-->
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <controls:Message MessageString="{Binding Message}" Background="{Binding Color}"/>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="Padding" Value="0,1,0,1"/>
+                </Style>
+            </ListBox.Styles>
+        </ListBox>        <controls:ImageButton Command="{Binding CleanMessageCommand}" Width="26" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Clean.png"/>
+
+    </Panel>
+
+</UserControl>

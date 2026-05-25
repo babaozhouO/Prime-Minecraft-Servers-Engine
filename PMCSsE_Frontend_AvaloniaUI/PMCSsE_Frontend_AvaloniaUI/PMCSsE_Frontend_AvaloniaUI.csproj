@@ -1,0 +1,74 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <BaseOutputPath>.\..\..\生成\PMCSsE_Frontend_AvaloniaUI</BaseOutputPath>
+    <GenerateDocumentationFile>False</GenerateDocumentationFile>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+  <ItemGroup>
+    <None Remove="Icons\Add.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.Themes.Fluent" />
+    <PackageReference Include="Avalonia.Fonts.Inter" />
+    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
+    <PackageReference Include="Avalonia.Diagnostics">
+      <IncludeAssets Condition="'$(Configuration)' != 'Debug'">None</IncludeAssets>
+      <PrivateAssets Condition="'$(Configuration)' != 'Debug'">All</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="ReactiveUI.Avalonia" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Fonts\SourceHanSansSC-Regular.otf" />
+    <AvaloniaResource Include="Icons\About.png" />
+    <AvaloniaResource Include="Icons\Add.png" />
+    <AvaloniaResource Include="Icons\AddNewMCServer.png" />
+    <AvaloniaResource Include="Icons\Cancel.png" />
+    <AvaloniaResource Include="Icons\Clean.png" />
+    <AvaloniaResource Include="Icons\Console.png" />
+    <AvaloniaResource Include="Icons\Copy.png" />
+    <AvaloniaResource Include="Icons\ExitApp.png" />
+    <AvaloniaResource Include="Icons\Finish.png" />
+    <AvaloniaResource Include="Icons\Folder.png" />
+    <AvaloniaResource Include="Icons\Forge.png" />
+    <AvaloniaResource Include="Icons\FunctionListBoxItem.png" />
+    <AvaloniaResource Include="Icons\FunctionListClosed.png" />
+    <AvaloniaResource Include="Icons\FunctionListOpened.png" />
+    <AvaloniaResource Include="Icons\Generator.png" />
+    <AvaloniaResource Include="Icons\Help.png" />
+    <AvaloniaResource Include="Icons\KillMCServer.png" />
+    <AvaloniaResource Include="Icons\Link.png" />
+    <AvaloniaResource Include="Icons\Login.png" />
+    <AvaloniaResource Include="Icons\Machine.png" />
+    <AvaloniaResource Include="Icons\Messages.png" />
+    <AvaloniaResource Include="Icons\OpenManager.png" />
+    <AvaloniaResource Include="Icons\OpenWebsite.png" />
+    <AvaloniaResource Include="Icons\PMCSsE.ico" />
+    <AvaloniaResource Include="Icons\RemoveMCServer.png" />
+    <AvaloniaResource Include="Icons\Run.png" />
+    <AvaloniaResource Include="Icons\Settings.png" />
+    <AvaloniaResource Include="Icons\Shutdown.png" />
+    <AvaloniaResource Include="Icons\Store.png" />
+    <AvaloniaResource Include="Icons\Tools.png" />
+    <AvaloniaResource Include="Icons\Unlink.png" />
+    <AvaloniaResource Include="Icons\VanillaMCServer.png" />
+    <AvaloniaResource Include="Images\Background.png" />
+    <AvaloniaResource Include="Styles\AcrylicPanelStyles.axaml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\PMCSsE_Communicator\PMCSsE_Communicator.csproj" />
+  </ItemGroup>
+</Project>

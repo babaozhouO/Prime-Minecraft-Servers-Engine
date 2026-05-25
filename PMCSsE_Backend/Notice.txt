@@ -1,0 +1,11 @@
+PMCSsE_Backend
+Copyright (c) 2025 【Babao Zhou (Legal Name: RenJie Zhou) <Contact: 1749861851@qq.com>】
+
+This product includes software developed by third parties:
+
+----------------------------------------------------------------------
+Component: SSH.NET
+Version: 2025.1.0
+License: MIT
+Location: /Licenses/SSH.NET-2025.0.0-LICENSE.txt
+----------------------------------------------------------------------

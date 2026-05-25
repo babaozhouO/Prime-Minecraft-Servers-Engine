@@ -1,0 +1,17 @@
+﻿<UserControl x:Class="PMCSsE_Frontend_WPF.Controls.LogListBoxItem"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:PMCSsE_Frontend_WPF.Controls"
+             mc:Ignorable="d" 
+             FontSize="15" 
+             Background="Transparent"
+             Width="Auto"
+             Height="Auto" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+    <StackPanel Orientation="Horizontal">
+        <local:ImageButton Style="{StaticResource ImageButtonStyle}" x:Name="CopyButton" Width="20.5" Height="20.5" Margin="1" Click="ImageButton_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_Copy.png"/>
+        <TextBox x:Name="TimeTextBox" Style="{StaticResource LogListBoxItemTextBoxStyle}" Text="{Binding TimeText}" Foreground="Black"/>
+        <TextBox x:Name="LogTextBox" Style="{StaticResource LogListBoxItemTextBoxStyle}" Text="{Binding LogText}" Foreground="{Binding TextColor}"/>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,305 @@
+﻿<!--   Copyright 2025 八宝粥(1749861851@qq.com)
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.-->
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                     xmlns:local="clr-namespace:PMCSsE_Frontend_WPF.Controls">
+    <Style TargetType="{x:Type local:ImageButton}" x:Key="ImageButtonStyle">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:ImageButton}">
+
+                    <UserControl>
+                        <Border x:Name="ImageButtonBorder"
+                            Background="#FFF9F9F9"
+                            BorderBrush="#FF04C7E0"
+                            BorderThickness="2"
+                            CornerRadius="4">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="1*"/>
+                                    <RowDefinition Height="28*"/>
+                                    <RowDefinition Height="1*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="28*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <Image Grid.Row="1" Grid.Column="1" Source="{TemplateBinding ImageButtonImageSource}"/>
+                            </Grid>
+                        </Border>
+                    </UserControl>
+
+                    <ControlTemplate.Triggers>
+
+                        <Trigger Property="IsMouseOverTheImageButton" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="#FFC8E6FF" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"/>
+                                        <ColorAnimation To="#FF5F9ACA" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="#FFF9F9F9" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"/>
+                                        <ColorAnimation To="#FF04C7E0" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+
+                        <Trigger Property="IsMousePressedTheImageButton" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ThicknessAnimation To="1" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Margin)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ThicknessAnimation To="0" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Margin)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type local:ImageButton}" x:Key="ImageButtonStyle1">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:ImageButton}">
+
+                    <UserControl>
+                        <Border x:Name="ImageButtonBorder"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            BorderThickness="2"
+                            CornerRadius="4">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="1*"/>
+                                    <RowDefinition Height="28*"/>
+                                    <RowDefinition Height="1*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="28*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <Image Grid.Row="1" Grid.Column="1" Source="{TemplateBinding ImageButtonImageSource}"/>
+                            </Grid>
+                        </Border>
+                    </UserControl>
+
+                    <ControlTemplate.Triggers>
+
+                        <Trigger Property="IsMouseOverTheImageButton" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="Red" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"/>
+                                        <ColorAnimation To="Red" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="Transparent" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"/>
+                                        <ColorAnimation To="Transparent" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+
+                        <Trigger Property="IsMousePressedTheImageButton" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ThicknessAnimation To="1" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Margin)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ThicknessAnimation To="0" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Margin)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type local:ImageButton}" x:Key="ImageButtonStyle2">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:ImageButton}">
+
+                    <UserControl>
+                        <Border x:Name="ImageButtonBorder"
+                            Background="Transparent"
+                            BorderBrush="Transparent"
+                            BorderThickness="2"
+                            CornerRadius="4">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="1*"/>
+                                    <RowDefinition Height="28*"/>
+                                    <RowDefinition Height="1*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="28*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <Image Grid.Row="1" Grid.Column="1" Source="{TemplateBinding ImageButtonImageSource}"/>
+                            </Grid>
+                        </Border>
+                    </UserControl>
+
+                    <ControlTemplate.Triggers>
+
+                        <Trigger Property="IsMouseOverTheImageButton" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="#90DADADA" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"/>
+                                        <ColorAnimation To="#90DADADA" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="Transparent" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"/>
+                                        <ColorAnimation To="Transparent" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+
+                        <Trigger Property="IsMousePressedTheImageButton" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ThicknessAnimation To="1" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Margin)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ThicknessAnimation To="0" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Margin)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+    <Style TargetType="{x:Type local:ImageButton}" x:Key="ImageButtonStyle3">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="{x:Type local:ImageButton}">
+
+                    <UserControl>
+                        <Border x:Name="ImageButtonBorder"
+                            Background="Transparent"
+                            BorderBrush="#FF04C7E0"
+                            BorderThickness="2"
+                            CornerRadius="4">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="1*"/>
+                                    <RowDefinition Height="28*"/>
+                                    <RowDefinition Height="1*"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1*"/>
+                                    <ColumnDefinition Width="28*"/>
+                                    <ColumnDefinition Width="1*"/>
+                                </Grid.ColumnDefinitions>
+                                <Image Grid.Row="1" Grid.Column="1" Source="{TemplateBinding ImageButtonImageSource}"/>
+                            </Grid>
+                        </Border>
+                    </UserControl>
+
+                    <ControlTemplate.Triggers>
+
+                        <Trigger Property="IsMouseOverTheImageButton" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="#FF5F9ACA" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"/>
+                                        <ColorAnimation To="#FFC8E6FF" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ColorAnimation To="#FF04C7E0" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.BorderBrush).(SolidColorBrush.Color)"/>
+                                        <ColorAnimation To="Transparent" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Background).(SolidColorBrush.Color)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+
+                        <Trigger Property="IsMousePressedTheImageButton" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ThicknessAnimation To="1" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Margin)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
+
+                            <Trigger.ExitActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <ThicknessAnimation To="0" Duration="0:0:0.2" Storyboard.TargetName="ImageButtonBorder" Storyboard.TargetProperty="(Border.Margin)"/>
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.ExitActions>
+                        </Trigger>
+
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+</ResourceDictionary>

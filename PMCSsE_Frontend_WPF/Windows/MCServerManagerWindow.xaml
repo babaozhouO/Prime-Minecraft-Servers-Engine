@@ -1,0 +1,331 @@
+﻿<!--   Copyright 2025 八宝粥(1749861851@qq.com)
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.-->
+<localWin:CustomWindow x:Class="PMCSsE_Frontend_WPF.Windows.MCServerManagerWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:localWin="clr-namespace:PMCSsE_Frontend_WPF.Windows"
+        xmlns:local="clr-namespace:PMCSsE_Frontend_WPF.Controls"
+        mc:Ignorable="d"
+        Title="PMCSsE——MC服务端管理面板" 
+        MinHeight="160"
+        MinWidth="450"
+        Height="675" 
+        Width="1200"
+        FontSize="15" 
+        WindowStyle="None"
+        AllowsTransparency="True"
+        ResizeMode="CanMinimize"
+        WindowStartupLocation="CenterScreen">
+    <localWin:CustomWindow.Background>
+        <ImageBrush ImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/Image/AppImage_Background.png"/>
+    </localWin:CustomWindow.Background>
+
+    <Grid Grid.Row="2" Grid.Column="1" Margin="30,20,30,20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="35"/>
+                <RowDefinition Height="3"/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Border Grid.RowSpan="3" Style="{StaticResource AcrylicPanelStyle0.8 0.60}" BorderThickness="3"/>
+            <StackPanel Orientation="Horizontal" Margin="3,3,3,0">
+                <local:CustomButton Style="{StaticResource BlueCustomButtonStyle}" Click="CustomButton_Click" Width="175" CustomButtonBorderThickness="3" CustomButtonText="MC服务端控制台" CustomButtonBorderCornerRadius="3" CustomButtonDisplayImage="pack://application:,,,/PMCSsE_Frontend_WPF;component/Icon/AppIcon_Console.png"/>
+                <local:CustomButton Style="{StaticResource BlueCustomButtonStyle}" Click="CustomButton_Click_1" Width="115" CustomButtonBorderThickness="3" CustomButtonText="备份工具" CustomButtonBorderCornerRadius="3" CustomButtonDisplayImage="pack://application:,,,/PMCSsE_Frontend_WPF;component/Icon/AppIcon_Store.png"/>
+                <local:CustomButton Style="{StaticResource BlueCustomButtonStyle}" Click="CustomButton_Click_2" Width="245" CustomButtonBorderThickness="3" CustomButtonText="实时服内外通信与管理工具" CustomButtonBorderCornerRadius="3" CustomButtonDisplayImage="pack://application:,,,/PMCSsE_Frontend_WPF;component/Icon/AppIcon_Messages.png"/>
+            </StackPanel>
+            <Line Grid.Row="1" X1="0" X2="1" Stretch="Fill" Stroke="Gray" StrokeThickness="3" Margin="1.5,0,1.5,0"/>
+            <Grid Grid.Row="2" Name="ServerConsoleGrid" Visibility="Visible">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="3"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="201"/>
+                    <ColumnDefinition Width="360"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="3"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="1" FontSize="17" Name="ManagerIDAndName_SG" Text="ID-服务器名称  当前页面:MC服务端控制台" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <Line Grid.Column="1" HorizontalAlignment="Right" Stroke="DarkGray" StrokeThickness="3" Y1="0" Y2="1" Stretch="Fill" Margin="0,-1.5,0,-1.5"/>
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="8*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="5*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text=" 服务端操作: " VerticalAlignment="Center" Height="20"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" Grid.Column="2" x:Name="StartButton_SG" Click="StartButton_SG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_RunMCServer.png"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" x:Name="ShutdownButton_SG" IsEnabled="False" Grid.Column="4" Click="ShutdownButton_SG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_ShutdownMCServer.png"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" x:Name="KillButton_SG" IsEnabled="False" Grid.Column="6" Click="KillButton_SG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_KillMCServer.png"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" Grid.Column="8" Click="OpenSettingsWindowButton_SG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_Settings1.png"/>
+                </Grid>
+                <Line Grid.Column="3" HorizontalAlignment="Left" Stroke="DarkGray" StrokeThickness="3" Y1="0" Y2="1" Stretch="Fill" Margin="0,-1.5,0,-1.5"/>
+                <Grid Grid.Column="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox Name="ShowTimeCheckBox_SG" Click="ShowTimeCheckBox_SG_Click" Content="显示日志时间" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="True"/>
+                    <CheckBox Grid.Column="1" Name="ShowDebugLogCheckBox_SG" Click="ShowDebugLogCheckBox_SG_Click" Content="显示调试日志" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="False"/>
+                    <local:CustomButton Style="{StaticResource BlueCustomButtonStyle}" Click="CleanLogButton_Click" CustomButtonDisplayImage="pack://application:,,,/PMCSsE_Frontend_WPF;component/Icon/AppIcon_Clean.png" Grid.Column="2" CustomButtonBorderCornerRadius="8" CustomButtonBorderThickness="2" CustomButtonText="清空日志"/>
+                </Grid>
+                <Line Grid.Column="3" HorizontalAlignment="Right" Stroke="DarkGray" StrokeThickness="3" Y1="0" Y2="1" Stretch="Fill" Margin="0,-1.5,0,-1.5"/>
+                <Line Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Stretch="Fill" Stroke="DarkGray" Opacity="0.8" X1="0" X2="1" StrokeThickness="3" Margin="-1.5,0,-1.5,0"/>
+                <Grid Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="2"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="5"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="5"/>
+                    </Grid.ColumnDefinitions>
+                    <ListBox Grid.Row="1" Grid.Column="1" x:Name="LogListBox_SG" FontSize="15" BorderBrush="Transparent" BorderThickness="0"
+                             ScrollViewer.CanContentScroll="True"
+                            ScrollViewer.IsDeferredScrollingEnabled="False" VirtualizingStackPanel.IsVirtualizing="True"
+                            VirtualizingStackPanel.VirtualizationMode="Recycling" Background="Transparent">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel IsItemsHost="True"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <local:LogListBoxItem DataContext="{Binding}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Line Grid.Row="2" Grid.ColumnSpan="3" X1="0" X2="1" Stretch="Fill" Stroke="Gray" StrokeThickness="2" Margin="-1.5,0,-1.5,0"/>
+                    <Grid Grid.Row="3" Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text=" >>> " Foreground="#FFE600FF" VerticalAlignment="Center" FontSize="17"/>
+                        <TextBox Grid.Column="1" Name="CommandEnterTextBox_SG" KeyDown="CommandEnterTextBox_SG_KeyDown" KeyUp="CommandEnterTextBox_SG_KeyUp" TextChanged="CommandEnterTextBox_SG_TextChanged" GotFocus="CommandEnterTextBox_SG_GotFocus" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" FontSize="16"/>
+                    </Grid>
+                </Grid>
+                <StackPanel MaxWidth="200" Grid.Row="2" Grid.Column="4" Name="FunctionCollectionList_SG"/>
+            </Grid>
+            <Grid Grid.Row="2" Name="BackupHelperConsoleGrid" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="3"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="201"/>
+                    <ColumnDefinition Width="360"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="3"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="1" FontSize="17" Name="ManagerIDAndName_BG" Text="ID-服务器名称  当前页面:备份工具" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <Line Grid.Column="1" HorizontalAlignment="Right" Stroke="DarkGray" StrokeThickness="3" Y1="0" Y2="1" Stretch="Fill" Margin="0,-1.5,0,-1.5"/>
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="8*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="5*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text=" 备份工具操作: " VerticalAlignment="Center" Height="20"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" Grid.Column="2" x:Name="StartButton_BG" Click="StartButton_BG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_RunMCServer.png"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" x:Name="ShutdownButton_BG" IsEnabled="False" Grid.Column="4" Click="ShutdownButton_BG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_ShutdownMCServer.png"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" x:Name="KillButton_BG" IsEnabled="False" Grid.Column="6" Click="KillButton_BG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_KillMCServer.png"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" Grid.Column="8" Click="OpenSettingsWindowButton_BG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_Settings1.png"/>
+                </Grid>
+                <Line Grid.Column="3" HorizontalAlignment="Left" Stroke="DarkGray" StrokeThickness="3" Y1="0" Y2="1" Stretch="Fill" Margin="0,-1.5,0,-1.5"/>
+                <Grid Grid.Column="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox Name="ShowTimeCheckBox_BG" Click="ShowTimeCheckBox_BG_Click" Content="显示日志时间" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="True"/>
+                    <CheckBox Grid.Column="1" Name="ShowDebugLogCheckBox_BG" Click="ShowDebugLogCheckBox_BG_Click" Content="显示调试日志" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="False"/>
+                    <local:CustomButton Style="{StaticResource BlueCustomButtonStyle}" Click="CleanLogButton_Click" CustomButtonDisplayImage="pack://application:,,,/PMCSsE_Frontend_WPF;component/Icon/AppIcon_Clean.png" Grid.Column="2" CustomButtonBorderCornerRadius="8" CustomButtonBorderThickness="2" CustomButtonText="清空日志"/>
+                </Grid>
+                <Line Grid.Column="3" HorizontalAlignment="Right" Stroke="DarkGray" StrokeThickness="3" Y1="0" Y2="1" Stretch="Fill" Margin="0,-1.5,0,-1.5"/>
+                <Line Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Stretch="Fill" Stroke="DarkGray" Opacity="0.8" X1="0" X2="1" StrokeThickness="3" Margin="-1.5,0,-1.5,0"/>
+
+                <Grid Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="5"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="5"/>
+                    </Grid.ColumnDefinitions>
+                    <ListBox Grid.Row="1" Grid.Column="1" x:Name="LogListBox_BG" FontSize="15" ScrollViewer.CanContentScroll="True" BorderBrush="Transparent" BorderThickness="0"
+            ScrollViewer.IsDeferredScrollingEnabled="False" VirtualizingStackPanel.IsVirtualizing="True"
+            VirtualizingStackPanel.VirtualizationMode="Recycling" Background="Transparent">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel IsItemsHost="True"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <local:LogListBoxItem DataContext="{Binding}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Line Grid.Row="2" Grid.Column="0" Y1="0" Y2="1" Stretch="Fill" Stroke="LightGray" StrokeThickness="3" HorizontalAlignment="Right" Margin="0,-1.5,0,-1.5"/>
+                    <Line Grid.Row="2" Grid.Column="3" Y1="0" Y2="1" Stretch="Fill" Stroke="LightGray" StrokeThickness="3" HorizontalAlignment="Left" Margin="0,-1.5,0,-1.5"/>
+                    <StackPanel Grid.Row="2" Grid.Column="1">
+                        <Line X1="0" X2="1" Stretch="Fill" Stroke="LightGray" StrokeThickness="3" Margin="-1.5,0,-1.5,0"/>
+                        <TextBlock Name="MainTaskTextBlock" Text=" 进行中的主任务:" Margin="0,2,0,2"/>
+                        <ProgressBar Name="MainTaskProgressBar" Grid.Row="3" Grid.Column="1" Height="5" Background="Transparent" BorderBrush="Transparent"/>
+                        <Line X1="0" X2="1" Stretch="Fill" Stroke="LightGray" StrokeThickness="3" Margin="-1.5,0,-1.5,0"/>
+                        <TextBlock Name="SecondaryTaskTextBlock" Text=" 进行中的分任务:" Margin="0,2,0,2"/>
+                        <ProgressBar Name="SecondaryTaskProgressBar" Grid.Row="3" Grid.Column="1" Height="5" Background="Transparent" BorderBrush="Transparent"/>
+                        <Line X1="0" X2="1" Stretch="Fill" Stroke="LightGray" StrokeThickness="3" Margin="-1.5,0,-1.5,0"/>
+
+                    </StackPanel>
+                </Grid>
+                
+                <StackPanel MaxWidth="200" Grid.Row="2" Grid.Column="4" Name="FunctionCollectionList_BG"/>
+            </Grid>
+            <Grid Grid.Row="2" Name="OnlineChatAndManagerConsoleGrid" Visibility="Collapsed">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="30"/>
+                    <RowDefinition Height="3"/>
+                    <RowDefinition/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="3"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="201"/>
+                    <ColumnDefinition Width="360"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="3"/>
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="1" FontSize="17" Name="ManagerIDAndName_OG" Text="ID-服务器名称  当前页面:实时服内外通信与管理工具" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+                <Line Grid.Column="1" HorizontalAlignment="Right" Stroke="DarkGray" StrokeThickness="3" Y1="0" Y2="1" Stretch="Fill" Margin="0,-1.5,0,-1.5"/>
+                <Grid Grid.Column="2">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="1*"/>
+                        <RowDefinition Height="8*"/>
+                        <RowDefinition Height="1*"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="4*"/>
+                        <ColumnDefinition Width="30*"/>
+                        <ColumnDefinition Width="5*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Grid.Row="1" Grid.Column="1" Text=" 服务端操作: " VerticalAlignment="Center" Height="20"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" Grid.Column="2" x:Name="StartButton_OG" Click="StartButton_OG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_RunMCServer.png"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" x:Name="ShutdownButton_OG" IsEnabled="False" Grid.Column="4" Click="ShutdownButton_OG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_ShutdownMCServer.png"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" x:Name="KillButton_OG" IsEnabled="False" Grid.Column="6" Click="KillButton_OG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_KillMCServer.png"/>
+                    <local:ImageButton Style="{StaticResource ImageButtonStyle}" Grid.Row="1" Grid.Column="8" Click="OpenSettingsWindowButton_OG_Click" ImageButtonImageSource="pack://application:,,,/PMCSsE_Frontend_WPF;component/icon/AppIcon_Settings1.png"/>
+                </Grid>
+                <Line Grid.Column="3" HorizontalAlignment="Left" Stroke="DarkGray" StrokeThickness="3" Y1="0" Y2="1" Stretch="Fill" Margin="0,-1.5,0,-1.5"/>
+                <Grid Grid.Column="3">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition/>
+                    </Grid.ColumnDefinitions>
+                    <CheckBox Name="ShowTimeCheckBox_OG" Click="ShowTimeCheckBox_OG_Click" Content="显示日志时间" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="True"/>
+                    <CheckBox Grid.Column="1" Name="ShowDebugLogCheckBox_OG" Click="ShowDebugLogCheckBox_OG_Click" Content="显示调试日志" HorizontalAlignment="Center" VerticalAlignment="Center" IsChecked="False"/>
+                    <local:CustomButton Style="{StaticResource BlueCustomButtonStyle}" Click="CleanLogButton_Click" CustomButtonDisplayImage="pack://application:,,,/PMCSsE_Frontend_WPF;component/Icon/AppIcon_Clean.png" Grid.Column="2" CustomButtonBorderCornerRadius="8" CustomButtonBorderThickness="2" CustomButtonText="清空日志"/>
+                </Grid>
+                <Line Grid.Column="3" HorizontalAlignment="Right" Stroke="DarkGray" StrokeThickness="3" Y1="0" Y2="1" Stretch="Fill" Margin="0,-1.5,0,-1.5"/>
+                <Line Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="4" Stretch="Fill" Stroke="DarkGray" Opacity="0.8" X1="0" X2="1" StrokeThickness="3" Margin="-1.5,0,-1.5,0"/>
+                <Grid Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="3">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="5"/>
+                        <RowDefinition/>
+                        <RowDefinition Height="2"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="5"/>
+                    </Grid.RowDefinitions>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="5"/>
+                        <ColumnDefinition/>
+                        <ColumnDefinition Width="5"/>
+                    </Grid.ColumnDefinitions>
+                    <ListBox Grid.Row="1" Grid.Column="1" x:Name="LogListBox_OG" FontSize="15" ScrollViewer.CanContentScroll="True" BorderBrush="Transparent" BorderThickness="0"
+            ScrollViewer.IsDeferredScrollingEnabled="False" VirtualizingStackPanel.IsVirtualizing="True"
+            VirtualizingStackPanel.VirtualizationMode="Recycling" Background="Transparent">
+                        <ListBox.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <VirtualizingStackPanel IsItemsHost="True"/>
+                            </ItemsPanelTemplate>
+                        </ListBox.ItemsPanel>
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <local:LogListBoxItem DataContext="{Binding}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Line Grid.Row="2" Grid.ColumnSpan="3" X1="0" X2="1" Stretch="Fill" Stroke="Gray" StrokeThickness="2" Margin="-1.5,0,-1.5,0"/>
+                    <Grid Grid.Row="3" Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text=" >>> " Foreground="#FFE600FF" VerticalAlignment="Center" FontSize="17"/>
+                        <TextBox Grid.Column="1" Name="CommandEnterTextBox_OG" KeyDown="CommandEnterTextBox_OG_KeyDown" KeyUp="CommandEnterTextBox_OG_KeyUp" GotFocus="CommandEnterTextBox_OG_GotFocus" VerticalAlignment="Center" Background="Transparent" BorderBrush="Transparent" TextChanged="CommandEnterTextBox_OG_TextChanged" FontSize="16"/>
+                    </Grid>
+                </Grid>
+            </Grid>
+        </Grid>
+    
+</localWin:CustomWindow>

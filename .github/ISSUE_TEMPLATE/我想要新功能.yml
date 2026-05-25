@@ -1,0 +1,25 @@
+name: 我想要新功能
+description: 告诉我们你希望添加到本项目的新功能
+title: 我希望能添加一个新功能
+labels: ["Feature"]
+body:
+- type: checkboxes
+  attributes:
+    label: "检查项"
+    description: "请检查下列项目，并勾选确认。"
+    options:
+    - label: "我确认使用的是最新预览版本"
+      required: true
+    - label: "我确认此功能未在开发清单或功能列表中"
+      required: true
+    - label: "我确认在 Issues 列表中并无其他人已经提出过与此请求相同或相似的请求"
+      required: true
+- type: textarea
+  attributes:
+    label: 描述你希望添加的新功能 
+    placeholder: "期待你的神奇构想"
+  validations:
+    required: true
+- type: textarea
+  attributes:
+    label: 还有什么想说的吗？
