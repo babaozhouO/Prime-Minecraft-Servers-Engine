@@ -862,20 +862,23 @@ namespace PMCSsE_Communicator
                                 case RespondTypeEnum_Private.LoadMCServerManagerFailed:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_LoadMCServerManagerFailed>(payload));
                                     return;
+                                case RespondTypeEnum_Private.StoppedMCServerManager:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_StoppedMCServerManager>(payload));
+                                    return;
+                                case RespondTypeEnum_Private.StopMCServerManagerFailed:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_StopMCServerManager>(payload));
+                                    return;
                                 case RespondTypeEnum_Private.DeletedMCServerManager:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_DeletedMCServerManager>(payload));
                                     return;
                                 case RespondTypeEnum_Private.DeleteMCServerManagerFailed:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_DeleteMCServerManagerFailed>(payload));
                                     return;
+                                case RespondTypeEnum_Private.LoadedMCServerManagers:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerManagers>(payload));
+                                    return;
                                 case RespondTypeEnum_Private.ErrorInfo:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_ErrorInfo>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.StoppedMCServerManager:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_StoppedMCServerManager>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.StopMCServerManagerFailed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_StopMCServerManager>(payload));
                                     return;
                             }
                         }

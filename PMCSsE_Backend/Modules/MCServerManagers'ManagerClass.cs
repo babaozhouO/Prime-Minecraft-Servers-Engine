@@ -40,17 +40,19 @@ namespace PMCSsE_Backend.Modules
                 StaticTools.HandleLog("正在停止程序");
                 ExitCalled();
             };
-            NativeServer.DataPackBus.Subscribe<Pack_GetMCServerConfigsList>(HandlePack_GetMCServerManagersList);
+            NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManagerConfigsList>(HandlePack_GetMCServerManagersList);
             NativeServer.DataPackBus.Subscribe<Pack_CreatNewMCServerManager>(HandlePack_CreatNewMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_LoadMCServerManager>(HandlePack_LoadMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_StopMCServerManager>(HandlePack_StopMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_DeleteMCServerManager>(HandlePack_DeleteMCServerManager);
+            NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManager>(HandlePack_GetMCServerManager);
             NativeServer.StartService();
             PluginsManager.LoadAllPlugins();
         }
-        private static void HandlePack_GetMCServerManagersList(Pack_GetMCServerConfigsList _)
+        private static void HandlePack_GetMCServerManagersList(Pack_GetMCServerManagerConfigsList _)
         {
             if (NativeServer == null) { return; }
+            StaticTools.HandleLog($"客户端请求获取所有管理器");
             MCServerManagerConfigs mCServerManagerConfigs = new();
             {
                 mCServerManagerConfigs.ConfigVersion = StaticMCServerManagerConfigs.ConfigVersion;
@@ -162,7 +164,12 @@ namespace PMCSsE_Backend.Modules
                     }
             }
         }
-
+        private static void HandlePack_GetMCServerManager(Pack_GetMCServerManager _)
+        {
+            if (NativeServer == null) { return; }
+            StaticTools.HandleLog($"客户端请求获取已加载的管理器");
+            NativeServer.RespondClient(RespondTypeEnum.LoadedMCServerManagers, new Pack_MCServerManagers(GetLoadedMCServerManagers()));
+        }
         private static MCServerManagerConfig? CreatNewMCServerManager()
         {
             string NewID = GenerateNewID();
@@ -318,6 +325,19 @@ namespace PMCSsE_Backend.Modules
             }
 
             return 0;
+        }
+        private static MCServerManagersData GetLoadedMCServerManagers()
+        {
+            MCServerManagersData result = new();
+            foreach (var item in LoadedMCServerManagersList)
+            {
+                result.MCServerManagerDataList.Add(new() 
+                { 
+                    ManagerID = item.MCServerManagerConfig.ManagerID, 
+                    IsMCServerRunning = item.isMCServerRunning 
+                });
+            }
+            return result;
         }
         internal static void ShutDown()
         {

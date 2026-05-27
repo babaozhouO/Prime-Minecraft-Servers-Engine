@@ -1,5 +1,4 @@
-﻿using PMCSsE_Communicator.DataPacks.Pack_StringOnly.Base;
-using ProtoBuf;
+﻿using ProtoBuf;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -7,7 +6,7 @@ using System.Text;
 namespace PMCSsE_Communicator.DataPacks.Pack_nothing
 {
     [ProtoContract]
-    public class Pack_GetMCServerManagerConfigsList
+    public class Pack_GetMCServerManager
     {
     }
 }

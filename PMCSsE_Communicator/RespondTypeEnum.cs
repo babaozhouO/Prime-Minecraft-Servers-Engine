@@ -23,6 +23,7 @@
         StopMCServerManagerFailed,
         DeletedMCServerManager,
         DeleteMCServerManagerFailed,
+        LoadedMCServerManagers,
         ErrorInfo
 
     }
@@ -37,6 +38,7 @@
         StopMCServerManagerFailed,
         DeletedMCServerManager,
         DeleteMCServerManagerFailed,
+        LoadedMCServerManagers,
         ErrorInfo,
         ConnectionAlive,
         RSAPublicKey,

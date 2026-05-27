@@ -621,6 +621,7 @@ namespace PMCSsE_Communicator
                 case RespondTypeEnum.StopMCServerManagerFailed:
                 case RespondTypeEnum.DeletedMCServerManager:
                 case RespondTypeEnum.DeleteMCServerManagerFailed:
+                case RespondTypeEnum.LoadedMCServerManagers:
                 case RespondTypeEnum.ErrorInfo:
                     {
                         using (ClientInfo.TasksQueueLock.EnterScope())
@@ -649,6 +650,7 @@ namespace PMCSsE_Communicator
                         return;
                     }
                 default:
+                    ReportLog("指定类型不在处理列表中！！");
                     return;
             }
         }
@@ -814,18 +816,18 @@ namespace PMCSsE_Communicator
             }
             return false;
         }
-        private void ProcessDataPack(byte[] dataPackContent)
+        private void ProcessDataPack(byte[] dataPack)
         {
             if (ClientInfo == null || ClientInfo.Aes == null) { return; }
             if (ClientInfo.HandShakeProcess == HandShakeProcess_Server.Finished)
             {
-                if (dataPackContent.Length == 2)//心跳包不加密
+                if (dataPack.Length == 2)//心跳包不加密
                 {
                     return;
                 }
                 try
                 {
-                    dataPackContent = SimpleHybridEncryption.DecryptWithAES(dataPackContent, ClientInfo.Aes!);
+                    dataPack = SimpleHybridEncryption.DecryptWithAES(dataPack, ClientInfo.Aes!);
                 }
                 catch (Exception ex)
                 {
@@ -833,8 +835,8 @@ namespace PMCSsE_Communicator
                     ReportLog($"异常信息：{ex.Message}{Environment.NewLine}{ex.StackTrace}");
                 }
 
-                byte type1 = dataPackContent[0];
-                int type2 = dataPackContent[1];
+                byte type1 = dataPack[0];
+                int type2 = dataPack[1];
                 if (type1 == 0)
                 {
                     RequestTypeEnum_Private requestTypeEnum_Private;
@@ -851,19 +853,22 @@ namespace PMCSsE_Communicator
                         switch (requestTypeEnum_Private)
                         {
                             case RequestTypeEnum_Private.GetMCServerManagersList:
-                                DataPackBus.Publish(new Pack_GetMCServerConfigsList());
+                                DataPackBus.Publish(new Pack_GetMCServerManagerConfigsList());
                                 break;
                             case RequestTypeEnum_Private.CreatNewMCServerManager:
                                 DataPackBus.Publish(new Pack_CreatNewMCServerManager());
                                 break;
                             case RequestTypeEnum_Private.LoadMCServerManager:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_LoadMCServerManager>(dataPackContent.AsMemory(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_LoadMCServerManager>(dataPack.AsMemory(2)));
                                 break;
                             case RequestTypeEnum_Private.StopMCServerManager:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_StopMCServerManager>(dataPackContent.AsMemory(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_StopMCServerManager>(dataPack.AsMemory(2)));
                                 break;
                             case RequestTypeEnum_Private.DeleteMCServerManager:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_DeleteMCServerManager>(dataPackContent.AsMemory(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_DeleteMCServerManager>(dataPack.AsMemory(2)));
+                                break;
+                            case RequestTypeEnum_Private.GetLoadedMCServerManagers:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetMCServerManager>(dataPack.AsMemory(2)));
                                 break;
                             case RequestTypeEnum_Private.ConnectionAlive:
                                 break;
@@ -881,7 +886,7 @@ namespace PMCSsE_Communicator
                 }
                 else
                 {
-                    ReceivedDataFromClient_Plugin(type1, dataPackContent);
+                    ReceivedDataFromClient_Plugin(type1, dataPack);
                 }
             }
         }

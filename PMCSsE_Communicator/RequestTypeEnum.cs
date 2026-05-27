@@ -28,7 +28,7 @@
         /// <summary>
         /// 获取已加载的MC服务端管理器
         /// </summary>
-        GetLoadedMCServers
+        GetLoadedMCServerManagers
     }
     internal enum RequestTypeEnum_Private
     {
@@ -37,7 +37,7 @@
         LoadMCServerManager,
         StopMCServerManager,
         DeleteMCServerManager,
-        GetLoadedMCServers,
+        GetLoadedMCServerManagers,
         ConnectionAlive,
         NeedRSAPublicKey,
         VerifyRSAPublicKeyTimeOut,

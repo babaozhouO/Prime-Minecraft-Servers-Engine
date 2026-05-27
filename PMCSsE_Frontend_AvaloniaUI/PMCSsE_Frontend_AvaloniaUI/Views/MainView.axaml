@@ -10,6 +10,7 @@
     <Design.DataContext>
         <vm:MainViewModel/>
     </Design.DataContext>
+
     <Panel>
         <Image Stretch="UniformToFill" Opacity="0.9" Source="avares://PMCSsE_Frontend_AvaloniaUI/Images/Background.png">
             <Image.Effect>
@@ -119,10 +120,10 @@
                 </TabItem.Header>
                 <Panel>
                     <Line Classes="fir"/>
-                    <ListBox SelectedItem="{Binding SelectedMCServerManager_LBItem}" ItemsSource="{Binding AllMCServerManagers_IS}" Margin="7,5,110,5"  Background="Transparent" BorderThickness="0" BorderBrush="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible">
+                    <ListBox SelectedItem="{Binding SelectedMCServerManagerConfig_LBItem}" ItemsSource="{Binding AllMCServerManagers_IS}" Margin="7,5,110,5"  Background="Transparent" BorderThickness="0" BorderBrush="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
-                                <controls:MCServerManager_LBItem ManagerID="{Binding ManagerID}" ServerName="{Binding ServerName}" MCServerType="{Binding MCServerType}"/>
+                                <controls:MCServerManagerConfig_LBItem ManagerID="{Binding ManagerID}" ServerName="{Binding ServerName}" MCServerType="{Binding MCServerType}"/>
                             </DataTemplate>
                         </ListBox.ItemTemplate>
                         <ListBox.Styles>
@@ -157,24 +158,32 @@
                     </Panel>
                 </TabItem.Header>
                 <Panel>
-                    <Line Classes="hor"/>
-                    <TabControl Classes="sec">
-                        <TabItem Header="还在制作" Classes="sec">
-                            <Panel>
-                                <Line Classes="sec"/>
-                            </Panel>
-                        </TabItem>
-                        <TabItem Header="" Classes="sec">
-                            <Panel>
-                                <Line Classes="sec"/>
-                            </Panel>
-                        </TabItem>
-                        <TabItem Header="" Classes="sec">
-                            <Panel>
-                                <Line Classes="sec"/>
-                            </Panel>
-                        </TabItem>
-                    </TabControl>
+                    <Line Classes="fir"/>
+                    <ListBox SelectedItem="{Binding SelectedMCServerManager_LBItem}" ItemsSource="{Binding LoadedMCServerManagers_IS}" Margin="7,5,110,5"  Background="Transparent" BorderThickness="0" BorderBrush="Transparent" ScrollViewer.HorizontalScrollBarVisibility="Visible" ScrollViewer.VerticalScrollBarVisibility="Visible">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <controls:MCServerManager_LBItem ManagerID="{Binding ManagerID}" ServerName="{Binding ServerName}" MCServerType="{Binding MCServerType}" MCServerRunningState="{Binding MCServerRunningState}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                        <ListBox.Styles>
+                            <Style Selector="ListBoxItem">
+                                <Setter Property="Padding" Value="2,3,2,3"/>
+                            </Style>
+                        </ListBox.Styles>
+                    </ListBox>
+                    <Line StartPoint="0,0" EndPoint="0,1" Stretch="Fill" Stroke="gray" StrokeThickness="2" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,0,106,0"/>
+                    <StackPanel Spacing="3" Width="106" HorizontalAlignment="Right" VerticalAlignment="Top">
+                        <TextBlock Text="操作" HorizontalAlignment="Center"/>
+                        <controls:MyButton Text="刷新" Command="{Binding RefreshLoadedMCServerManagerCommand}"/>
+                        <controls:MyButton Text="打开" Command="{Binding OpenSelectedMCServerManagerCommand}"/>
+                        <StackPanel.Styles>
+                            <Style Selector="controls|MyButton">
+                                <Setter Property="Width" Value="100"/>
+                                <Setter Property="Height" Value="40"/>
+                                <Setter Property="CornerRadius" Value="1"/>
+                            </Style>
+                        </StackPanel.Styles>
+                    </StackPanel>
                 </Panel>
             </TabItem>
             <TabItem Classes="fir">
@@ -315,8 +324,11 @@
                     <Setter Property="Padding" Value="0,1,0,1"/>
                 </Style>
             </ListBox.Styles>
-        </ListBox>        <controls:ImageButton Command="{Binding CleanMessageCommand}" Width="26" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Clean.png"/>
-
+        </ListBox>        
+        <controls:ImageButton Command="{Binding CleanMessageCommand}" Width="26" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Clean.png"/>
+        <Panel Classes="MCServerManager" IsVisible="{Binding MCServerManagerPanelVisibility}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <Button/>
+        </Panel>
     </Panel>
 
 </UserControl>

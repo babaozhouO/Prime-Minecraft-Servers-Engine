@@ -2,6 +2,21 @@
 
 namespace PMCSsE_Communicator
 {
+    [ProtoContract(SkipConstructor =true)]
+    public class MCServerManagersData
+    {
+        [ProtoMember(1)]
+        public List<MCServerManagerData> MCServerManagerDataList = [];
+    }
+    [ProtoContract(SkipConstructor =true)]
+    public class MCServerManagerData
+    {
+        [ProtoMember(1)]
+        public required string ManagerID;
+        [ProtoMember(2)]
+        public required bool IsMCServerRunning;
+    }
+
     /// <summary>
     /// MC服务端配置类,包含多个MC服务端管理实例的配置和版本号
     /// </summary>

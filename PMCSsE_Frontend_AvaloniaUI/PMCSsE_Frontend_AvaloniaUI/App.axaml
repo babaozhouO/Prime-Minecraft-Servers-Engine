@@ -12,37 +12,35 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.-->
 <Application xmlns="https://github.com/avaloniaui"
-			 xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-			 xmlns:local="using:PMCSsE_Frontend_AvaloniaUI"
-			 xmlns:msbox="using:MsBox.Avalonia.Controls"
-			 x:Class="PMCSsE_Frontend_AvaloniaUI.App"
-			 RequestedThemeVariant="Default">
-	<!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
-
-	<Application.DataTemplates>
-		<local:ViewLocator/>
-	</Application.DataTemplates>
-
-	<Application.Styles>
-		<FluentTheme/>
-		<Style Selector="TextBlock">
-			<Setter Property="FontFamily" Value="avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf#Source Han Sans SC"/>
-		</Style>
-		<Style Selector="TextBox">
-			<Setter Property="FontFamily" Value="avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf#Source Han Sans SC"/>
-		</Style>
-		<Style Selector="AccessText">
-			<Setter Property="FontFamily" Value="avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf#Source Han Sans SC"/>
-		</Style>
-		<Style Selector="TabItem">
-			<Setter Property="FontFamily" Value="avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf#Source Han Sans SC"/>
-		</Style>
-	</Application.Styles>
-	<Application.Resources>
-		<ResourceDictionary>
-			<ResourceDictionary.MergedDictionaries>
-				<ResourceInclude Source="avares://PMCSsE_Frontend_AvaloniaUI/Styles/AcrylicPanelStyles.axaml"/>
-			</ResourceDictionary.MergedDictionaries>
-		</ResourceDictionary>
-	</Application.Resources>
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:local="using:PMCSsE_Frontend_AvaloniaUI"
+             xmlns:msbox="using:MsBox.Avalonia.Controls"
+             x:Class="PMCSsE_Frontend_AvaloniaUI.App"
+             RequestedThemeVariant="Light">
+    <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
+    <Application.DataTemplates>
+        <local:ViewLocator/>
+    </Application.DataTemplates>
+    <Application.Styles>
+        <FluentTheme/>
+        <Style Selector="TextBlock">
+            <Setter Property="FontFamily" Value="avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf#Source Han Sans SC"/>
+        </Style>
+        <Style Selector="TextBox">
+            <Setter Property="FontFamily" Value="avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf#Source Han Sans SC"/>
+        </Style>
+        <Style Selector="AccessText">
+            <Setter Property="FontFamily" Value="avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf#Source Han Sans SC"/>
+        </Style>
+        <Style Selector="TabItem">
+            <Setter Property="FontFamily" Value="avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf#Source Han Sans SC"/>
+        </Style>
+    </Application.Styles>
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceInclude Source="avares://PMCSsE_Frontend_AvaloniaUI/Styles/AcrylicPanelStyles.axaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
 </Application>

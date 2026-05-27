@@ -1,11 +1,13 @@
 <ListBoxItem xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             x:DataType="local:MCServerManagerConfig_LBItem"
+             xmlns:local="using:PMCSsE_Frontend_AvaloniaUI.Controls"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="PMCSsE_Frontend_AvaloniaUI.Controls.MCServerManager_LBItem"
+             mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="99"
+             x:Class="PMCSsE_Frontend_AvaloniaUI.Controls.MCServerManagerConfig_LBItem"
              Name="root" FontSize="16">
-    <Grid ShowGridLines="False" Margin="3" ColumnDefinitions="90,1*" RowDefinitions="32,32,32,32">
+    <Grid ShowGridLines="False" Margin="3" ColumnDefinitions="90,1*" RowDefinitions="32,32,32">
         <!--Image/--><!--可制作ico展示-->
         <TextBlock Text="服务端名称:"  Grid.Row="0" VerticalAlignment="Center"/>
         <TextBlock Text="{Binding #root.ServerName}" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1"/>
@@ -13,8 +15,7 @@
         <TextBlock Text="{Binding #root.ManagerID}" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1"/>
         <TextBlock Text="服务端类型:" Grid.Row="2" VerticalAlignment="Center"/>
         <TextBlock Text="{Binding #root.MCServerType}" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
-        <TextBlock Text="服务端状态:" Grid.Row="3" VerticalAlignment="Center"/>        
-        <TextBlock Text="{Binding #root.MCServerRunningState}" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1"/>
+
     </Grid>
     <ListBoxItem.Background>
         <SolidColorBrush Color="White" Opacity="0.4"/>

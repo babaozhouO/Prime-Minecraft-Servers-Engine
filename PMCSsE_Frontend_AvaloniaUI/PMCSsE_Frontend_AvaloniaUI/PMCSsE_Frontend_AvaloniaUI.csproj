@@ -71,4 +71,10 @@
   <ItemGroup>
     <ProjectReference Include="..\..\PMCSsE_Communicator\PMCSsE_Communicator.csproj" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="Controls\MCServerManagerConfig_LBItem.axaml.cs">
+      <DependentUpon>MCServerManagerConfig_LBItem.axaml</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>

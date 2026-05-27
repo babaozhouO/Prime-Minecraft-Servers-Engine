@@ -1,13 +1,17 @@
 using Avalonia;
+using Avalonia.Automation;
 using Avalonia.Controls;
+using Avalonia.Controls.Mixins;
+using Avalonia.Controls.Primitives;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml;
-using PMCSsE_Frontend_AvaloniaUI.Controls;
+using PMCSsE_Frontend_AvaloniaUI.Modules;
 
 namespace PMCSsE_Frontend_AvaloniaUI.Controls;
 
-public partial class MCServerManager_LBItem : ListBoxItem
+public partial class MCServerManagerConfig_LBItem : ListBoxItem
 {
-    public MCServerManager_LBItem()
+    public MCServerManagerConfig_LBItem()
     {
         InitializeComponent();
     }
@@ -18,7 +22,7 @@ public partial class MCServerManager_LBItem : ListBoxItem
     }
 
     public static readonly StyledProperty<string> ManagerIDProperty =
-        AvaloniaProperty.Register<MCServerManager_LBItem, string>(nameof(ManagerID));
+        AvaloniaProperty.Register<MCServerManagerConfig_LBItem, string>(nameof(ManagerID));
     public string ServerName
     {
         get => GetValue(ServerNameProperty);
@@ -26,7 +30,7 @@ public partial class MCServerManager_LBItem : ListBoxItem
     }
 
     public static readonly StyledProperty<string> ServerNameProperty =
-        AvaloniaProperty.Register<MCServerManager_LBItem, string>(nameof(ServerName));
+        AvaloniaProperty.Register<MCServerManagerConfig_LBItem, string>(nameof(ServerName));
     public string MCServerType
     {
         get => GetValue(MCServerTypeProperty);
@@ -34,14 +38,7 @@ public partial class MCServerManager_LBItem : ListBoxItem
     }
 
     public static readonly StyledProperty<string> MCServerTypeProperty =
-        AvaloniaProperty.Register<MCServerManager_LBItem, string>(nameof(MCServerType));
+        AvaloniaProperty.Register<MCServerManagerConfig_LBItem, string>(nameof(MCServerType));
 
-    public string MCServerRunningState
-    {
-        get => GetValue(MCServerRunningStateProperty);
-        set => SetValue(MCServerRunningStateProperty, value);
-    }
 
-    public static readonly StyledProperty<string> MCServerRunningStateProperty =
-        AvaloniaProperty.Register<MCServerManager_LBItem, string>(nameof(MCServerRunningState));
 }

@@ -28,7 +28,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             get => _firstTabControlPage;
             set => this.RaiseAndSetIfChanged(ref _firstTabControlPage, value);
         }
-        private int _firstTabControlPage = 0;//
+        private int _firstTabControlPage = 2;//
 
         public ObservableCollection<MessageModel> Messages_IS
         {
@@ -90,12 +90,25 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _password, value);
         }
         private string? _password = string.Empty;
-        public ObservableCollection<MCServerManager_LBItemModel> AllMCServerManagers_IS//item source
+        public ObservableCollection<MCServerManagerConfig_LBItemModel> AllMCServerManagers_IS//item source
         {
             get => _allMCServerManagers_IS;
             set => this.RaiseAndSetIfChanged(ref _allMCServerManagers_IS, value);
         }
-        private ObservableCollection<MCServerManager_LBItemModel> _allMCServerManagers_IS = [];
+        private ObservableCollection<MCServerManagerConfig_LBItemModel> _allMCServerManagers_IS = [];
+
+        public object? SelectedMCServerManagerConfig_LBItem
+        {
+            get => _selectedMCServerManagerConfig_LBItem;
+            set => this.RaiseAndSetIfChanged(ref _selectedMCServerManagerConfig_LBItem, value);
+        }
+        private object? _selectedMCServerManagerConfig_LBItem;
+        public ObservableCollection<MCServerManager_LBItemModel> LoadedMCServerManagers_IS//item source
+        {
+            get => _loadedMCServerManagers_IS;
+            set => this.RaiseAndSetIfChanged(ref _loadedMCServerManagers_IS, value);
+        }
+        private ObservableCollection<MCServerManager_LBItemModel> _loadedMCServerManagers_IS = [];
 
         public object? SelectedMCServerManager_LBItem
         {
@@ -103,6 +116,13 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _selectedMCServerManager_LBItem, value);
         }
         private object? _selectedMCServerManager_LBItem;
+
+        public bool MCServerManagerPanelVisibility
+        {
+            get => _mCServerManagerPanelVisibility;
+            set => this.RaiseAndSetIfChanged(ref _mCServerManagerPanelVisibility, value);
+        }
+        private bool _mCServerManagerPanelVisibility = false;
         #endregion
         #region 命令绑定
         private readonly BehaviorSubject<bool> _canCleanMessage = new(false);
@@ -146,6 +166,14 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 
         private readonly BehaviorSubject<bool> _canDeleteMCServerManager = new(true);
         public ReactiveCommand<Unit, Unit> DeleteMCServerManagerCommand { get; }
+
+
+        private readonly BehaviorSubject<bool> _canRefreshLoadedMCServerManager = new(true);
+        public ReactiveCommand<Unit, Unit> RefreshLoadedMCServerManagerCommand { get; }
+
+
+        private readonly BehaviorSubject<bool> _canOpenSelectedMCServerManager = new(true);
+        public ReactiveCommand<Unit, Unit> OpenSelectedMCServerManagerCommand { get; }
         #endregion
         public MainViewModel()
         {
@@ -171,6 +199,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             LoadNewMCServerManagerCommand = ReactiveCommand.Create(LoadMCServerManagerAction, _canLoadNewMCServerManager, uiScheduler);
             StopNewMCServerManagerCommand = ReactiveCommand.Create(StopMCServerManagerAction, _canStopNewMCServerManager, uiScheduler);
             DeleteMCServerManagerCommand = ReactiveCommand.Create(DeleteMCServerManagerAction, _canDeleteMCServerManager, uiScheduler);
+            RefreshLoadedMCServerManagerCommand = ReactiveCommand.Create(RefreshLoadedMCServerManagerAction, _canRefreshLoadedMCServerManager, uiScheduler);
+            OpenSelectedMCServerManagerCommand = ReactiveCommand.Create(OpenSelectedMCServerManagerAction, _canOpenSelectedMCServerManager, uiScheduler);
             ConnectionStateImage = DisconnectedImage;
         }
 
@@ -263,6 +293,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 
             nativeClient.DataPackBus.Subscribe<Pack_DeletedMCServerManager>(HandlePack_DeletedMCServerManager);
             nativeClient.DataPackBus.Subscribe<Pack_DeleteMCServerManagerFailed>(HandlePack_DeleteMCServerManagerFailed);
+
+            nativeClient.DataPackBus.Subscribe<Pack_MCServerManagers>(HandlePack_MCServerManagers);
             nativeClient.DataPackBus.Subscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
             nativeClient.Connect();
             ConnectPageIndex = 2;
@@ -308,7 +340,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 FirstTabControlPage = 0;
                 return;
             }
-            nativeClient.RequestBackend(RequestTypeEnum.GetMCServerManagersList, new Pack_GetMCServerConfigsList());
+            nativeClient.RequestBackend(RequestTypeEnum.GetMCServerManagersList, new Pack_GetMCServerManagerConfigsList());
             Dispatcher.UIThread.Post((state) =>
             {
                 SendMessage("已发送获取服务端管理器列表请求", 0);
@@ -330,7 +362,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         public void LoadMCServerManagerAction()
         {
-            if (SelectedMCServerManager_LBItem == null)
+            if (SelectedMCServerManagerConfig_LBItem == null)
             {
                 SendMessage("未选择要启动的MC服务端管理器", 2);
                 return;
@@ -340,7 +372,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage("未连接到后端", 2);
                 return;
             }
-            if (SelectedMCServerManager_LBItem is MCServerManager_LBItemModel m)
+            if (SelectedMCServerManagerConfig_LBItem is MCServerManagerConfig_LBItemModel m)
             {
                 nativeClient.RequestBackend(RequestTypeEnum.LoadMCServerManager, new Pack_LoadMCServerManager(m.ManagerID));
                 SendMessage("已发送启动MC服务端管理器请求", 0);
@@ -348,7 +380,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         public void StopMCServerManagerAction()
         {
-            if (SelectedMCServerManager_LBItem == null)
+            if (SelectedMCServerManagerConfig_LBItem == null)
             {
                 SendMessage("未选择要停止的MC服务端管理器", 2);
                 return;
@@ -358,7 +390,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage("未连接到后端", 2);
                 return;
             }
-            if (SelectedMCServerManager_LBItem is MCServerManager_LBItemModel m)
+            if (SelectedMCServerManagerConfig_LBItem is MCServerManagerConfig_LBItemModel m)
             {
                 nativeClient.RequestBackend(RequestTypeEnum.StopMCServerManager, new Pack_StopMCServerManager(m.ManagerID));
                 SendMessage("已发送停止MC服务端管理器请求", 0);
@@ -366,7 +398,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         public void DeleteMCServerManagerAction()
         {
-            if (SelectedMCServerManager_LBItem == null)
+            if (SelectedMCServerManagerConfig_LBItem == null)
             {
                 SendMessage("未选择要删除的MC服务端管理器", 2);
                 return;
@@ -376,13 +408,31 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage("未连接到后端", 2);
                 return;
             }
-            if (SelectedMCServerManager_LBItem is MCServerManager_LBItemModel m)
+            if (SelectedMCServerManagerConfig_LBItem is MCServerManagerConfig_LBItemModel m)
             {
                 AllMCServerManagers_IS.Remove(m);
                 nativeClient.RequestBackend(RequestTypeEnum.DeleteMCServerManager, new Pack_DeleteMCServerManager(m.ManagerID));
                 SendMessage("已发送删除MC服务端管理器请求", 0);
 
             }
+        }
+        public void RefreshLoadedMCServerManagerAction()
+        {
+            if (nativeClient == null)
+            {
+                SendMessage("未连接到后端", 2);
+                return;
+            }
+            nativeClient.RequestBackend(RequestTypeEnum.GetLoadedMCServerManagers, new Pack_GetMCServerManager());
+
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage("已发送获取已加载的MC服务端管理器请求", 0);
+            }, null);
+        }
+        public void OpenSelectedMCServerManagerAction()
+        {
+            MCServerManagerPanelVisibility = true;
         }
         #endregion
         #region nativeclient事件处理
@@ -396,7 +446,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 AllMCServerManagers_IS.Clear();
                 foreach (MCServerManagerConfig mCServerManagerConfig in StaticMCServerManagerConfigs.MCServerManagerConfigsList)
                 {
-                    AllMCServerManagers_IS.Add(new MCServerManager_LBItemModel(mCServerManagerConfig));
+                    AllMCServerManagers_IS.Add(new MCServerManagerConfig_LBItemModel(mCServerManagerConfig));
                 }
                 SendMessage("加载服务端管理器列表成功", 3);
             }, null);
@@ -405,7 +455,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         {
             Dispatcher.UIThread.Post((state) =>
             {
-                AllMCServerManagers_IS.Add(new MCServerManager_LBItemModel(pack.MCServerManagerConfig));
+                AllMCServerManagers_IS.Add(new MCServerManagerConfig_LBItemModel(pack.MCServerManagerConfig));
                 SendMessage("新建服务端管理器成功", 3);
             }, null);
         }
@@ -456,6 +506,26 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             Dispatcher.UIThread.Post((state) =>
             {
                 SendMessage($"删除服务端管理器[{pack.ManagerID}]失败", 2);
+            }, null);
+        }
+        private void HandlePack_MCServerManagers(Pack_MCServerManagers pack)
+        {
+            LoadedMCServerManagers_IS.Clear();
+            pack.MCServerManagersData.MCServerManagerDataList?.ForEach((item) =>//效率低，以后再改
+                {
+                    foreach (var item1 in AllMCServerManagers_IS)
+                    {
+                        if (item.ManagerID == item1.ManagerID)
+                        {
+                            LoadedMCServerManagers_IS.Add(new MCServerManager_LBItemModel(item1.Config, item));
+                            return;
+                        }
+                    }
+                });
+
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"刷新已加载的服务端管理器成功", 3);
             }, null);
         }
         private void HandlePack_ErrorInfo(Pack_ErrorInfo pack)
@@ -572,7 +642,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             nativeClient!.NeedPassword -= HandleNeedPasswordEvent;
             nativeClient!.NeedToVerifyRSAPublicKey -= HandleVerifyRSAPublicKey;
             nativeClient!.Connected -= HandleConnected;
-            nativeClient!.RequestBackend(RequestTypeEnum.GetMCServerManagersList, new Pack_GetMCServerConfigsList());
+            RefreshAllMCServerManagerListAction();
+            RefreshLoadedMCServerManagerAction();
             Dispatcher.UIThread.Post((state) =>
             {
                 ConnectLogs += "连接成功" + Environment.NewLine;
@@ -632,9 +703,5 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             Messages_IS.Remove(m);
         }
         #endregion
-    }
-    internal static class MainVM
-    {
-        internal static MainViewModel? vm;
     }
 }
