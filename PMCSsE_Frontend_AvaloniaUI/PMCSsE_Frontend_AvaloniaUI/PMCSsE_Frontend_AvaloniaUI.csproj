@@ -15,10 +15,12 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Icons\Add.png" />
+    <None Remove="Icons\Send.png" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Avalonia" />
+    <PackageReference Include="Avalonia.AvaloniaEdit" />
     <PackageReference Include="Avalonia.Themes.Fluent" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
@@ -58,6 +60,7 @@
     <AvaloniaResource Include="Icons\PMCSsE.ico" />
     <AvaloniaResource Include="Icons\RemoveMCServer.png" />
     <AvaloniaResource Include="Icons\Run.png" />
+    <AvaloniaResource Include="Icons\Send.png" />
     <AvaloniaResource Include="Icons\Settings.png" />
     <AvaloniaResource Include="Icons\Shutdown.png" />
     <AvaloniaResource Include="Icons\Store.png" />

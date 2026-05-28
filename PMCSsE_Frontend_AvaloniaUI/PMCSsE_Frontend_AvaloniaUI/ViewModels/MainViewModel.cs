@@ -9,6 +9,7 @@ using PMCSsE_Communicator.DataPacks.Pack_StringOnly;
 using PMCSsE_Frontend_AvaloniaUI.Controls;
 using PMCSsE_Frontend_AvaloniaUI.Models;
 using PMCSsE_Frontend_AvaloniaUI.Modules;
+using PMCSsE_Frontend_AvaloniaUI.Views;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 using System;
@@ -425,10 +426,6 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage("已发送获取已加载的MC服务端管理器请求", 0);
             }, null);
         }
-        public void OpenSelectedMCServerManagerAction()
-        {
-            MCServerManagerPanelVisibility = true;
-        }
         #endregion
         #region nativeclient事件处理
         private void HandlePack_MCServerManagerConfigs(Pack_MCServerManagerConfigs pack)
@@ -707,15 +704,24 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             get => _mCServerManagerPanelVisibility;
             set => this.RaiseAndSetIfChanged(ref _mCServerManagerPanelVisibility, value);
         }
-        private bool _mCServerManagerPanelVisibility = false;
+        private bool _mCServerManagerPanelVisibility = true;
         public string? MCServerName
         {
             get => _mCServerName;
             set => this.RaiseAndSetIfChanged(ref _mCServerName, value);
         }
         private string? _mCServerName = string.Empty;
+        private MCServerManager_LBItemModel UsingManager;
 
-        private MCServerManagerPage MCServerManagerPage = new();
+        public void OpenSelectedMCServerManagerAction()
+        {
+            if (SelectedMCServerManager_LBItem is MCServerManager_LBItemModel m)
+            {
+                UsingManager = m;
+                MCServerManagerPanelVisibility = true;
+
+            }
+        }
         private void ExitManagerPanelAction()
         {
             MCServerManagerPanelVisibility = false;

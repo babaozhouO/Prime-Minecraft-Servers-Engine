@@ -23,6 +23,7 @@ limitations under the License.-->
     </Application.DataTemplates>
     <Application.Styles>
         <FluentTheme/>
+        <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml"/>
         <Style Selector="TextBlock">
             <Setter Property="FontFamily" Value="avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf#Source Han Sans SC"/>
         </Style>
