@@ -324,11 +324,54 @@
                     <Setter Property="Padding" Value="0,1,0,1"/>
                 </Style>
             </ListBox.Styles>
-        </ListBox>        
-        <controls:ImageButton Command="{Binding CleanMessageCommand}" Width="26" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Clean.png"/>
-        <Panel Classes="MCServerManager" IsVisible="{Binding MCServerManagerPanelVisibility}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-            <Button/>
+        </ListBox>
+        <Panel Background="#FFFFF0" Classes="MCServerManager" IsVisible="{Binding MCServerManagerPanelVisibility}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+            <!--叠加层-->
+            <TextBlock Text="{Binding MCServerName}" HorizontalAlignment="Left" FontSize="16"/>
+            <Line StartPoint="0,0" EndPoint="1,0" Margin="0,25,0,0" Stroke="LightGray" Stretch="Fill" StrokeThickness="2"/>
+            <DrawerPage Background="#FFFFF0" CompactDrawerLength="26" DrawerPlacement="Right" DrawerLength="160" DrawerLayoutBehavior="CompactOverlay" Margin="0,27,0,0">
+                <DrawerPage.Drawer>
+                    <StackPanel>
+                        <Button >
+                            <Panel>
+                                <Image Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Console.png"/>
+                                <TextBlock Text="控制台"/>
+                            </Panel>
+                        </Button>
+                        <Button>
+                            <Panel>
+                                <Image Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Store.png"/>
+                                <TextBlock Text="备份"/>
+                            </Panel>
+                        </Button>
+                        <Button>
+                            <Panel>
+                                <Image Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Link.png"/>
+                                <TextBlock Text="互联"/>
+                            </Panel>
+                        </Button>
+                        <StackPanel.Styles>
+                            <Style Selector="Button">
+                                <Setter Property="HorizontalAlignment" Value="Stretch"/>
+                                <Setter Property="Height" Value="26"/>
+                                <Setter Property="Padding" Value="1"/>
+                            </Style>
+                            <Style Selector="Image">
+                                <Setter Property="HorizontalAlignment" Value="Left"/>
+                            </Style>
+                            <Style Selector="TextBlock">
+                                <Setter Property="VerticalAlignment" Value="Center"/>
+                                <Setter Property="Margin" Value="26,0,0,0"/>
+                            </Style>
+                        </StackPanel.Styles>
+                    </StackPanel>
+                </DrawerPage.Drawer>
+                <DrawerPage.DrawerFooter>
+                    <controls:MyButton Command="{Binding ExitManagerPanelCommand}" Height="45" Text="返回" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/ExitApp.png"/>
+                </DrawerPage.DrawerFooter>
+            </DrawerPage>
         </Panel>
+        <controls:ImageButton Command="{Binding CleanMessageCommand}" Width="26" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Clean.png"/>
     </Panel>
 
 </UserControl>

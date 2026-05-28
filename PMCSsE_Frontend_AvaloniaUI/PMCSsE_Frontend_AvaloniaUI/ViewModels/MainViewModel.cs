@@ -117,12 +117,6 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         private object? _selectedMCServerManager_LBItem;
 
-        public bool MCServerManagerPanelVisibility
-        {
-            get => _mCServerManagerPanelVisibility;
-            set => this.RaiseAndSetIfChanged(ref _mCServerManagerPanelVisibility, value);
-        }
-        private bool _mCServerManagerPanelVisibility = false;
         #endregion
         #region 命令绑定
         private readonly BehaviorSubject<bool> _canCleanMessage = new(false);
@@ -201,6 +195,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             DeleteMCServerManagerCommand = ReactiveCommand.Create(DeleteMCServerManagerAction, _canDeleteMCServerManager, uiScheduler);
             RefreshLoadedMCServerManagerCommand = ReactiveCommand.Create(RefreshLoadedMCServerManagerAction, _canRefreshLoadedMCServerManager, uiScheduler);
             OpenSelectedMCServerManagerCommand = ReactiveCommand.Create(OpenSelectedMCServerManagerAction, _canOpenSelectedMCServerManager, uiScheduler);
+            ExitManagerPanelCommand = ReactiveCommand.Create(ExitManagerPanelAction, _canExitManagerPanel, uiScheduler);
             ConnectionStateImage = DisconnectedImage;
         }
 
@@ -701,6 +696,29 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         public void DeleteMessage(MessageModel m)
         {
             Messages_IS.Remove(m);
+        }
+        #endregion
+        #region MCServerManager叠加层
+
+        private readonly BehaviorSubject<bool> _canExitManagerPanel = new(true);
+        public ReactiveCommand<Unit, Unit> ExitManagerPanelCommand { get; }
+        public bool MCServerManagerPanelVisibility
+        {
+            get => _mCServerManagerPanelVisibility;
+            set => this.RaiseAndSetIfChanged(ref _mCServerManagerPanelVisibility, value);
+        }
+        private bool _mCServerManagerPanelVisibility = false;
+        public string? MCServerName
+        {
+            get => _mCServerName;
+            set => this.RaiseAndSetIfChanged(ref _mCServerName, value);
+        }
+        private string? _mCServerName = string.Empty;
+
+        private MCServerManagerPage MCServerManagerPage = new();
+        private void ExitManagerPanelAction()
+        {
+            MCServerManagerPanelVisibility = false;
         }
         #endregion
     }
