@@ -45,13 +45,13 @@ namespace PMCSsE_Backend.Modules
                     Thread thread = new(() =>
                     {
                         SFTPClientClass sFTPClient = new(
-                            MCServerManager.MCServerManagerConfig.BackupHelperConfig.SFTPHelperConfig);
+                            MCServerManager.MCServerManagerConfig.BackupManagerConfig.SFTPClientConfig);
 
                         sFTPClient.ConnectTaskDone += (Bool) =>
                         {
                             if (Bool)
                             {
-                                sFTPClient.UploadLocalFile(Path.Combine(MCServerManager.MCServerManagerConfig.BackupHelperConfig.BackupFileOutputDirectory, BackupFileName), Path.Combine(MCServerManager.MCServerManagerConfig.BackupHelperConfig.RemoteBackupFileStoreDirectory, BackupFileName));
+                                sFTPClient.UploadLocalFile(Path.Combine(MCServerManager.MCServerManagerConfig.BackupManagerConfig.BackupFileOutputDirectory, BackupFileName), Path.Combine(MCServerManager.MCServerManagerConfig.BackupManagerConfig.RemoteBackupFileStoreDirectory, BackupFileName));
                             }
                             else
                             {
@@ -76,16 +76,16 @@ namespace PMCSsE_Backend.Modules
                     thread.Start();
                     return;
                 };
-                SevenZipInvokerClass.Invoke7Zip(MCServerManager.MCServerManagerConfig.BackupHelperConfig.CompactionLevel,
-                    MCServerManager.MCServerManagerConfig.BackupHelperConfig.ExcludedFilesList,
-                    MCServerManager.MCServerManagerConfig.BackupHelperConfig.ExcludedFileExtensionsList,
-                    MCServerManager.MCServerManagerConfig.BackupHelperConfig.ExcludedFoldersList,
-                    Path.Combine(MCServerManager.MCServerManagerConfig.BackupHelperConfig.BackupFileOutputDirectory, BackupFileName),
+                SevenZipInvokerClass.Invoke7Zip(MCServerManager.MCServerManagerConfig.BackupManagerConfig.CompactionLevel,
+                    MCServerManager.MCServerManagerConfig.BackupManagerConfig.ExcludedFilesList,
+                    MCServerManager.MCServerManagerConfig.BackupManagerConfig.ExcludedFileExtensionsList,
+                    MCServerManager.MCServerManagerConfig.BackupManagerConfig.ExcludedFoldersList,
+                    Path.Combine(MCServerManager.MCServerManagerConfig.BackupManagerConfig.BackupFileOutputDirectory, BackupFileName),
                     MCServerManager.MCServerManagerConfig.MCServerDirectory);
                 return;
             }
 
-            if (MCServerManager.MCServerManagerConfig.BackupHelperConfig.StopServerBeforeBackup)
+            if (MCServerManager.MCServerManagerConfig.BackupManagerConfig.StopServerBeforeBackup)
             {
                 Action MCServerStatueChanged = delegate { };
                 MCServerStatueChanged += () =>
@@ -105,13 +105,13 @@ namespace PMCSsE_Backend.Modules
                             Thread thread = new(() =>
                             {
                                 SFTPClientClass sFTPClient = new(
-                                    MCServerManager.MCServerManagerConfig.BackupHelperConfig.SFTPHelperConfig);
+                                    MCServerManager.MCServerManagerConfig.BackupManagerConfig.SFTPClientConfig);
 
                                 sFTPClient.ConnectTaskDone += (Bool) =>
                                 {
                                     if (Bool)
                                     {
-                                        sFTPClient.UploadLocalFile(Path.Combine(MCServerManager.MCServerManagerConfig.BackupHelperConfig.BackupFileOutputDirectory, BackupFileName), MCServerManager.MCServerManagerConfig.BackupHelperConfig.RemoteBackupFileStoreDirectory);
+                                        sFTPClient.UploadLocalFile(Path.Combine(MCServerManager.MCServerManagerConfig.BackupManagerConfig.BackupFileOutputDirectory, BackupFileName), MCServerManager.MCServerManagerConfig.BackupManagerConfig.RemoteBackupFileStoreDirectory);
                                     }
                                     else
                                     {
@@ -135,11 +135,11 @@ namespace PMCSsE_Backend.Modules
                             });
                             thread.Start();
                         };
-                        SevenZipInvokerClass.Invoke7Zip(MCServerManager.MCServerManagerConfig.BackupHelperConfig.CompactionLevel,
-                            MCServerManager.MCServerManagerConfig.BackupHelperConfig.ExcludedFilesList,
-                            MCServerManager.MCServerManagerConfig.BackupHelperConfig.ExcludedFileExtensionsList,
-                            MCServerManager.MCServerManagerConfig.BackupHelperConfig.ExcludedFoldersList,
-                            Path.Combine(MCServerManager.MCServerManagerConfig.BackupHelperConfig.BackupFileOutputDirectory, BackupFileName),
+                        SevenZipInvokerClass.Invoke7Zip(MCServerManager.MCServerManagerConfig.BackupManagerConfig.CompactionLevel,
+                            MCServerManager.MCServerManagerConfig.BackupManagerConfig.ExcludedFilesList,
+                            MCServerManager.MCServerManagerConfig.BackupManagerConfig.ExcludedFileExtensionsList,
+                            MCServerManager.MCServerManagerConfig.BackupManagerConfig.ExcludedFoldersList,
+                            Path.Combine(MCServerManager.MCServerManagerConfig.BackupManagerConfig.BackupFileOutputDirectory, BackupFileName),
                             MCServerManager.MCServerManagerConfig.MCServerDirectory);
 
                     }
@@ -168,13 +168,13 @@ namespace PMCSsE_Backend.Modules
                         Thread thread = new(() =>
                         {
                             SFTPClientClass sFTPClient = new(
-                                MCServerManager.MCServerManagerConfig.BackupHelperConfig.SFTPHelperConfig);
+                                MCServerManager.MCServerManagerConfig.BackupManagerConfig.SFTPClientConfig);
 
                             sFTPClient.ConnectTaskDone += (Bool) =>
                             {
                                 if (Bool)
                                 {
-                                    sFTPClient.UploadLocalFile(Path.Combine(MCServerManager.MCServerManagerConfig.BackupHelperConfig.BackupFileOutputDirectory, BackupFileName), Path.Combine(MCServerManager.MCServerManagerConfig.BackupHelperConfig.RemoteBackupFileStoreDirectory, BackupFileName));
+                                    sFTPClient.UploadLocalFile(Path.Combine(MCServerManager.MCServerManagerConfig.BackupManagerConfig.BackupFileOutputDirectory, BackupFileName), Path.Combine(MCServerManager.MCServerManagerConfig.BackupManagerConfig.RemoteBackupFileStoreDirectory, BackupFileName));
                                 }
                                 else
                                 {
@@ -198,11 +198,11 @@ namespace PMCSsE_Backend.Modules
                         });
                         thread.Start();
                     };
-                    SevenZipInvokerClass.Invoke7Zip(MCServerManager.MCServerManagerConfig.BackupHelperConfig.CompactionLevel,
-                        MCServerManager.MCServerManagerConfig.BackupHelperConfig.ExcludedFilesList,
-                        MCServerManager.MCServerManagerConfig.BackupHelperConfig.ExcludedFileExtensionsList,
-                        MCServerManager.MCServerManagerConfig.BackupHelperConfig.ExcludedFoldersList,
-                        Path.Combine(MCServerManager.MCServerManagerConfig.BackupHelperConfig.BackupFileOutputDirectory, BackupFileName),
+                    SevenZipInvokerClass.Invoke7Zip(MCServerManager.MCServerManagerConfig.BackupManagerConfig.CompactionLevel,
+                        MCServerManager.MCServerManagerConfig.BackupManagerConfig.ExcludedFilesList,
+                        MCServerManager.MCServerManagerConfig.BackupManagerConfig.ExcludedFileExtensionsList,
+                        MCServerManager.MCServerManagerConfig.BackupManagerConfig.ExcludedFoldersList,
+                        Path.Combine(MCServerManager.MCServerManagerConfig.BackupManagerConfig.BackupFileOutputDirectory, BackupFileName),
                         MCServerManager.MCServerManagerConfig.MCServerDirectory);
                 };
                 MCServerManager.MCServerGameSaved += GameSaved;

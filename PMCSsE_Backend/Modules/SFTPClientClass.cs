@@ -56,7 +56,7 @@ internal class SFTPClientClass
 
     }
 
-    internal SFTPClientClass(SFTPHelperConfig SFTPHelperConfig)
+    internal SFTPClientClass(SFTPClientConfig SFTPHelperConfig)
     {
         BufferSize = SFTPHelperConfig.BufferSize * 1024 * 1024 - 1;
         PasswordConnectionInfo passwordConnectionInfo = new(SFTPHelperConfig.Host,

@@ -149,7 +149,7 @@ namespace PMCSsE_Backend.Modules
                 MCServerProcess.StartInfo.UseShellExecute = false;
                 MCServerProcess.StartInfo.CreateNoWindow = true;
                 MCServerProcess.StartInfo.FileName = MCServerManagerConfig.JavaPath;
-                MCServerProcess.StartInfo.Arguments = MCServerManagerConfig.StartUpArgument;
+                MCServerProcess.StartInfo.Arguments = MCServerManagerConfig.StartUpArguments;
                 MCServerProcess.StartInfo.WorkingDirectory = MCServerManagerConfig.MCServerDirectory;
                 try
                 {
@@ -196,7 +196,7 @@ namespace PMCSsE_Backend.Modules
                 isOK = false;
                 ReportLog("错误", "管理面板", "Java路径为空，请设置正确的Java路径");
             }
-            if (MCServerManagerConfig.StartUpArgument == string.Empty)
+            if (MCServerManagerConfig.StartUpArguments == string.Empty)
             {
                 isOK = false;
                 ReportLog("错误", "管理面板", "启动参数为空，请设置正确的启动参数");

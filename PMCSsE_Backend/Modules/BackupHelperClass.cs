@@ -67,7 +67,7 @@ namespace PMCSsE_Backend.Modules
                 }
             };
 
-            if (!IsWaitingForBackup && !IsBackupHelperRunning && MCServerManager.MCServerManagerConfig.BackupHelperConfig.AutoBackupEnabled)
+            if (!IsWaitingForBackup && !IsBackupHelperRunning && MCServerManager.MCServerManagerConfig.BackupManagerConfig.AutoBackupEnabled)
             {
                 StartService();
             }
@@ -77,10 +77,10 @@ namespace PMCSsE_Backend.Modules
         {
             DateTime NowTime = DateTime.Now;
             double NextExecuteTimeSpanMS;
-            switch (MCServerManager.MCServerManagerConfig.BackupHelperConfig.BackupTimingMode)
+            switch (MCServerManager.MCServerManagerConfig.BackupManagerConfig.BackupTimingMode)
             {
                 case BackupTimingMode.DayInterval_SpecificTime:
-                    string[] SplitedExecuteTime = MCServerManager.MCServerManagerConfig.BackupHelperConfig.SpecificTime.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                    string[] SplitedExecuteTime = MCServerManager.MCServerManagerConfig.BackupManagerConfig.SpecificTime.Split(':', StringSplitOptions.RemoveEmptyEntries);
                     double[] SplitedExecuteTime_Double = [
                         Convert.ToDouble(SplitedExecuteTime[0]),
                         Convert.ToDouble(SplitedExecuteTime[1]),
@@ -91,7 +91,7 @@ namespace PMCSsE_Backend.Modules
                     NextExecuteTime = NextExecuteTime.AddSeconds(SplitedExecuteTime_Double[2]);
                     if (NextExecuteTime <= NowTime)
                     {
-                        NextExecuteTime = NextExecuteTime.AddDays(Convert.ToDouble(MCServerManager.MCServerManagerConfig.BackupHelperConfig.DayInterval));
+                        NextExecuteTime = NextExecuteTime.AddDays(Convert.ToDouble(MCServerManager.MCServerManagerConfig.BackupManagerConfig.DayInterval));
                     }
                     TimeSpan timeSpan = NextExecuteTime - NowTime;
                     NextExecuteTimeSpanMS = timeSpan.TotalMilliseconds;
@@ -102,7 +102,7 @@ namespace PMCSsE_Backend.Modules
                     break;
 
                 case BackupTimingMode.FixedTimeInterval:
-                    string[] SplitedTimeSpan = MCServerManager.MCServerManagerConfig.BackupHelperConfig.TimeInterval.Split(':', StringSplitOptions.RemoveEmptyEntries);
+                    string[] SplitedTimeSpan = MCServerManager.MCServerManagerConfig.BackupManagerConfig.TimeInterval.Split(':', StringSplitOptions.RemoveEmptyEntries);
                     int[] SplitedTimeSpan_int = [
                         Convert.ToInt32(SplitedTimeSpan[0]),
                         Convert.ToInt32(SplitedTimeSpan[1]),
@@ -146,7 +146,7 @@ namespace PMCSsE_Backend.Modules
             {
                 return;
             }
-            switch (MCServerManager.MCServerManagerConfig.BackupHelperConfig.BackupMode)
+            switch (MCServerManager.MCServerManagerConfig.BackupManagerConfig.BackupMode)
             {
                 case BackupMode.Full:
                     FullBackupHelperClass fullBackupHelperClass = new(MCServerManager, CancellationTokenSource);

@@ -179,6 +179,8 @@ namespace PMCSsE_Backend.Modules
             }
             MCServerManagerConfig mCServerManagerConfig = new() { ManagerID = NewID };
             StaticMCServerManagerConfigs.MCServerManagerConfigsList.Add(mCServerManagerConfig);
+            StaticMCServerManagerConfigs.MCServerManagerConfigsList.Sort((a, b) =>
+                int.Parse(a.ManagerID).CompareTo(int.Parse(b.ManagerID)));
             if (!StaticConfigManagerClass.SaveMCServerManagersConfig())//保存失败
             {
                 StaticMCServerManagerConfigs.MCServerManagerConfigsList.Remove(mCServerManagerConfig);
@@ -331,10 +333,10 @@ namespace PMCSsE_Backend.Modules
             MCServerManagersData result = new();
             foreach (var item in LoadedMCServerManagersList)
             {
-                result.MCServerManagerDataList.Add(new() 
-                { 
-                    ManagerID = item.MCServerManagerConfig.ManagerID, 
-                    IsMCServerRunning = item.isMCServerRunning 
+                result.MCServerManagerDataList.Add(new()
+                {
+                    ManagerID = item.MCServerManagerConfig.ManagerID,
+                    IsMCServerRunning = item.isMCServerRunning
                 });
             }
             return result;

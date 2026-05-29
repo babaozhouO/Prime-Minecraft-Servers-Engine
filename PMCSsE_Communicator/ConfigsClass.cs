@@ -83,12 +83,12 @@ namespace PMCSsE_Communicator
         /// 启动参数
         /// </summary>
         [ProtoMember(6)]
-        public string StartUpArgument { get; set; } = "";
+        public string StartUpArguments { get; set; } = "";
         /// <summary>
         /// 备份工具配置
         /// </summary>
         [ProtoMember(7)]
-        public BackupHelperConfig BackupHelperConfig { get; set; } = new();
+        public BackupManagerConfig BackupManagerConfig { get; set; } = new();
         /// <summary>
         /// 在线聊天系统配置
         /// </summary>
@@ -100,7 +100,7 @@ namespace PMCSsE_Communicator
     /// 备份工具配置
     /// </summary>
     [ProtoContract]
-    public class BackupHelperConfig
+    public class BackupManagerConfig
     {
         //-----------------------------------------------备份器配置-------------------------------//
         /// <summary>
@@ -172,7 +172,7 @@ namespace PMCSsE_Communicator
         /// SFTP客户端
         /// </summary>
         [ProtoMember(14)]
-        public SFTPHelperConfig SFTPHelperConfig { get; set; } = new();
+        public SFTPClientConfig SFTPClientConfig { get; set; } = new();
     }
     /// <summary>
     /// 备份模式
@@ -210,7 +210,7 @@ namespace PMCSsE_Communicator
     /// SFTP客户端配置
     /// </summary>
     [ProtoContract]
-    public class SFTPHelperConfig
+    public class SFTPClientConfig
     {
         /// <summary>
         /// 是否启用
@@ -241,7 +241,7 @@ namespace PMCSsE_Communicator
         /// 缓冲区大小(MiB)
         /// </summary>
         [ProtoMember(6)]
-        public int BufferSize { get; set; } = 16;
+        public int BufferSize { get; set; } = 1;
     }
     /// <summary>
     /// 在线聊天系统配置
