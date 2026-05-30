@@ -27,13 +27,13 @@ namespace PMCSsE_Backend.Modules
         private CancellationTokenSource? CancellationTokenSource;
         private readonly List<WebSocket> WebSocketClients = [];
         internal event Action<string, string, string> ReportLog = delegate { };
-        private readonly MCServerManagerClass MCServerManager;
+        private readonly MCServerManager MCServerManager;
         private Thread? HttpListenerThread;
         private MessageRecordingsManagerClass? MessageRecordingsManager;
         internal event Action<bool> ReportServiceState = delegate { };
         internal bool ServiceState = false;
 
-        internal OnlineChattingSystemClass(MCServerManagerClass singleMCServerManager)
+        internal OnlineChattingSystemClass(MCServerManager singleMCServerManager)
         {
             MCServerManager = singleMCServerManager;
         }

@@ -16,6 +16,7 @@
   <ItemGroup>
     <None Remove="Icons\Add.png" />
     <None Remove="Icons\Send.png" />
+    <None Remove="Icons\Set.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -61,6 +62,7 @@
     <AvaloniaResource Include="Icons\RemoveMCServer.png" />
     <AvaloniaResource Include="Icons\Run.png" />
     <AvaloniaResource Include="Icons\Send.png" />
+    <AvaloniaResource Include="Icons\Set.png" />
     <AvaloniaResource Include="Icons\Settings.png" />
     <AvaloniaResource Include="Icons\Shutdown.png" />
     <AvaloniaResource Include="Icons\Store.png" />

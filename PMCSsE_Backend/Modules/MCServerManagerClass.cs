@@ -12,31 +12,32 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 using PMCSsE_Communicator;
+using System.Text;
 
 namespace PMCSsE_Backend.Modules
 {
     /// <summary>
     /// 单个MC服务端管理类
     /// </summary>
-    internal class MCServerManagerClass
+    public class MCServerManager
     {
         /// <summary>
         /// 服务端运行状态
         /// </summary>
-        internal bool isMCServerRunning = false;
+        public bool isMCServerRunning = false;
         /// <summary>
         /// 服务端运行状态改变
         /// </summary>
-        internal event Action MCServerRunningStatusChanged = delegate { };
+        public event Action MCServerRunningStatusChanged = delegate { };
 
         /// <summary>
         /// 上报服务端游戏已保存（备份功能使用
         /// </summary>
-        internal event Action MCServerGameSaved = delegate { };
-        internal event Action<bool> ReportBackupServiceRunningStatus = delegate { };
-        internal event Action<string, byte, string, byte> ReportBackupProgress = delegate { };
+        public event Action MCServerGameSaved = delegate { };
+        public event Action<bool> ReportBackupServiceRunningStatus = delegate { };
+        public event Action<string, byte, string, byte> ReportBackupProgress = delegate { };
 
-        internal event Action<string, string, string> ReportLog = delegate { };
+        public event Action<string, string, string> ReportLog = delegate { };
         /// <summary>
         /// 服务端进程
         /// </summary>
@@ -56,7 +57,7 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// 构造函数
         /// </summary>
-        internal MCServerManagerClass(MCServerManagerConfig mCServerManagerConfig)
+        internal MCServerManager(MCServerManagerConfig mCServerManagerConfig)
         {
             MCServerManagerConfig = mCServerManagerConfig;
             MCServerProcess = new()
@@ -131,7 +132,7 @@ namespace PMCSsE_Backend.Modules
         /// <summary>        
         /// 启动服务端
         /// </summary>
-        internal void StartMCServer()
+        public void StartMCServer()
         {
             if ((MCServerProcess != null) && !isMCServerRunning && CheckConfig())
             {
@@ -142,7 +143,7 @@ namespace PMCSsE_Backend.Modules
 
                 MCServerProcess.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
                 MCServerProcess.StartInfo.StandardErrorEncoding = System.Text.Encoding.UTF8;
-                MCServerProcess.StartInfo.StandardInputEncoding = System.Text.Encoding.UTF8;
+                MCServerProcess.StartInfo.StandardInputEncoding =new UTF8Encoding(false);
                 MCServerProcess.StartInfo.RedirectStandardInput = true;
                 MCServerProcess.StartInfo.RedirectStandardOutput = true;
                 MCServerProcess.StartInfo.RedirectStandardError = true;
@@ -206,7 +207,7 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// 发送命令
         /// </summary>
-        internal void SendCommand(string Command)
+        public void SendCommand(string Command)
         {
             if (!(MCServerProcess == null) && isMCServerRunning)
             {
@@ -228,7 +229,7 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// 发送命令(互联专用)
         /// </summary>
-        internal void SendCommandHL(string Command)
+        public void SendCommandHL(string Command)
         {
             if (!(MCServerProcess == null) && isMCServerRunning)
             {
@@ -239,7 +240,7 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// stop服务端
         /// </summary>
-        internal void ShutdownMCServer()
+        public void ShutdownMCServer()
         {
             if ((MCServerProcess != null) && isMCServerRunning)
             {
@@ -252,7 +253,7 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// 终结服务端
         /// </summary>
-        internal void KillMCServer()
+        public void KillMCServer()
         {
             if ((MCServerProcess != null) && isMCServerRunning)
             {
@@ -310,7 +311,7 @@ namespace PMCSsE_Backend.Modules
         }
         #endregion
 
-        internal void Dispose()
+        public void Dispose()
         {
             MCServerRunningStatusChanged = delegate { };
             MCServerGameSaved = delegate { };

@@ -12,6 +12,7 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 
+using PMCSsE_Backend.PluginsSystem;
 using PMCSsE_Communicator;
 using PMCSsE_Communicator.DataPacks;
 using PMCSsE_Communicator.DataPacks.Pack_nothing;
@@ -23,7 +24,7 @@ namespace PMCSsE_Backend.Modules
     internal static class MCServerManagers_ManagerClass
     {
         internal static NativeServer? NativeServer;
-        private static readonly List<MCServerManagerClass> LoadedMCServerManagersList = [];
+        private static readonly List<MCServerManager> LoadedMCServerManagersList = [];
         internal static event Action ExitCalled = delegate { };
         public static DataPackBus? DataPackBus => NativeServer?.DataPackBus;
         internal static void Initialize()
@@ -46,8 +47,8 @@ namespace PMCSsE_Backend.Modules
             NativeServer.DataPackBus.Subscribe<Pack_StopMCServerManager>(HandlePack_StopMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_DeleteMCServerManager>(HandlePack_DeleteMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManager>(HandlePack_GetMCServerManager);
-            NativeServer.StartService();
             PluginsManager.LoadAllPlugins();
+            NativeServer.StartService();
         }
         private static void HandlePack_GetMCServerManagersList(Pack_GetMCServerManagerConfigsList _)
         {
@@ -261,7 +262,7 @@ namespace PMCSsE_Backend.Modules
             }
             if (mCServerManagerConfig != null)
             {
-                MCServerManagerClass mCServerManager = new(mCServerManagerConfig);
+                MCServerManager mCServerManager = new(mCServerManagerConfig);
                 LoadedMCServerManagersList.Add(mCServerManager);
                 return 0;
             }

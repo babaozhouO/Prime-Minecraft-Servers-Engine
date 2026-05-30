@@ -1,20 +1,28 @@
-﻿using PMCSsE_Communicator.PluginLoader;
+﻿using PMCSsE_Backend.Modules;
+using PMCSsE_Backend.PluginsSystem;
+using PMCSsE_Communicator.PluginLoader;
 using System.Security.Cryptography;
 
 namespace Example_PMCSsE_Plugin
 {
-    public class Example_PMCSsE_Plugin : IPlugin
+    public class Example_PMCSsE_Plugin : IPlugin, ISpecialMCServerFeaturesProvider
     {
         public string Name => "Example_PMCSsE_Plugin";
         public string Version => "1.0.0";
-
         public int MinSupportedVersion => 1040;
 
         public int MaxSupportedVersion => 1040;
 
-        public event Action Started = delegate { };
-        public event Action<string> ReportLog = delegate { };
-        public event Action Stopped = delegate { };
+        public string TargetMCServerType => "Vanilla";
+
+        public IReadOnlyList<IAsyncSpecialMCServerFeature> Features =>
+            [
+            new VanillaServerFeature_GetServerVersion()
+            ];
+
+        public event Action<string> Started = delegate { };
+        public event Action<string,string> ReportLog = delegate { };
+        public event Action<string> Stopped = delegate { };
 
         public void Dispose()
         {
@@ -23,25 +31,34 @@ namespace Example_PMCSsE_Plugin
 
         public void Initialize()
         {
-            Console.WriteLine("示例插件已初始化");
+
         }
 
         public void Start()
         {
-            Console.WriteLine("示例插件已启动");
-            Console.WriteLine("正在计算100次随机int32相加之和的平均数");
-            decimal sum = 0;
-            for (byte count = 1; count < 100; count++)
-            {
-                sum += RandomNumberGenerator.GetInt32(int.MaxValue / 2) + RandomNumberGenerator.GetInt32(int.MaxValue / 2);
-            }
-            Console.Write("结果");
-            Console.WriteLine(sum / 100);
+            ReportLog(Name,"示例插件！启动！");
+            Started(Name);
         }
 
         public void Stop()
         {
+            ReportLog(Name,"Goodbye!");
+            Stopped(Name);
+        }
+        public class VanillaServerFeature_GetServerVersion : IAsyncSpecialMCServerFeature
+        {
+            public string FeatureDescription => "服务端开启时发送version获取原版服务端版本号";
 
+
+            public string FeatureName => "获取版本信息";
+
+            public async Task AsyncFeature(MCServerManager mCServerManager)
+            {
+                if (mCServerManager.isMCServerRunning)
+                {
+                    mCServerManager.SendCommand("version");
+                }
+            }
         }
     }
 }

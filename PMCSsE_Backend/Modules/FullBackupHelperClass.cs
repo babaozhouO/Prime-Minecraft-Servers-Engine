@@ -17,13 +17,13 @@ namespace PMCSsE_Backend.Modules
 {
     internal class FullBackupHelperClass : IDisposable, IReportLog
     {
-        private readonly MCServerManagerClass MCServerManager;
+        private readonly MCServerManager MCServerManager;
         private SevenZipInvokerClass? SevenZipInvokerClass;
         private readonly CancellationTokenSource CancellationTokenSource;
         private string BackupFileName = "";
         public event Action<string, string, string> ReportLog = delegate { };
         public event Action TaskDone = delegate { };
-        internal FullBackupHelperClass(MCServerManagerClass mCServerManagerClass, CancellationTokenSource CancellationTokenSource)
+        internal FullBackupHelperClass(MCServerManager mCServerManagerClass, CancellationTokenSource CancellationTokenSource)
         {
             MCServerManager = mCServerManagerClass;
             this.CancellationTokenSource = CancellationTokenSource;

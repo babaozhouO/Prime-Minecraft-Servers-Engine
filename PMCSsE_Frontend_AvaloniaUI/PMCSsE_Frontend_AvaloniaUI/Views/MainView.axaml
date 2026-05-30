@@ -326,7 +326,7 @@
                 </Style>
             </ListBox.Styles>
         </ListBox>
-        <Panel Background="#FFFFF0" Classes="MCServerManager" IsVisible="{Binding MCServerManagerPanelVisibility}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+        <Panel Background="#FDFDFD" Classes="MCServerManager" IsVisible="{Binding MCServerManagerPanelVisibility}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <!--叠加层-->
             <TextBlock Text="{Binding MCServerName}" HorizontalAlignment="Left" FontSize="16"/>
             <Line StartPoint="0,0" EndPoint="1,0" Margin="0,25,0,0" Stroke="LightGray" Stretch="Fill" StrokeThickness="2"/>
@@ -397,13 +397,14 @@
                         <controls:ImageButton Grid.Row="3" Grid.Column="9" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/KillMCServer.png"/>
                     </Grid>
                     <ScrollViewer>
-                        <StackPanel Background="#FFFFF0" Margin="5,0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                        <StackPanel Background="#FFFFF0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
                             <!--配置页-->
                             <TextBlock Text="管理器配置" HorizontalAlignment="Center" FontSize="20"/>
                             <TextBlock Text="服务器名称:"/>
                             <TextBox/>
                             <TextBlock Text="服务端类型:"/>
-                            <TextBox/>
+                            <ComboBox>
+                            </ComboBox>
                             <TextBlock Text="服务端根目录:"/>
                             <TextBox/>
                             <TextBlock Text="Java路径:"/>
@@ -413,18 +414,13 @@
                             <Line Margin="0,10" StartPoint="0,0" EndPoint="1,0" Stretch="Fill" Stroke="LightGray" StrokeThickness="2"/>
                             <TextBlock Text="备份工具配置" HorizontalAlignment="Center" FontSize="20"/>
                             <TextBlock Text="启用自动备份"/>
-                            <TextBox/>
-                            <TextBlock Text="服务端类型:"/>
-                            <TextBox/>
-                            <TextBlock Text="服务端根目录:"/>
-                            <TextBox/>
-                            <TextBlock Text="Java路径:"/>
-                            <TextBox/>
-                            <TextBlock Text="启动参数:"/>
-                            <TextBox/>
+                            <CheckBox/>
                             <Line Margin="0,10" StartPoint="0,0" EndPoint="1,0" Stretch="Fill" Stroke="LightGray" StrokeThickness="2"/>
-
-                            <controls:MyButton Command="" HorizontalAlignment="Right" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Finish.png" MaxHeight="50" MaxWidth="120" Text="提交配置"/>
+                            <TextBlock Text="互联系统配置" HorizontalAlignment="Center" FontSize="20"/>
+                            <TextBlock Text="启用"/>
+                            <CheckBox/>
+                            <controls:MyButton Command="" HorizontalAlignment="Right" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Set.png" MaxHeight="50" MaxWidth="120" Text="修改配置"/>
+                            <controls:MyButton IsEnabled="False" Command="" HorizontalAlignment="Right" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Finish.png" MaxHeight="50" MaxWidth="120" Text="提交配置"/>
                             <StackPanel.Styles>
                                 <Style Selector="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>

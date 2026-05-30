@@ -17,7 +17,7 @@ namespace PMCSsE_Backend.Modules
 {
     internal class BackupHelperClass
     {
-        private readonly MCServerManagerClass MCServerManager;
+        private readonly MCServerManager MCServerManager;
 
         internal CancellationTokenSource CancellationTokenSource;
 
@@ -35,7 +35,7 @@ namespace PMCSsE_Backend.Modules
         private DateTime NextExecuteTime;
         private TimeSpan NextExecuteTimeSpan;
 
-        internal BackupHelperClass(MCServerManagerClass mCServerManagerClass,
+        internal BackupHelperClass(MCServerManager mCServerManagerClass,
             CancellationTokenSource CancellationTokenSource)
         {
             MCServerManager = mCServerManagerClass;
