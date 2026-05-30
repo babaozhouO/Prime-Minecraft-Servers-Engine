@@ -314,51 +314,40 @@
                 </Style>
             </TabControl.Styles>
         </TabControl>
-        <ListBox ItemsSource="{Binding Messages_IS}" MaxHeight="260" Background="Transparent" VerticalAlignment="Bottom" HorizontalAlignment="Left"><!--消息列表-->
-        <ListBox.ItemTemplate>
-            <DataTemplate>
-                <controls:Message MessageString="{Binding Message}" Background="{Binding Color}"/>
-            </DataTemplate>
-        </ListBox.ItemTemplate>
-            <ListBox.Styles>
-                <Style Selector="ListBoxItem">
-                    <Setter Property="Padding" Value="0,1,0,1"/>
-                </Style>
-            </ListBox.Styles>
-        </ListBox>
+
         <Panel Background="#FDFDFD" Classes="MCServerManager" IsVisible="{Binding MCServerManagerPanelVisibility}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <!--叠加层-->
             <TextBlock Text="{Binding MCServerName}" HorizontalAlignment="Left" FontSize="16"/>
             <Line StartPoint="0,0" EndPoint="1,0" Margin="0,25,0,0" Stroke="LightGray" Stretch="Fill" StrokeThickness="2"/>
-            <DrawerPage Background="#FFFFF0" CompactDrawerLength="26" DrawerPlacement="Right" DrawerLength="160" DrawerLayoutBehavior="CompactOverlay" Margin="0,27,0,0">
+            <DrawerPage DataContext="{Binding #root.DataContext}" Background="#FFFFF0" CompactDrawerLength="26" DrawerPlacement="Right" DrawerLength="160" DrawerLayoutBehavior="CompactOverlay" Margin="0,27,0,0">
                 <DrawerPage.Drawer>
                     <ScrollViewer>
-                        <StackPanel>
-                            <Button >
+                        <StackPanel DataContext="{Binding #root.DataContext}">
+                            <Button Command="{Binding ChangePageCommand}" CommandParameter="Console">
                                 <Panel>
                                     <Image Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Console.png"/>
                                     <TextBlock Text="控制台"/>
                                 </Panel>
                             </Button>
-                            <Button>
+                            <Button Command="{Binding ChangePageCommand}" CommandParameter="Backup">
                                 <Panel>
                                     <Image Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Store.png"/>
                                     <TextBlock Text="备份"/>
                                 </Panel>
                             </Button>
-                            <Button>
+                            <Button Command="{Binding ChangePageCommand}" CommandParameter="OnlineChatting">
                                 <Panel>
                                     <Image Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Link.png"/>
                                     <TextBlock Text="互联"/>
                                 </Panel>
                             </Button>
-                            <Button>
+                            <Button Command="{Binding ChangePageCommand}" CommandParameter="Explorer">
                                 <Panel>
                                     <Image Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Folder.png"/>
                                     <TextBlock Text="文件管理"/>
                                 </Panel>
                             </Button>
-                            <Button>
+                            <Button Command="{Binding ChangePageCommand}" CommandParameter="Settings">
                                 <Panel>
                                     <Image Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Settings.png"/>
                                     <TextBlock Text="设置"/>
@@ -384,43 +373,42 @@
                 <DrawerPage.DrawerFooter>
                     <controls:MyButton Command="{Binding ExitManagerPanelCommand}" Height="45" Text="返回" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/ExitApp.png"/>
                 </DrawerPage.DrawerFooter>
-                <Panel>
-                    <Grid Background="#FFFFF0" RowDefinitions="2,*,2,30,2" ColumnDefinitions="2,*,2,30,2,30,2,30,2,30,2">
-                        <!--控制台-->
-                        <!--                        <avaloniaedit:TextEditor Grid.Row="1" Grid.Column="1" Background="#FFFFF0" BorderThickness="2" Margin="0" BorderBrush="LightGray" Grid.ColumnSpan="9" ShowLineNumbers="True" IsReadOnly="True">
+                <Panel DataContext="{Binding #root.DataContext}">
+                    <Grid IsVisible="{Binding ConsolePanelVisibility}" Background="#FFFFF0" RowDefinitions="2,*,2,30,2" ColumnDefinitions="2,*,2,30,2,30,2,30,2,30,2">
+                        <!-- 控制台-->
+                        <avaloniaedit:TextEditor Grid.Row="1" Grid.Column="1" Background="#FFFFF0" BorderThickness="2" Margin="0" BorderBrush="LightGray" Grid.ColumnSpan="9" ShowLineNumbers="True" IsReadOnly="True">
 
-                        </avaloniaedit:TextEditor>-->
+                        </avaloniaedit:TextEditor>
                         <TextBox Grid.Row="3" Grid.Column="1" Text="" PlaceholderText="键入命令（无需/）"/>
                         <controls:ImageButton Grid.Row="3" Grid.Column="3" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Send.png"/>
                         <controls:ImageButton Grid.Row="3" Grid.Column="5" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Run.png"/>
                         <controls:ImageButton Grid.Row="3" Grid.Column="7" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Shutdown.png"/>
                         <controls:ImageButton Grid.Row="3" Grid.Column="9" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/KillMCServer.png"/>
                     </Grid>
-                    <ScrollViewer>
-                        <StackPanel Background="#FFFFF0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-                            <!--配置页-->
+                    <ScrollViewer IsVisible="{Binding SettingPanelVisibility}">
+                        <StackPanel IsVisible="{Binding SettingPanelVisibility}" Background="#FFFFF0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
+                            <!-- 配置页-->
                             <TextBlock Text="管理器配置" HorizontalAlignment="Center" FontSize="20"/>
                             <TextBlock Text="服务器名称:"/>
-                            <TextBox/>
+                            <TextBox Text="{Binding MCServerName_Edit}" PlaceholderText="例如：机械动力服——二周目" IsEnabled="{Binding EditingConfig}"/>
                             <TextBlock Text="服务端类型:"/>
-                            <ComboBox>
-                            </ComboBox>
+                            <ComboBox Text="{Binding MCServerType_Edit}" IsEditable="true" PlaceholderForeground="LightGray" IsEnabled="{Binding EditingConfig}" PlaceholderText="选择一个类型，不在支持列表中请选“Vanilla”" HorizontalAlignment="Stretch" DataContext="{Binding #root.DataContext}" ItemsSource="{Binding SupportedMCServerTypes_IS}"/>
                             <TextBlock Text="服务端根目录:"/>
-                            <TextBox/>
+                            <TextBox Text="{Binding MCServerDirectory_Edit}" PlaceholderText="请输入绝对路径" IsEnabled="{Binding EditingConfig}"/>
                             <TextBlock Text="Java路径:"/>
-                            <TextBox/>
+                            <TextBox Text="{Binding JavaPath_Edit}" IsEnabled="{Binding EditingConfig}"/>
                             <TextBlock Text="启动参数:"/>
-                            <TextBox/>
+                            <TextBox Text="{Binding StartArgument_Edit}" IsEnabled="{Binding EditingConfig}"/>
                             <Line Margin="0,10" StartPoint="0,0" EndPoint="1,0" Stretch="Fill" Stroke="LightGray" StrokeThickness="2"/>
                             <TextBlock Text="备份工具配置" HorizontalAlignment="Center" FontSize="20"/>
                             <TextBlock Text="启用自动备份"/>
-                            <CheckBox/>
+                            <CheckBox IsEnabled="{Binding EditingConfig}"/>
                             <Line Margin="0,10" StartPoint="0,0" EndPoint="1,0" Stretch="Fill" Stroke="LightGray" StrokeThickness="2"/>
                             <TextBlock Text="互联系统配置" HorizontalAlignment="Center" FontSize="20"/>
                             <TextBlock Text="启用"/>
-                            <CheckBox/>
-                            <controls:MyButton Command="" HorizontalAlignment="Right" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Set.png" MaxHeight="50" MaxWidth="120" Text="修改配置"/>
-                            <controls:MyButton IsEnabled="False" Command="" HorizontalAlignment="Right" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Finish.png" MaxHeight="50" MaxWidth="120" Text="提交配置"/>
+                            <CheckBox IsEnabled="{Binding EditingConfig}"/>
+                            <controls:MyButton Command="{Binding EditConfigCommand}" HorizontalAlignment="Right" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Set.png" MaxHeight="50" MaxWidth="120" Text="修改配置"/>
+                            <controls:MyButton Command="{Binding CommitConfigCommand}" HorizontalAlignment="Right" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Finish.png" MaxHeight="50" MaxWidth="120" Text="提交配置"/>
                             <StackPanel.Styles>
                                 <Style Selector="TextBlock">
                                     <Setter Property="VerticalAlignment" Value="Center"/>
@@ -428,13 +416,28 @@
                                 </Style>
                             </StackPanel.Styles>
                         </StackPanel>
+
                     </ScrollViewer>
-                    <Panel.Styles>
-                    </Panel.Styles>
+
                 </Panel>
+
             </DrawerPage>
+
         </Panel>
+        <ListBox ItemsSource="{Binding Messages_IS}" MaxHeight="260" Background="Transparent" VerticalAlignment="Bottom" HorizontalAlignment="Left"><!--消息列表-->
+        <ListBox.ItemTemplate>
+            <DataTemplate>
+                <controls:Message MessageString="{Binding Message}" Background="{Binding Color}"/>
+            </DataTemplate>
+        </ListBox.ItemTemplate>
+            <ListBox.Styles>
+                <Style Selector="ListBoxItem">
+                    <Setter Property="Padding" Value="0,1,0,1"/>
+                </Style>
+            </ListBox.Styles>
+        </ListBox>
         <controls:ImageButton Command="{Binding CleanMessageCommand}" Width="26" Height="26" VerticalAlignment="Top" HorizontalAlignment="Right" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Clean.png"/>
+
     </Panel>
 
 </UserControl>

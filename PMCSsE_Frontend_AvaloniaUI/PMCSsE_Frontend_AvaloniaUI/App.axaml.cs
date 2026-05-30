@@ -25,6 +25,9 @@ namespace PMCSsE_Frontend_AvaloniaUI
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
+#if DEBUG
+            this.AttachDeveloperTools();
+#endif
         }
 
         public override void OnFrameworkInitializationCompleted()
@@ -34,11 +37,11 @@ namespace PMCSsE_Frontend_AvaloniaUI
                 // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
                 // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
                 desktop.MainWindow = new MainWindow();
-                
+
             }
             else if (ApplicationLifetime is IActivityApplicationLifetime activityLifetime)
-            { 
-                activityLifetime.MainViewFactory = () => new MainView(); 
+            {
+                activityLifetime.MainViewFactory = () => new MainView();
             }
             else if (ApplicationLifetime is ISingleViewApplicationLifetime singleViewPlatform)
             {

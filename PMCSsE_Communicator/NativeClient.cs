@@ -850,6 +850,12 @@ namespace PMCSsE_Communicator
                                 case RespondTypeEnum_Private.MCServerManagerConfigs:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerManagerConfigs>(payload));
                                     return;
+                                case RespondTypeEnum_Private.LoadedMCServerManagers:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerManagers>(payload));
+                                    return;
+                                case RespondTypeEnum_Private.SupportedMCServerTypes:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_SupportedMCServerTypes>(payload));
+                                    return;
                                 case RespondTypeEnum_Private.CreatedNewMCServerManager:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_CreatedNewMCServerManager>(payload));
                                     return;
@@ -874,8 +880,8 @@ namespace PMCSsE_Communicator
                                 case RespondTypeEnum_Private.DeleteMCServerManagerFailed:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_DeleteMCServerManagerFailed>(payload));
                                     return;
-                                case RespondTypeEnum_Private.LoadedMCServerManagers:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerManagers>(payload));
+                                case RespondTypeEnum_Private.ModifiedMCServerManagerConfig:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_ModifiedMCServerManagerConfig>(payload));
                                     return;
                                 case RespondTypeEnum_Private.ErrorInfo:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_ErrorInfo>(payload));

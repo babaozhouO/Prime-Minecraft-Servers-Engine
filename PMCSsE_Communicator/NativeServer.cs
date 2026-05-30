@@ -1,4 +1,5 @@
-﻿using PMCSsE_Communicator.DataPacks.Pack_nothing;
+﻿using PMCSsE_Communicator.DataPacks;
+using PMCSsE_Communicator.DataPacks.Pack_nothing;
 using PMCSsE_Communicator.DataPacks.Pack_StringOnly;
 using ProtoBuf;
 using ProtoBuf.Meta;
@@ -386,7 +387,7 @@ namespace PMCSsE_Communicator
                 ReportLog($"异常信息：{ex.Message}{Environment.NewLine}{ex.StackTrace}");
                 return;
             }
-            var (dataPack, succeed) = GenerateDataPack(RespondTypeEnum_Private.RSAPublicKey, keyBytes,false);
+            var (dataPack, succeed) = GenerateDataPack(RespondTypeEnum_Private.RSAPublicKey, keyBytes, false);
             if (!succeed)
             {
                 ReportLog($"在握手流程的“客户端请求RSA公钥”阶段生成RSA公钥数据包失败");
@@ -610,49 +611,31 @@ namespace PMCSsE_Communicator
             {
                 return;
             }
-            switch (type)
+
+            using (ClientInfo.TasksQueueLock.EnterScope())
             {
-                case RespondTypeEnum.MCServerManagerConfigs:
-                case RespondTypeEnum.CreatedNewMCServerManager:
-                case RespondTypeEnum.CreatNewMCServerManagerFailed:
-                case RespondTypeEnum.LoadedMCServerManager:
-                case RespondTypeEnum.LoadMCServerManagerFailed:
-                case RespondTypeEnum.StoppedMCServerManager:
-                case RespondTypeEnum.StopMCServerManagerFailed:
-                case RespondTypeEnum.DeletedMCServerManager:
-                case RespondTypeEnum.DeleteMCServerManagerFailed:
-                case RespondTypeEnum.LoadedMCServerManagers:
-                case RespondTypeEnum.ErrorInfo:
+                ClientInfo.TasksQueue.Enqueue(async () =>
+                {
+                    (byte[] payload, bool succeed) = SerializePayloadObject<T>(content);
+                    if (succeed)
                     {
-                        using (ClientInfo.TasksQueueLock.EnterScope())
+                        (byte[] dataPack, bool succeed1) = GenerateDataPack((RespondTypeEnum_Private)type, payload);
+                        if (succeed1)
                         {
-                            ClientInfo.TasksQueue.Enqueue(async () =>
-                            {
-                                (byte[] payload, bool succeed) = SerializePayloadObject<T>(content);
-                                if (succeed)
-                                {
-                                    (byte[] dataPack, bool succeed1) = GenerateDataPack((RespondTypeEnum_Private)type, payload);
-                                    if (succeed1)
-                                    {
-                                        await SendDataPack(dataPack);
-                                    }
-                                    else
-                                    {
-                                        ReportLog($"生成[{type}]数据包失败");
-                                    }
-                                }
-                                else
-                                {
-                                    ReportLog($"序列化[{typeof(T)}]对象失败");
-                                }
-                            });
+                            await SendDataPack(dataPack);
                         }
-                        return;
+                        else
+                        {
+                            ReportLog($"生成[{type}]数据包失败");
+                        }
                     }
-                default:
-                    ReportLog("指定类型不在处理列表中！！");
-                    return;
+                    else
+                    {
+                        ReportLog($"序列化[{typeof(T)}]对象失败");
+                    }
+                });
             }
+
         }
         private async Task<byte[]> ReceiveDataPack()
         {
@@ -855,6 +838,12 @@ namespace PMCSsE_Communicator
                             case RequestTypeEnum_Private.GetMCServerManagersList:
                                 DataPackBus.Publish(new Pack_GetMCServerManagerConfigsList());
                                 break;
+                            case RequestTypeEnum_Private.GetLoadedMCServerManagers:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetMCServerManager>(dataPack.AsMemory(2)));
+                                break;
+                            case RequestTypeEnum_Private.GetSupportedMCServerTypes:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetSupportedMCServerTypes>(dataPack.AsMemory(2)));
+                                break;
                             case RequestTypeEnum_Private.CreatNewMCServerManager:
                                 DataPackBus.Publish(new Pack_CreatNewMCServerManager());
                                 break;
@@ -867,8 +856,8 @@ namespace PMCSsE_Communicator
                             case RequestTypeEnum_Private.DeleteMCServerManager:
                                 DataPackBus.Publish(Serializer.Deserialize<Pack_DeleteMCServerManager>(dataPack.AsMemory(2)));
                                 break;
-                            case RequestTypeEnum_Private.GetLoadedMCServerManagers:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetMCServerManager>(dataPack.AsMemory(2)));
+                            case RequestTypeEnum_Private.ModifyMCServerManagerConfig:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_ModifyMCServerManagerConfig>(dataPack.AsMemory(2)));
                                 break;
                             case RequestTypeEnum_Private.ConnectionAlive:
                                 break;

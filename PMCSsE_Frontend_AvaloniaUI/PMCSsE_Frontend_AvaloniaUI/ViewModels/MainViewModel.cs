@@ -14,6 +14,7 @@ using ReactiveUI;
 using ReactiveUI.Avalonia;
 using System;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
 
@@ -29,7 +30,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             get => _firstTabControlPage;
             set => this.RaiseAndSetIfChanged(ref _firstTabControlPage, value);
         }
-        private int _firstTabControlPage = 2;//
+        private int _firstTabControlPage = 0;//
 
         public ObservableCollection<MessageModel> Messages_IS
         {
@@ -48,7 +49,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             get => _connectPageIndex;
             set => this.RaiseAndSetIfChanged(ref _connectPageIndex, value);
         }
-        private int _connectPageIndex = 0;
+        private int _connectPageIndex = 1;
         public string? DisplayingIP
         {
             get => _displayingIP;
@@ -196,6 +197,9 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             DeleteMCServerManagerCommand = ReactiveCommand.Create(DeleteMCServerManagerAction, _canDeleteMCServerManager, uiScheduler);
             RefreshLoadedMCServerManagerCommand = ReactiveCommand.Create(RefreshLoadedMCServerManagerAction, _canRefreshLoadedMCServerManager, uiScheduler);
             OpenSelectedMCServerManagerCommand = ReactiveCommand.Create(OpenSelectedMCServerManagerAction, _canOpenSelectedMCServerManager, uiScheduler);
+            ChangePageCommand = ReactiveCommand.Create<string>(ChangePageAction, _canChangePage, uiScheduler);
+            EditConfigCommand = ReactiveCommand.Create(EditConfigAction, _canEditConfig, uiScheduler);
+            CommitConfigCommand = ReactiveCommand.Create(CommitConfigAction, _canCommitConfig, uiScheduler);
             ExitManagerPanelCommand = ReactiveCommand.Create(ExitManagerPanelAction, _canExitManagerPanel, uiScheduler);
             ConnectionStateImage = DisconnectedImage;
         }
@@ -277,6 +281,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             _canDisconnect.OnNext(true);
 
             nativeClient.DataPackBus.Subscribe<Pack_MCServerManagerConfigs>(HandlePack_MCServerManagerConfigs);
+            nativeClient.DataPackBus.Subscribe<Pack_MCServerManagers>(HandlePack_MCServerManagers);
+            nativeClient.DataPackBus.Subscribe<Pack_SupportedMCServerTypes>(HandlePack_SupportedMCServerTypes);
 
             nativeClient.DataPackBus.Subscribe<Pack_CreatedNewMCServerManager>(HandlePack_CreatedNewMCServerManager);
             nativeClient.DataPackBus.Subscribe<Pack_CreatNewMCServerManagerFailed>(HandlePack_CreatNewMCServerManagerFailed);
@@ -289,8 +295,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 
             nativeClient.DataPackBus.Subscribe<Pack_DeletedMCServerManager>(HandlePack_DeletedMCServerManager);
             nativeClient.DataPackBus.Subscribe<Pack_DeleteMCServerManagerFailed>(HandlePack_DeleteMCServerManagerFailed);
-
-            nativeClient.DataPackBus.Subscribe<Pack_MCServerManagers>(HandlePack_MCServerManagers);
+            nativeClient.DataPackBus.Subscribe<Pack_ModifiedMCServerManagerConfig>(HandlePack_ModifiedMCServerManagerConfig);
             nativeClient.DataPackBus.Subscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
             nativeClient.Connect();
             ConnectPageIndex = 2;
@@ -443,6 +448,38 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage("加载服务端管理器列表成功", 3);
             }, null);
         }
+        private void HandlePack_MCServerManagers(Pack_MCServerManagers pack)
+        {
+            LoadedMCServerManagers_IS.Clear();
+            pack.MCServerManagersData.MCServerManagerDataList?.ForEach((item) =>//效率低，以后再改
+                {
+                    foreach (var item1 in AllMCServerManagers_IS)
+                    {
+                        if (item.ManagerID == item1.ManagerID)
+                        {
+                            LoadedMCServerManagers_IS.Add(new MCServerManager_LBItemModel(item1.Config, item));
+                            return;
+                        }
+                    }
+                });
+
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"刷新已加载的服务端管理器成功", 3);
+            }, null);
+        }
+        private void HandlePack_SupportedMCServerTypes(Pack_SupportedMCServerTypes pack)
+        {
+            SupportedMCServerTypes_IS.Clear();
+            foreach (var type in pack.SupportedMCServerTypes)
+            {
+                SupportedMCServerTypes_IS.Add(type);
+            }
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage("获取支持的服务端类型成功", 3);
+            }, null);
+        }
         private void HandlePack_CreatedNewMCServerManager(Pack_CreatedNewMCServerManager pack)
         {
             Dispatcher.UIThread.Post((state) =>
@@ -500,24 +537,20 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage($"删除服务端管理器[{pack.ManagerID}]失败", 2);
             }, null);
         }
-        private void HandlePack_MCServerManagers(Pack_MCServerManagers pack)
+        private void HandlePack_ModifiedMCServerManagerConfig(Pack_ModifiedMCServerManagerConfig pack)
         {
-            LoadedMCServerManagers_IS.Clear();
-            pack.MCServerManagersData.MCServerManagerDataList?.ForEach((item) =>//效率低，以后再改
-                {
-                    foreach (var item1 in AllMCServerManagers_IS)
-                    {
-                        if (item.ManagerID == item1.ManagerID)
-                        {
-                            LoadedMCServerManagers_IS.Add(new MCServerManager_LBItemModel(item1.Config, item));
-                            return;
-                        }
-                    }
-                });
-
+            var mc= LoadedMCServerManagers_IS.FirstOrDefault(mc => mc.ManagerID == pack.MCServerManagerConfig.ManagerID);
+            mc.Config.MCServerName = pack.MCServerManagerConfig.MCServerName;
+            mc.Config.MCServerType = pack.MCServerManagerConfig.MCServerType;
+            mc.Config.MCServerDirectory = pack.MCServerManagerConfig.MCServerDirectory;
+            mc.Config.JavaPath = pack.MCServerManagerConfig.JavaPath;
+            mc.Config.StartUpArguments = pack.MCServerManagerConfig.StartUpArguments;
+            mc.Config.BackupManagerConfig = pack.MCServerManagerConfig.BackupManagerConfig;
+            mc.Config.OnlineChattingSystemConfig = pack.MCServerManagerConfig.OnlineChattingSystemConfig;
+            MCServerName = UsingManager?.Config.MCServerName;
             Dispatcher.UIThread.Post((state) =>
             {
-                SendMessage($"刷新已加载的服务端管理器成功", 3);
+                SendMessage($"修改服务端管理器[{pack.MCServerManagerConfig.ManagerID}]的配置成功", 3);
             }, null);
         }
         private void HandlePack_ErrorInfo(Pack_ErrorInfo pack)
@@ -612,6 +645,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             ConnectingNativeServer = null;
 
             nativeClient.DataPackBus.Unsubscribe<Pack_MCServerManagerConfigs>(HandlePack_MCServerManagerConfigs);
+            nativeClient.DataPackBus.Unsubscribe<Pack_MCServerManagers>(HandlePack_MCServerManagers);
+            nativeClient.DataPackBus.Unsubscribe<Pack_SupportedMCServerTypes>(HandlePack_SupportedMCServerTypes);
 
             nativeClient.DataPackBus.Unsubscribe<Pack_CreatedNewMCServerManager>(HandlePack_CreatedNewMCServerManager);
             nativeClient.DataPackBus.Unsubscribe<Pack_CreatNewMCServerManagerFailed>(HandlePack_CreatNewMCServerManagerFailed);
@@ -624,9 +659,13 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 
             nativeClient.DataPackBus.Unsubscribe<Pack_DeletedMCServerManager>(HandlePack_DeletedMCServerManager);
             nativeClient.DataPackBus.Unsubscribe<Pack_DeleteMCServerManagerFailed>(HandlePack_DeleteMCServerManagerFailed);
+
             nativeClient.DataPackBus.Unsubscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
             nativeClient.Dispose();
             nativeClient = null;
+            AllMCServerManagers_IS.Clear();
+            LoadedMCServerManagers_IS.Clear();
+            SupportedMCServerTypes_IS.Clear();
         }
 
         private void HandleConnected()
@@ -636,6 +675,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             nativeClient!.Connected -= HandleConnected;
             RefreshAllMCServerManagerListAction();
             RefreshLoadedMCServerManagerAction();
+            nativeClient.RequestBackend(RequestTypeEnum.GetSupportedMCServerTypes, new Pack_GetSupportedMCServerTypes());
             Dispatcher.UIThread.Post((state) =>
             {
                 ConnectLogs += "连接成功" + Environment.NewLine;
@@ -645,7 +685,9 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 _canSendPassword.OnNext(false);
                 _canDisconnect.OnNext(true);
                 SendMessage("连接后端成功", 3);
-                SendMessage("已发送获取服务端管理器列表请求", 0);
+                SendMessage("已发送获取所有服务端管理器列表请求", 0);
+                SendMessage("已发送获取已加载服务端管理器列表请求", 0);
+                SendMessage("已发送获取受支持的MC服务端类型请求", 0);
             }, null);
         }
 
@@ -699,32 +741,198 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 
         private readonly BehaviorSubject<bool> _canExitManagerPanel = new(true);
         public ReactiveCommand<Unit, Unit> ExitManagerPanelCommand { get; }
+
+        private readonly BehaviorSubject<bool> _canChangePage = new(true);
+        public ReactiveCommand<string, Unit> ChangePageCommand { get; }
+
+        private readonly BehaviorSubject<bool> _canEditConfig = new(true);
+        public ReactiveCommand<Unit, Unit> EditConfigCommand { get; }
+
+        private readonly BehaviorSubject<bool> _canCommitConfig = new(false);
+        public ReactiveCommand<Unit, Unit> CommitConfigCommand { get; }
         public bool MCServerManagerPanelVisibility
         {
             get => _mCServerManagerPanelVisibility;
             set => this.RaiseAndSetIfChanged(ref _mCServerManagerPanelVisibility, value);
         }
-        private bool _mCServerManagerPanelVisibility = true;
+        private bool _mCServerManagerPanelVisibility = false;
+        public bool ConsolePanelVisibility
+        {
+            get => _consolePanelVisibility;
+            set => this.RaiseAndSetIfChanged(ref _consolePanelVisibility, value);
+        }
+        private bool _consolePanelVisibility = true;
+        public bool BackupPanelVisibility
+        {
+            get => _backupPanelVisibility;
+            set => this.RaiseAndSetIfChanged(ref _backupPanelVisibility, value);
+        }
+        private bool _backupPanelVisibility = false;
+        public bool OnlineChattingPanelVisibility
+        {
+            get => _onlineChattingPanelVisibility;
+            set => this.RaiseAndSetIfChanged(ref _onlineChattingPanelVisibility, value);
+        }
+        private bool _onlineChattingPanelVisibility = false;
+        public bool ExplorerPanelVisibility
+        {
+            get => _explorerPanelVisibility;
+            set => this.RaiseAndSetIfChanged(ref _explorerPanelVisibility, value);
+        }
+        private bool _explorerPanelVisibility = false;
+        public bool SettingPanelVisibility
+        {
+            get => _settingPanelVisibility;
+            set => this.RaiseAndSetIfChanged(ref _settingPanelVisibility, value);
+        }
+        private bool _settingPanelVisibility = false;
+        public bool EditingConfig
+        {
+            get => _editingConfig;
+            set => this.RaiseAndSetIfChanged(ref _editingConfig, value);
+        }
+        private bool _editingConfig = false;
         public string? MCServerName
         {
             get => _mCServerName;
             set => this.RaiseAndSetIfChanged(ref _mCServerName, value);
         }
         private string? _mCServerName = string.Empty;
-        private MCServerManager_LBItemModel UsingManager;
+        public string? MCServerName_Edit
+        {
+            get => _mCServerName_Edit;
+            set => this.RaiseAndSetIfChanged(ref _mCServerName_Edit, value);
+        }
+        private string? _mCServerName_Edit = string.Empty;
+        public string? MCServerType_Edit
+        {
+            get => _mCServerType_Edit;
+            set => this.RaiseAndSetIfChanged(ref _mCServerType_Edit, value);
+        }
+        private string? _mCServerType_Edit = string.Empty;
+        public string? MCServerDirectory_Edit
+        {
+            get => _mCServerDirectory_Edit;
+            set => this.RaiseAndSetIfChanged(ref _mCServerDirectory_Edit, value);
+        }
+        private string? _mCServerDirectory_Edit = string.Empty;
+        public string? JavaPath_Edit
+        {
+            get => _javaPath_Edit;
+            set => this.RaiseAndSetIfChanged(ref _javaPath_Edit, value);
+        }
+        private string? _javaPath_Edit = string.Empty;
+        public string? StartArgument_Edit
+        {
+            get => _startArgument_Edit;
+            set => this.RaiseAndSetIfChanged(ref _startArgument_Edit, value);
+        }
+        private string? _startArgument_Edit = string.Empty;
+
+        private MCServerManager_LBItemModel? UsingManager;
+
+        public ObservableCollection<string> SupportedMCServerTypes_IS//item source
+        {
+            get => _supportedMCServerTypes_IS;
+            set => this.RaiseAndSetIfChanged(ref _supportedMCServerTypes_IS, value);
+        }
+        private ObservableCollection<string> _supportedMCServerTypes_IS = [];
 
         public void OpenSelectedMCServerManagerAction()
         {
             if (SelectedMCServerManager_LBItem is MCServerManager_LBItemModel m)
             {
                 UsingManager = m;
+                MCServerName = UsingManager.ServerName;
                 MCServerManagerPanelVisibility = true;
 
             }
         }
-        private void ExitManagerPanelAction()
+        public void ChangePageAction(string pageName)
+        {
+            switch (pageName)
+            {
+                case "Console":
+                    ConsolePanelVisibility = true;
+                    BackupPanelVisibility = false;
+                    OnlineChattingPanelVisibility = false;
+                    ExplorerPanelVisibility = false;
+                    SettingPanelVisibility = false;
+                    break;
+                case "Backup":
+                    ConsolePanelVisibility = false;
+                    BackupPanelVisibility = true;
+                    OnlineChattingPanelVisibility = false;
+                    ExplorerPanelVisibility = false;
+                    SettingPanelVisibility = false;
+                    break;
+                case "OnlineChatting":
+                    ConsolePanelVisibility = false;
+                    BackupPanelVisibility = false;
+                    OnlineChattingPanelVisibility = true;
+                    ExplorerPanelVisibility = false;
+                    SettingPanelVisibility = false;
+                    break;
+                case "Explorer":
+                    ConsolePanelVisibility = false;
+                    BackupPanelVisibility = false;
+                    OnlineChattingPanelVisibility = false;
+                    ExplorerPanelVisibility = true;
+                    SettingPanelVisibility = false;
+                    break;
+                case "Settings":
+                    MCServerName_Edit = UsingManager?.Config.MCServerName;
+                    MCServerType_Edit = UsingManager?.Config.MCServerType;
+                    MCServerDirectory_Edit = UsingManager?.Config.MCServerDirectory;
+                    JavaPath_Edit = UsingManager?.Config.JavaPath;
+                    StartArgument_Edit = UsingManager?.Config.StartUpArguments;
+                    ConsolePanelVisibility = false;
+                    BackupPanelVisibility = false;
+                    OnlineChattingPanelVisibility = false;
+                    ExplorerPanelVisibility = false;
+                    SettingPanelVisibility = true;
+                    break;
+                default:
+                    break;
+            }
+        }
+        public void EditConfigAction()
+        {
+            if (UsingManager == null) return;
+            if (UsingManager.State.IsMCServerRunning)
+            {
+                SendMessage("服务端仍在运行，请关服后再修改配置", 2);
+                return;
+            }
+            _canEditConfig.OnNext(false);
+            _canCommitConfig.OnNext(true);
+            EditingConfig = true;
+        }
+        public void CommitConfigAction()
+        {
+            _canEditConfig.OnNext(true);
+            _canCommitConfig.OnNext(false);
+            EditingConfig = false;
+            if (nativeClient == null)
+            {
+                SendMessage("未连接到后端，无法提交配置", 2);
+                return;
+            }
+            nativeClient.RequestBackend(RequestTypeEnum.ModifyMCServerManagerConfig, new Pack_ModifyMCServerManagerConfig(new MCServerManagerConfig()
+            {
+                ManagerID = UsingManager?.ManagerID??"",
+                MCServerName = MCServerName_Edit ?? "",
+                MCServerType = MCServerType_Edit ?? "",
+                MCServerDirectory = MCServerDirectory_Edit ?? "",
+                JavaPath = JavaPath_Edit ?? "",
+                StartUpArguments = StartArgument_Edit ?? ""
+            }));
+            SendMessage("已发送修改请求", 0);
+        }
+        public void ExitManagerPanelAction()
         {
             MCServerManagerPanelVisibility = false;
+            UsingManager = null;
         }
         #endregion
     }

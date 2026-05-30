@@ -10,6 +10,14 @@
         /// </summary>
         GetMCServerManagersList,
         /// <summary>
+        /// 获取已加载的MC服务端管理器
+        /// </summary>
+        GetLoadedMCServerManagers,
+        /// <summary>
+        /// 获取支持的服务端列表
+        /// </summary>
+        GetSupportedMCServerTypes,
+        /// <summary>
         /// 创建新的MC服务端管理器
         /// </summary>
         CreatNewMCServerManager,
@@ -24,20 +32,19 @@
         /// <summary>
         /// 删除MC服务端管理器
         /// </summary>
-        DeleteMCServerManager,
-        /// <summary>
-        /// 获取已加载的MC服务端管理器
-        /// </summary>
-        GetLoadedMCServerManagers
+        DeleteMCServerManager, 
+        ModifyMCServerManagerConfig
     }
     internal enum RequestTypeEnum_Private
     {
         GetMCServerManagersList,
+        GetLoadedMCServerManagers,
+        GetSupportedMCServerTypes,
         CreatNewMCServerManager,
         LoadMCServerManager,
         StopMCServerManager,
         DeleteMCServerManager,
-        GetLoadedMCServerManagers,
+        ModifyMCServerManagerConfig,
         ConnectionAlive,
         NeedRSAPublicKey,
         VerifyRSAPublicKeyTimeOut,

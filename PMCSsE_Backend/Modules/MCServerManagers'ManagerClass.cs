@@ -25,6 +25,7 @@ namespace PMCSsE_Backend.Modules
     {
         internal static NativeServer? NativeServer;
         private static readonly List<MCServerManager> LoadedMCServerManagersList = [];
+        internal static readonly List<string> SupportedMCServerTypes = ["Vanilla"];
         internal static event Action ExitCalled = delegate { };
         public static DataPackBus? DataPackBus => NativeServer?.DataPackBus;
         internal static void Initialize()
@@ -42,12 +43,20 @@ namespace PMCSsE_Backend.Modules
                 ExitCalled();
             };
             NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManagerConfigsList>(HandlePack_GetMCServerManagersList);
+            NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManager>(HandlePack_GetMCServerManager);
+            NativeServer.DataPackBus.Subscribe<Pack_GetSupportedMCServerTypes>(HandlePack_GetSupportedMCServerTypes);
             NativeServer.DataPackBus.Subscribe<Pack_CreatNewMCServerManager>(HandlePack_CreatNewMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_LoadMCServerManager>(HandlePack_LoadMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_StopMCServerManager>(HandlePack_StopMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_DeleteMCServerManager>(HandlePack_DeleteMCServerManager);
-            NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManager>(HandlePack_GetMCServerManager);
+            NativeServer.DataPackBus.Subscribe<Pack_ModifyMCServerManagerConfig>(HandlePack_ModifyMCServerConfig);
             PluginsManager.LoadAllPlugins();
+            PluginsManager.SpecialMCServerFeaturesProviders.ForEach((provider) =>
+            {
+                if (!SupportedMCServerTypes.Contains(provider.TargetMCServerType))
+                    SupportedMCServerTypes.Add(provider.TargetMCServerType);
+            });
+
             NativeServer.StartService();
         }
         private static void HandlePack_GetMCServerManagersList(Pack_GetMCServerManagerConfigsList _)
@@ -60,6 +69,19 @@ namespace PMCSsE_Backend.Modules
                 mCServerManagerConfigs.MCServerManagerConfigsList = StaticMCServerManagerConfigs.MCServerManagerConfigsList;
             }
             NativeServer.RespondClient(RespondTypeEnum.MCServerManagerConfigs, new Pack_MCServerManagerConfigs(mCServerManagerConfigs));
+        }
+        private static void HandlePack_GetMCServerManager(Pack_GetMCServerManager _)
+        {
+            if (NativeServer == null) { return; }
+            StaticTools.HandleLog($"客户端请求获取已加载的管理器");
+            NativeServer.RespondClient(RespondTypeEnum.LoadedMCServerManagers, new Pack_MCServerManagers(GetLoadedMCServerManagers()));
+        }
+        private static void HandlePack_GetSupportedMCServerTypes(Pack_GetSupportedMCServerTypes _)
+        {
+            if (NativeServer == null) { return; }
+            StaticTools.HandleLog($"客户端请求获取支持的服务端类型");
+            NativeServer.RespondClient(RespondTypeEnum.SupportedMCServerTypes, new Pack_SupportedMCServerTypes() { SupportedMCServerTypes = SupportedMCServerTypes });
+
         }
         private static void HandlePack_CreatNewMCServerManager(Pack_CreatNewMCServerManager _)
         {
@@ -165,11 +187,34 @@ namespace PMCSsE_Backend.Modules
                     }
             }
         }
-        private static void HandlePack_GetMCServerManager(Pack_GetMCServerManager _)
+        private static void HandlePack_ModifyMCServerConfig(Pack_ModifyMCServerManagerConfig pack)
         {
-            if (NativeServer == null) { return; }
-            StaticTools.HandleLog($"客户端请求获取已加载的管理器");
-            NativeServer.RespondClient(RespondTypeEnum.LoadedMCServerManagers, new Pack_MCServerManagers(GetLoadedMCServerManagers()));
+            StaticTools.HandleLog($"前端请求修改ID为[{pack.MCServerManagerConfig.ManagerID}]配置文件");
+            var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.MCServerManagerConfig.ManagerID);
+            if (m == null)
+            {
+                StaticTools.HandleLog("未找到要修改的MC服务端管理器配置");
+                return;
+            }
+            if (m.isMCServerRunning)
+            {
+                StaticTools.HandleLog("前端在服务端仍在运行的情况下编辑配置文件");
+                return;
+            }
+            m.MCServerManagerConfig.MCServerName = pack.MCServerManagerConfig.MCServerName;//引用，可直接修改到静态配置
+            m.MCServerManagerConfig.MCServerType = pack.MCServerManagerConfig.MCServerType;
+            m.MCServerManagerConfig.MCServerDirectory = pack.MCServerManagerConfig.MCServerDirectory;
+            m.MCServerManagerConfig.JavaPath = pack.MCServerManagerConfig.JavaPath;
+            m.MCServerManagerConfig.StartUpArguments = pack.MCServerManagerConfig.StartUpArguments;
+            m.MCServerManagerConfig.BackupManagerConfig = pack.MCServerManagerConfig.BackupManagerConfig;
+            m.MCServerManagerConfig.OnlineChattingSystemConfig = pack.MCServerManagerConfig.OnlineChattingSystemConfig;
+            if (!StaticConfigManagerClass.SaveMCServerManagersConfig())
+            {
+                StaticTools.HandleLog("MC服务端管理器配置文件保存失败");
+                return;
+            }
+            StaticTools.HandleLog($"修改ID为[{pack.MCServerManagerConfig.ManagerID}]配置文件成功");
+            NativeServer?.RespondClient(RespondTypeEnum.ModifiedMCServerManagerConfig, new Pack_ModifiedMCServerManagerConfig(pack.MCServerManagerConfig));
         }
         private static MCServerManagerConfig? CreatNewMCServerManager()
         {

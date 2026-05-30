@@ -9,6 +9,8 @@
         /// 所有MC服务端管理器的配置信息
         /// </summary>
         MCServerManagerConfigs,
+        LoadedMCServerManagers,
+        SupportedMCServerTypes,
         /// <summary>
         /// 已创建新MC服务端管理器
         /// </summary>
@@ -22,14 +24,16 @@
         StoppedMCServerManager,
         StopMCServerManagerFailed,
         DeletedMCServerManager,
-        DeleteMCServerManagerFailed,
-        LoadedMCServerManagers,
+        DeleteMCServerManagerFailed, 
+        ModifiedMCServerManagerConfig,
         ErrorInfo
 
     }
     internal enum RespondTypeEnum_Private
     {
         MCServerManagerConfigs,
+        LoadedMCServerManagers,
+        SupportedMCServerTypes,
         CreatedNewMCServerManager,
         CreatNewMCServerManagerFailed,
         LoadedMCServerManager,
@@ -38,7 +42,7 @@
         StopMCServerManagerFailed,
         DeletedMCServerManager,
         DeleteMCServerManagerFailed,
-        LoadedMCServerManagers,
+        ModifiedMCServerManagerConfig,
         ErrorInfo,
         ConnectionAlive,
         RSAPublicKey,
