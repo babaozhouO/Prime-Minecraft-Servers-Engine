@@ -15,7 +15,7 @@
 | 前/后端 | 框架 | 设计模式 | 运行环境 | 开发状态 | 使用方法 |
 |---------|-----|---------|----------|---------|----------|
 | 后端 | .NET 10.0 | 我也不知道 | Windows/Linux/MacOS(应该没有人会用移动设备开服吧) | 20% | [使用文档](https://babaozhouo.github.io/Prime-Minecraft-Servers-Engine/) |
-| 前端 | Avalonia | MVVM+事件驱动 | Windows10、11/Linux/MacOS/IOS/Android | 5% | [使用文档](https://babaozhouo.github.io/Prime-Minecraft-Servers-Engine/) |
+| 前端 | Avalonia | MVVM+事件驱动 | Windows10、11/Linux/MacOS/IOS/Android | 15% | [使用文档](https://babaozhouo.github.io/Prime-Minecraft-Servers-Engine/) |
 | 前端 | WPF | 事件驱动 | Windows10、11 | 停更 | [使用文档](https://babaozhouo.github.io/Prime-Minecraft-Servers-Engine/) |
 | [Yuzu前端(第三方)](https://github.com/LLP773/PMCSsE_Yuzu-Frontend) | Avalonia | MVVM+事件驱动 | Windows10、11/Linux/MacOS/IOS/Android | \ | \ |
 
@@ -38,7 +38,7 @@
 ### 🚀 功能开发进度
 | 基本功能：| 进度 |
 |------------------------------------------------------------|-------|
-|   1.前后端通信                                               | 15%  |
+|   1.前后端通信                                               | 80%  |
 |   2.自动下载 + 部署各种类型的服务端                            | 0%  |
 |   3.托管(多个)服务端，快速启停服务端、查看服务端日志、命令输入   | ✔  |
 |   4.监控服务端资源占用（CPU、内存、IO等）                      | 0%  |
