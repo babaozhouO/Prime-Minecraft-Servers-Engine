@@ -90,7 +90,7 @@ namespace PMCSsE_Backend.Modules
                 Action MCServerStatueChanged = delegate { };
                 MCServerStatueChanged += () =>
                 {
-                    MCServerManager.MCServerRunningStatusChanged -= MCServerStatueChanged;
+                    MCServerManager.MCServerRunningStateChanged -= MCServerStatueChanged;
                     if (!MCServerManager.isMCServerRunning)
                     {
                         SevenZipInvokerClass = new(CancellationTokenSource);
@@ -144,7 +144,7 @@ namespace PMCSsE_Backend.Modules
 
                     }
                 };
-                MCServerManager.MCServerRunningStatusChanged += MCServerStatueChanged;
+                MCServerManager.MCServerRunningStateChanged += MCServerStatueChanged;
                 MCServerManager.ShutdownMCServer();
 
             }

@@ -7,9 +7,9 @@ using System.Text;
 namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
 {
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_DeletedMCServerManager : Pack_ManagerOperation
+    public class Pack_RunMCServerFailed : Pack_ManagerOperation
     {
-        public Pack_DeletedMCServerManager(string managerID) : base(managerID)
+        public Pack_RunMCServerFailed(string managerID) : base(managerID)
         {
         }
     }

@@ -12,6 +12,9 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly.Base
     [ProtoInclude(7, typeof(Pack_DeleteMCServerManager))]
     [ProtoInclude(8, typeof(Pack_DeletedMCServerManager))]
     [ProtoInclude(9, typeof(Pack_DeleteMCServerManagerFailed))]
+    [ProtoInclude(11,typeof(Pack_RunMCServer))]
+    [ProtoInclude(12, typeof(Pack_RunMCServerSucceed))]
+    [ProtoInclude(13, typeof(Pack_RunMCServerFailed))]
     public class Pack_ManagerOperation
     {
         public Pack_ManagerOperation(string managerID)

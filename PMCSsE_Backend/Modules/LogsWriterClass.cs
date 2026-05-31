@@ -27,7 +27,7 @@ namespace PMCSsE_Backend.Modules
         private string? LogFilePath;
         private readonly System.Timers.Timer OneSecondTimer = new() { AutoReset = false, Interval = 1000 };
         private DateTime Date = DateTime.Now.Date;
-        internal event Action<string, string, string> ReportLog = delegate { };
+        internal event Action<string> ReportLog = delegate { };
         internal bool Disposed = false;
         internal List<string> Logs = [];
         internal LogsWriterClass(MCServerManagerConfig mCServerManagerConfig)
@@ -55,10 +55,8 @@ namespace PMCSsE_Backend.Modules
                 catch (Exception ex)
                 {
                     Running = false;
-                    ReportLog("错误", "日志写入器", $"创建日志目录时出错：{ex.Message}");
-                    ReportLog("错误", "日志写入器", $"堆栈跟踪：{ex.StackTrace}");
-                    StaticTools.HandleLog($"创建日志目录时出错：{ex.Message}", false, true);
-                    StaticTools.HandleLog($"堆栈跟踪：{ex.StackTrace}", false, true);
+                    ReportLog($"创建日志目录时出错：{ex.Message}");
+                    ReportLog($"堆栈跟踪：{ex.StackTrace}");
                     Dispose();
                     return;
                 }
@@ -73,10 +71,8 @@ namespace PMCSsE_Backend.Modules
                 catch (Exception ex)
                 {
                     Running = false;
-                    ReportLog("错误", "日志写入器", $"创建日志文件时出错：{ex.Message}");
-                    ReportLog("错误", "日志写入器", $"堆栈跟踪：{ex.StackTrace}");
-                    StaticTools.HandleLog($"创建日志文件时出错：{ex.Message}", false, true);
-                    StaticTools.HandleLog($"堆栈跟踪：{ex.StackTrace}", false, true);
+                    ReportLog($"创建日志文件时出错：{ex.Message}");
+                    ReportLog($"堆栈跟踪：{ex.StackTrace}");
                     Dispose();
                     return;
                 }
@@ -88,10 +84,8 @@ namespace PMCSsE_Backend.Modules
             catch (Exception ex)
             {
                 Running = false;
-                ReportLog("错误", "日志写入器", $"打开日志文件时出错：{ex.Message}");
-                ReportLog("错误", "日志写入器", $"堆栈跟踪：{ex.StackTrace}");
-                StaticTools.HandleLog($"打开日志文件时出错：{ex.Message}", false, true);
-                StaticTools.HandleLog($"堆栈跟踪：{ex.StackTrace}", false, true);
+                ReportLog($"打开日志文件时出错：{ex.Message}");
+                ReportLog($"堆栈跟踪：{ex.StackTrace}");
                 Dispose();
                 return;
             }
@@ -120,10 +114,8 @@ namespace PMCSsE_Backend.Modules
                     catch (Exception ex)
                     {
                         Running = false;
-                        ReportLog("错误", "日志写入器", $"创建并切换日志文件时出错：{ex.Message}");
-                        ReportLog("错误", "日志写入器", $"堆栈跟踪：{ex.StackTrace}");
-                        StaticTools.HandleLog($"创建并切换日志文件时出错：{ex.Message}", false, true);
-                        StaticTools.HandleLog($"堆栈跟踪：{ex.StackTrace}", false, true);
+                        ReportLog($"创建并切换日志文件时出错：{ex.Message}");
+                        ReportLog($"堆栈跟踪：{ex.StackTrace}");
                         Dispose();
                         return;
                     }
@@ -145,10 +137,8 @@ namespace PMCSsE_Backend.Modules
                     catch (Exception ex)
                     {
                         Running = false;
-                        ReportLog("错误", "日志写入器", $"使用UTF8编码日志文本时出错：{ex.Message}");
-                        ReportLog("错误", "日志写入器", $"堆栈跟踪：{ex.StackTrace}");
-                        StaticTools.HandleLog($"使用UTF8编码日志文本时出错：{ex.Message}", false, true);
-                        StaticTools.HandleLog($"堆栈跟踪：{ex.StackTrace}", false, true);
+                        ReportLog($"使用UTF8编码日志文本时出错：{ex.Message}");
+                        ReportLog($"堆栈跟踪：{ex.StackTrace}");
                         Dispose();
                         return;
                     }
@@ -165,10 +155,8 @@ namespace PMCSsE_Backend.Modules
                 catch (Exception ex)
                 {
                     Running = false;
-                    ReportLog("错误", "日志写入器", $"写入日志时出错：{ex.Message}");
-                    ReportLog("错误", "日志写入器", $"堆栈跟踪：{ex.StackTrace}");
-                    StaticTools.HandleLog($"写入日志时出错：{ex.Message}", false, true);
-                    StaticTools.HandleLog($"堆栈跟踪：{ex.StackTrace}", false, true);
+                    ReportLog($"写入日志时出错：{ex.Message}");
+                    ReportLog($"堆栈跟踪：{ex.StackTrace}");
                     Dispose();
                     return;
                 }
@@ -216,10 +204,8 @@ namespace PMCSsE_Backend.Modules
                     catch (Exception ex)
                     {
                         Running = false;
-                        ReportLog("错误", "日志写入器", $"创建并切换日志文件时出错：{ex.Message}");
-                        ReportLog("错误", "日志写入器", $"堆栈跟踪：{ex.StackTrace}");
-                        StaticTools.HandleLog($"创建并切换日志文件时出错：{ex.Message}", false, true);
-                        StaticTools.HandleLog($"堆栈跟踪：{ex.StackTrace}", false, true);
+                        ReportLog($"创建并切换日志文件时出错：{ex.Message}");
+                        ReportLog($"堆栈跟踪：{ex.StackTrace}");
                         LogFileStream?.Close();
                         LogFileStream?.Dispose();
                         ReportLog = delegate { };
@@ -242,10 +228,8 @@ namespace PMCSsE_Backend.Modules
                     catch (Exception ex)
                     {
                         Running = false;
-                        ReportLog("错误", "日志写入器", $"使用UTF8编码日志文本时出错：{ex.Message}");
-                        ReportLog("错误", "日志写入器", $"堆栈跟踪：{ex.StackTrace}");
-                        StaticTools.HandleLog($"使用UTF8编码日志文本时出错：{ex.Message}", false, true);
-                        StaticTools.HandleLog($"堆栈跟踪：{ex.StackTrace}", false, true);
+                        ReportLog($"使用UTF8编码日志文本时出错：{ex.Message}");
+                        ReportLog($"堆栈跟踪：{ex.StackTrace}");
                         LogFileStream?.Close();
                         LogFileStream?.Dispose();
                         ReportLog = delegate { };
@@ -264,10 +248,8 @@ namespace PMCSsE_Backend.Modules
                 catch (Exception ex)
                 {
                     Running = false;
-                    ReportLog("错误", "日志写入器", $"写入日志时出错：{ex.Message}");
-                    ReportLog("错误", "日志写入器", $"堆栈跟踪：{ex.StackTrace}");
-                    StaticTools.HandleLog($"写入日志时出错：{ex.Message}", false, true);
-                    StaticTools.HandleLog($"堆栈跟踪：{ex.StackTrace}", false, true);
+                    ReportLog($"写入日志时出错：{ex.Message}");
+                    ReportLog($"堆栈跟踪：{ex.StackTrace}");
                     LogFileStream?.Close();
                     LogFileStream?.Dispose();
                     ReportLog = delegate { };

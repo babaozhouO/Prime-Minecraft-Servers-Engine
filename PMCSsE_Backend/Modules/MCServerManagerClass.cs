@@ -12,6 +12,7 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 using PMCSsE_Communicator;
+using System.Reflection;
 using System.Text;
 
 namespace PMCSsE_Backend.Modules
@@ -28,16 +29,15 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// 服务端运行状态改变
         /// </summary>
-        public event Action MCServerRunningStatusChanged = delegate { };
-
+        public event Action<string,bool> MCServerRunningStateChanged = delegate { };
         /// <summary>
-        /// 上报服务端游戏已保存（备份功能使用
+        /// 上报管理器日志（ID，log）
         /// </summary>
-        public event Action MCServerGameSaved = delegate { };
-        public event Action<bool> ReportBackupServiceRunningStatus = delegate { };
-        public event Action<string, byte, string, byte> ReportBackupProgress = delegate { };
-
-        public event Action<string, string, string> ReportLog = delegate { };
+        public event Action<string, string> ReportManagerLog = delegate { };
+        /// <summary>
+        /// 上报服务端日志（ID，log）
+        /// </summary>
+        public event Action<string, string> ReportServerLog = delegate { };
         /// <summary>
         /// 服务端进程
         /// </summary>
@@ -49,42 +49,30 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// 当前管理器的备份工具
         /// </summary>
-        private BackupHelperClass? BackupHelper = null;
+        private BackupManager BackupManager;
         /// <summary>
         /// 当前管理器的在线聊天与管理工具
         /// </summary>
-        internal OnlineChattingSystemClass? OnlineChattingSystem = null;
+        internal OnlineChattingSystemClass OnlineChattingSystem;
         /// <summary>
         /// 构造函数
         /// </summary>
         internal MCServerManager(MCServerManagerConfig mCServerManagerConfig)
         {
             MCServerManagerConfig = mCServerManagerConfig;
+            this.ReportManagerLog += WriteManagerLog;
+            LogsWriter = new(MCServerManagerConfig);
+            LogsWriter.ReportLog += HandleLogsWriterLog;
             MCServerProcess = new()
             {
-                EnableRaisingEvents = true,
+                EnableRaisingEvents = true
             };
 
             MCServerProcess.OutputDataReceived += (sender, OutputDataReceived) =>
             {
                 if (!string.IsNullOrEmpty(OutputDataReceived.Data))
                 {
-                    if (OutputDataReceived.Data.Contains("Saved the game") || OutputDataReceived.Data.Contains("游戏已保存"))
-                    {
-                        MCServerGameSaved();
-                    }
-                    if (OutputDataReceived.Data.Contains("WARN"))
-                    {
-                        ReportLog("警告", $"{MCServerManagerConfig.MCServerName}(服务端)", $"{OutputDataReceived.Data}");
-                        return;
-                    }
-                    if (OutputDataReceived.Data.Contains("ERROR"))
-                    {
-                        ReportLog("错误", $"{MCServerManagerConfig.MCServerName}(服务端)", $"{OutputDataReceived.Data}");
-                        return;
-                    }
-                    ReportLog("信息", $"{MCServerManagerConfig.MCServerName}(服务端)", $"{OutputDataReceived.Data}");
-
+                    ReportServerLog(MCServerManagerConfig.ManagerID, OutputDataReceived.Data);
                 }
             };
 
@@ -93,22 +81,7 @@ namespace PMCSsE_Backend.Modules
             {
                 if (!string.IsNullOrEmpty(ErrorDataReceived.Data))
                 {
-                        if (ErrorDataReceived.Data.Contains("Saved the game") || ErrorDataReceived.Data.Contains("游戏已保存"))
-                        {
-                            MCServerGameSaved();
-                        }
-                        if (ErrorDataReceived.Data.Contains("WARN"))
-                        {
-                            ReportLog("警告", $"{MCServerManagerConfig.MCServerName}(服务端)", $"{ErrorDataReceived.Data}");
-                            return;
-                        }
-                        if (ErrorDataReceived.Data.Contains("ERROR"))
-                        {
-                            ReportLog("错误", $"{MCServerManagerConfig.MCServerName}(服务端)", $"{ErrorDataReceived.Data}");
-                            return;
-                        }
-                        ReportLog("信息", $"{MCServerManagerConfig.MCServerName}(服务端)", $"{ErrorDataReceived.Data}");
-                 
+                    ReportServerLog(MCServerManagerConfig.ManagerID, ErrorDataReceived.Data);
                 }
             };
 
@@ -119,12 +92,15 @@ namespace PMCSsE_Backend.Modules
                 MCServerProcess.CancelErrorRead();
 
                 isMCServerRunning = false;
-                MCServerRunningStatusChanged();
-                ReportLog("信息", "MC服务端管理器", "服务端已停止运行。");
+                MCServerRunningStateChanged(MCServerManagerConfig.ManagerID,false);
+                ReportManagerLog(MCServerManagerConfig.ManagerID, "服务端已停止运行。");
             };
 
-            InitializeLogsWriter();
-            ReportLog("成功", "MC服务端管理器", "已初始化");
+            BackupManager = new(this);
+            OnlineChattingSystem = new(this);
+
+
+            ReportManagerLog(MCServerManagerConfig.ManagerID, "已初始化管理器");
 
         }
 
@@ -132,18 +108,16 @@ namespace PMCSsE_Backend.Modules
         /// <summary>        
         /// 启动服务端
         /// </summary>
-        public void StartMCServer()
+        ///  <returns>返回值0：正确，1：空目录2：不合法的目录，3：空Java路径，4：空启动参数,5:启动失败，6：仍在运行</returns>
+        public int StartMCServer()
         {
-            if ((MCServerProcess != null) && !isMCServerRunning && CheckConfig())
+            int flag = CheckConfig();
+            if (flag != 0) return flag;
+            if (!isMCServerRunning)
             {
-                if (RunningStateRecorder.SystemCommandLineEncoding != System.Text.Encoding.UTF8)
-                {
-                    ReportLog("警告", "MC服务端管理器", $"系统控制台编码不是UTF8编码,若您修改了默认Java参数头部，服务端输出非英文字符可能乱码");
-                }
-
                 MCServerProcess.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
                 MCServerProcess.StartInfo.StandardErrorEncoding = System.Text.Encoding.UTF8;
-                MCServerProcess.StartInfo.StandardInputEncoding =new UTF8Encoding(false);
+                MCServerProcess.StartInfo.StandardInputEncoding = new UTF8Encoding(false);
                 MCServerProcess.StartInfo.RedirectStandardInput = true;
                 MCServerProcess.StartInfo.RedirectStandardOutput = true;
                 MCServerProcess.StartInfo.RedirectStandardError = true;
@@ -159,71 +133,68 @@ namespace PMCSsE_Backend.Modules
                         MCServerProcess.BeginOutputReadLine();
                         MCServerProcess.BeginErrorReadLine();
                         isMCServerRunning = true;
-                        MCServerRunningStatusChanged();
-                        ReportLog("成功", "MC服务端管理器", "MC服务端已成功启动");
-                        MCServerProcess.StandardInput.WriteLine("");
+                        MCServerRunningStateChanged(MCServerManagerConfig.ManagerID,true);
+                        ReportManagerLog(MCServerManagerConfig.ManagerID, "MC服务端已成功启动");
+                        return 0;
                     }
                 }
                 catch (Exception ex)
                 {
-                    ReportLog("错误", "MC服务端管理器", $"错误:({ex.Message})");
-                    ReportLog("堆栈跟踪", "MC服务端管理器", $"堆栈跟踪:({ex.StackTrace})");
+                    ReportManagerLog(MCServerManagerConfig.ManagerID, $"错误:({ex.Message})");
+                    ReportManagerLog(MCServerManagerConfig.ManagerID, $"堆栈跟踪:({ex.StackTrace})");
                     if (!isMCServerRunning)
                     {
-                        ReportLog("失败", "MC服务端管理器", "MC服务端启动失败");
+                        ReportManagerLog(MCServerManagerConfig.ManagerID, "MC服务端启动失败");
                     }
+                    return 5;
                 }
             }
+            return 6;
         }
         /// <summary>
         /// 检查配置
         /// </summary>
-        /// <returns>返回正确与否</returns>
-        private bool CheckConfig()
+        /// <returns>返回值0：正确，1：空目录2：不合法的目录，3：空Java路径，4：空启动参数</returns>
+        public int CheckConfig()
         {
-            bool isOK = true;
             if (MCServerManagerConfig.MCServerDirectory == string.Empty)
             {
-                isOK = false;
-                ReportLog("错误", "管理面板", "MC服务端目录为空，请设置正确的目录");
+                return 1;
             }
             if (!MCServerManagerConfig.MCServerDirectory.Contains('\\'))
             {
-                isOK = false;
-                ReportLog("错误", "管理面板", "MC服务端目录格式错误，请设置正确的目录");
+                return 2;
             }
             if (MCServerManagerConfig.JavaPath == string.Empty)
             {
-                isOK = false;
-                ReportLog("错误", "管理面板", "Java路径为空，请设置正确的Java路径");
+                return 3;
             }
             if (MCServerManagerConfig.StartUpArguments == string.Empty)
             {
-                isOK = false;
-                ReportLog("错误", "管理面板", "启动参数为空，请设置正确的启动参数");
+                return 4;
             }
-            return isOK;
+            return 0;
         }
         /// <summary>
         /// 发送命令
         /// </summary>
         public void SendCommand(string Command)
         {
-            if (!(MCServerProcess == null) && isMCServerRunning)
+            if (isMCServerRunning)
             {
                 if (string.IsNullOrWhiteSpace(Command))
                 {
-                    ReportLog("错误", "MC服务端管理器", "命令为空");
+                    ReportManagerLog(MCServerManagerConfig.ManagerID, "不可发送空命令");
                     return;
                 }
                 MCServerProcess.StandardInput.WriteLine(Command);
                 MCServerProcess.StandardInput.Flush();
 
-                ReportLog("成功", "MC服务端管理器", $"已发送[{Command}]命令");
+                ReportManagerLog(MCServerManagerConfig.ManagerID, $"已向服务端发送[{Command}]命令");
             }
             else
             {
-                ReportLog("错误", "MC服务端管理器", "服务端未启动");
+                ReportManagerLog(MCServerManagerConfig.ManagerID, "发送命令失败，服务端未启动");
             }
         }
         /// <summary>
@@ -231,7 +202,7 @@ namespace PMCSsE_Backend.Modules
         /// </summary>
         public void SendCommandHL(string Command)
         {
-            if (!(MCServerProcess == null) && isMCServerRunning)
+            if (isMCServerRunning)
             {
                 MCServerProcess.StandardInput.WriteLine(Command);
                 MCServerProcess.StandardInput.Flush();
@@ -240,84 +211,70 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// stop服务端
         /// </summary>
-        public void ShutdownMCServer()
+        public bool ShutdownMCServer()
         {
-            if ((MCServerProcess != null) && isMCServerRunning)
+            if (isMCServerRunning)
             {
                 MCServerProcess.StandardInput.WriteLine("stop");
-
-                ReportLog("成功", "MC服务端管理器", "已发送[stop]命令。");
-
+                ReportManagerLog(MCServerManagerConfig.ManagerID, "已发送[stop]命令。");
+                return true;
             }
+            return false;
         }
         /// <summary>
         /// 终结服务端
         /// </summary>
-        public void KillMCServer()
+        public bool KillMCServer()
         {
-            if ((MCServerProcess != null) && isMCServerRunning)
+            if (isMCServerRunning)
             {
-                MCServerProcess.Kill();
-
-                ReportLog("成功", "MC服务端管理器", "已进行Kill操作。");
-
+                try
+                {
+                    MCServerProcess.Kill();
+                    ReportManagerLog(MCServerManagerConfig.ManagerID, "已进行强制终结MC服务端操作。");
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    ReportManagerLog(MCServerManagerConfig.ManagerID, $"进行强制终结MC服务端操作时发生异常：{ex.Message}{Environment.NewLine}{ex.StackTrace}");
+                }
+                return false;
             }
+            ReportManagerLog(MCServerManagerConfig.ManagerID, "进行强制终结MC服务端操作时发现服务端未运行");
+            return false;
         }
         #endregion
         #region 备份工具相关
-        internal void InitializeBackupHelper(CancellationTokenSource cancellationTokenSource)
-        {
-            if (BackupHelper == null)
-            {
-                ReportLog("信息", "MC服务端管理器", "正在加载备份工具");
-                BackupHelper = new(this, cancellationTokenSource);
-
-                BackupHelper.ReportLog += ReportLog;
-
-                BackupHelper.ReportProgress += ReportBackupProgress;
-                BackupHelper.ReportServiceRunningStatue += ReportBackupServiceRunningStatus;
-            }
-
-        }
         #endregion
         #region 互联工具相关
-        internal void InitializeOnlineChattingAndManager()
-        {
-            if (OnlineChattingSystem == null)
-            {
-                ReportLog("信息", "实时服内外通信和远程服务器管理器", "正在加载实时服内外通信与管理工具");
-                OnlineChattingSystem = new(this);
-                OnlineChattingSystem.ReportLog += (type, sender, log) =>
-                {
-                    this.ReportLog?.Invoke(type, sender, log);
-                };
-                ReportLog("信息", "实时服内外通信和远程服务器管理器", "加载完成");
-            }
-        }
         #endregion
         #region 日志处理
-        private LogsWriterClass? LogsWriter = null;
-
-        private void InitializeLogsWriter()
+        private readonly LogsWriterClass LogsWriter;
+        private void WriteManagerLog(string managerID, string log)
         {
-            LogsWriter = new(MCServerManagerConfig);
-            // 订阅 ReportLog 事件
-            this.ReportLog += (type, sender, log) =>
-            {
-                string logLine = $"[{DateTime.Now:G}] | [{type}] | [{sender}] {log}";
-                LogsWriter.AppendLog(logLine);
-            };
-            LogsWriter.ReportLog += this.ReportLog;
+            string logLine = $"[{DateTime.Now:G}] | {log}";
+            LogsWriter.AppendLog(logLine);
+        }
+        private void HandleLogsWriterLog(string log)
+        {
+            ReportManagerLog(MCServerManagerConfig.ManagerID, log);
         }
         #endregion
-
+        /// <summary>
+        /// 释放
+        /// </summary>
         public void Dispose()
         {
-            MCServerRunningStatusChanged = delegate { };
-            MCServerGameSaved = delegate { };
-            ReportBackupServiceRunningStatus = delegate { };
-            ReportBackupProgress = delegate { };
-            ReportLog = delegate { };
+            if (isMCServerRunning)
+            {
+                ShutdownMCServer();
+            }
+            //BackupHelper
+            LogsWriter.Dispose();
+            LogsWriter.ReportLog -= HandleLogsWriterLog;
+            ReportManagerLog -= WriteManagerLog;
+            MCServerRunningStateChanged = delegate { };
+            ReportManagerLog = delegate { };
             MCServerProcess.Dispose();
 
         }

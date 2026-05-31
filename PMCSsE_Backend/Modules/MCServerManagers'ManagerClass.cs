@@ -50,6 +50,7 @@ namespace PMCSsE_Backend.Modules
             NativeServer.DataPackBus.Subscribe<Pack_StopMCServerManager>(HandlePack_StopMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_DeleteMCServerManager>(HandlePack_DeleteMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_ModifyMCServerManagerConfig>(HandlePack_ModifyMCServerConfig);
+            NativeServer.DataPackBus.Subscribe<Pack_RunMCServer>(HandlePack_RunMCServer);
             PluginsManager.LoadAllPlugins();
             PluginsManager.SpecialMCServerFeaturesProviders.ForEach((provider) =>
             {
@@ -211,10 +212,64 @@ namespace PMCSsE_Backend.Modules
             if (!StaticConfigManagerClass.SaveMCServerManagersConfig())
             {
                 StaticTools.HandleLog("MC服务端管理器配置文件保存失败");
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("MC服务端管理器配置文件保存失败"));
                 return;
             }
             StaticTools.HandleLog($"修改ID为[{pack.MCServerManagerConfig.ManagerID}]配置文件成功");
             NativeServer?.RespondClient(RespondTypeEnum.ModifiedMCServerManagerConfig, new Pack_ModifiedMCServerManagerConfig(pack.MCServerManagerConfig));
+        }
+        private static void HandlePack_RunMCServer(Pack_RunMCServer pack)
+        {
+            StaticTools.HandleLog($"前端请求运行ID为[{pack.ManagerID}]的服务端");
+            var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
+            if (m == null)
+            {
+                StaticTools.HandleLog($"未找到指定的MC服务端管理器[{pack.ManagerID}]");
+                return;
+            }
+            if (m.isMCServerRunning)
+            {
+                StaticTools.HandleLog("前端在服务端仍在运行的情况下启动服务器");
+                return;
+            }
+            string error;
+            switch (m.StartMCServer())
+            {
+                case 0:
+                    StaticTools.HandleLog($"服务端[{m.MCServerManagerConfig.ManagerID}]启动成功");
+                    NativeServer?.RespondClient(RespondTypeEnum.RunMCServerSucceed,new Pack_RunMCServerSucceed(pack.ManagerID));
+                    m.ReportServerLog += HandleServerLog;
+                    //m.MCServerRunningStateChanged += HandleMCServerRunningStateChanged;
+                    return;
+                case 1:
+                    error = "目录为空";
+                    break;
+                case 2:
+                    error = "目录格式不正确";
+                    break;
+                case 3:
+                    error = "Java路径为空";
+                    break;
+                case 4:
+                    error = "启动参数为空";
+                    break;
+                case 5:
+                    error = "服务端启动失败";
+                    break;
+                case 6:
+                    error = "服务端仍在运行";
+                    break;
+                default:
+                    error = "未知错误";
+                    break;
+            }
+            StaticTools.HandleLog($"启动ID为[{pack.ManagerID}]的服务端失败");
+            NativeServer?.RespondClient(RespondTypeEnum.RunMCServerFailed, new Pack_RunMCServerFailed(pack.ManagerID));
+            NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo(error));
+        }
+        private static void HandleServerLog(string managerID,string log)
+        {
+            //NativeServer?.RespondClient(RespondTypeEnum.MCServerLog, new Pack_MCServerLog(managerID, log));
         }
         private static MCServerManagerConfig? CreatNewMCServerManager()
         {
@@ -309,9 +364,14 @@ namespace PMCSsE_Backend.Modules
             {
                 MCServerManager mCServerManager = new(mCServerManagerConfig);
                 LoadedMCServerManagersList.Add(mCServerManager);
+                mCServerManager.ReportManagerLog += HandleManagerReportLog;
                 return 0;
             }
             return 2;
+        }
+        private static void HandleManagerReportLog(string managerID,string log)
+        {
+            StaticTools.HandleLog($"MC服务端管理器[{managerID}]:{log}");
         }
         /// <summary>
         /// 0成功，1未启动，2服务端仍在运行
@@ -329,6 +389,7 @@ namespace PMCSsE_Backend.Modules
                         return 2;
                     }
                     LoadedMCServerManagersList.Remove(item);
+                    item.ReportManagerLog -= HandleManagerReportLog;
                     item.Dispose();
                     return 0;
                 }

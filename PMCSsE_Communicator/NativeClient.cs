@@ -883,6 +883,12 @@ namespace PMCSsE_Communicator
                                 case RespondTypeEnum_Private.ModifiedMCServerManagerConfig:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_ModifiedMCServerManagerConfig>(payload));
                                     return;
+                                case RespondTypeEnum_Private.RunMCServerSucceed:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_RunMCServerSucceed>(payload));
+                                    return;
+                                case RespondTypeEnum_Private.RunMCServerFailed:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_RunMCServerFailed>(payload));
+                                    return;
                                 case RespondTypeEnum_Private.ErrorInfo:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_ErrorInfo>(payload));
                                     return;

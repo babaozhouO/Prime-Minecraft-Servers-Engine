@@ -198,6 +198,10 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             RefreshLoadedMCServerManagerCommand = ReactiveCommand.Create(RefreshLoadedMCServerManagerAction, _canRefreshLoadedMCServerManager, uiScheduler);
             OpenSelectedMCServerManagerCommand = ReactiveCommand.Create(OpenSelectedMCServerManagerAction, _canOpenSelectedMCServerManager, uiScheduler);
             ChangePageCommand = ReactiveCommand.Create<string>(ChangePageAction, _canChangePage, uiScheduler);
+            RunMCServerCommand = ReactiveCommand.Create(RunMCServerAction, _canRunMCServer, uiScheduler);
+            SendCommandCommand = ReactiveCommand.Create(SendCommandAction, _canSendCommand, uiScheduler);
+            StopMCServerCommand = ReactiveCommand.Create(StopMCServerAction, _canStopMCServer, uiScheduler);
+            KillMCServerCommand = ReactiveCommand.Create(KillMCServerAction, _canKillMCServer, uiScheduler);
             EditConfigCommand = ReactiveCommand.Create(EditConfigAction, _canEditConfig, uiScheduler);
             CommitConfigCommand = ReactiveCommand.Create(CommitConfigAction, _canCommitConfig, uiScheduler);
             ExitManagerPanelCommand = ReactiveCommand.Create(ExitManagerPanelAction, _canExitManagerPanel, uiScheduler);
@@ -296,6 +300,9 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             nativeClient.DataPackBus.Subscribe<Pack_DeletedMCServerManager>(HandlePack_DeletedMCServerManager);
             nativeClient.DataPackBus.Subscribe<Pack_DeleteMCServerManagerFailed>(HandlePack_DeleteMCServerManagerFailed);
             nativeClient.DataPackBus.Subscribe<Pack_ModifiedMCServerManagerConfig>(HandlePack_ModifiedMCServerManagerConfig);
+            nativeClient.DataPackBus.Subscribe<Pack_RunMCServerSucceed>(HandlePack_RunMCServerSucceed);
+            nativeClient.DataPackBus.Subscribe<Pack_RunMCServerFailed>(HandlePack_RunMCServerFailed);
+
             nativeClient.DataPackBus.Subscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
             nativeClient.Connect();
             ConnectPageIndex = 2;
@@ -553,6 +560,24 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage($"修改服务端管理器[{pack.MCServerManagerConfig.ManagerID}]的配置成功", 3);
             }, null);
         }
+        private void HandlePack_RunMCServerSucceed(Pack_RunMCServerSucceed pack)
+        {
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"启动服务端[{pack.ManagerID}]成功", 3);
+                _canRunMCServer.OnNext(false);
+                _canSendCommand.OnNext(true);
+                _canKillMCServer.OnNext(true);
+                _canKillMCServer.OnNext(true);
+            }, null);
+        }
+        private void HandlePack_RunMCServerFailed(Pack_RunMCServerFailed pack)
+        {
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"启动服务端[{pack.ManagerID}]失败", 2);
+            }, null);
+        }
         private void HandlePack_ErrorInfo(Pack_ErrorInfo pack)
         {
             Dispatcher.UIThread.Post((state) =>
@@ -750,6 +775,18 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 
         private readonly BehaviorSubject<bool> _canCommitConfig = new(false);
         public ReactiveCommand<Unit, Unit> CommitConfigCommand { get; }
+
+        private readonly BehaviorSubject<bool> _canRunMCServer = new(true);
+        public ReactiveCommand<Unit, Unit> RunMCServerCommand { get; }
+
+        private readonly BehaviorSubject<bool> _canSendCommand = new(false);
+        public ReactiveCommand<Unit, Unit> SendCommandCommand { get; }
+
+        private readonly BehaviorSubject<bool> _canStopMCServer = new(false);
+        public ReactiveCommand<Unit, Unit> StopMCServerCommand { get; }
+
+        private readonly BehaviorSubject<bool> _canKillMCServer = new(false);
+        public ReactiveCommand<Unit, Unit> KillMCServerCommand { get; }
         public bool MCServerManagerPanelVisibility
         {
             get => _mCServerManagerPanelVisibility;
@@ -895,6 +932,33 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 default:
                     break;
             }
+        }
+        public void RunMCServerAction()
+        {
+            if (nativeClient == null)
+            {
+                SendMessage("未连接到后端，无法启动服务端", 2);
+                return;
+            }
+            if (UsingManager == null)
+            {
+                SendMessage("UsingManager为null", 2);
+                return;
+            }
+            nativeClient.RequestBackend(RequestTypeEnum.RunMCServer, new Pack_RunMCServer(UsingManager.ManagerID));
+            SendMessage("已发送启动请求", 0);
+        }
+        public void StopMCServerAction()
+        {
+
+        }
+        public void KillMCServerAction()
+        {
+
+        }
+        public void SendCommandAction()
+        {
+
         }
         public void EditConfigAction()
         {

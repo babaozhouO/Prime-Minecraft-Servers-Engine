@@ -15,7 +15,7 @@ using PMCSsE_Communicator;
 
 namespace PMCSsE_Backend.Modules
 {
-    internal class BackupHelperClass
+    internal class BackupManager
     {
         private readonly MCServerManager MCServerManager;
 
@@ -35,11 +35,10 @@ namespace PMCSsE_Backend.Modules
         private DateTime NextExecuteTime;
         private TimeSpan NextExecuteTimeSpan;
 
-        internal BackupHelperClass(MCServerManager mCServerManagerClass,
-            CancellationTokenSource CancellationTokenSource)
+        public BackupManager(MCServerManager mCServerManagerClass)
         {
             MCServerManager = mCServerManagerClass;
-            this.CancellationTokenSource = CancellationTokenSource;
+          CancellationTokenSource =new();
             CountDownTimer.Elapsed += (sender, e) =>
             {
                 StopService();
@@ -73,7 +72,7 @@ namespace PMCSsE_Backend.Modules
             }
         }
 
-        internal void StartService()
+        public void StartService()
         {
             DateTime NowTime = DateTime.Now;
             double NextExecuteTimeSpanMS;
@@ -128,7 +127,7 @@ namespace PMCSsE_Backend.Modules
 
         }
 
-        internal void StopService()
+        public void StopService()
         {
             IsWaitingForBackup = false;
             CountDownTimer.Stop();
@@ -140,7 +139,7 @@ namespace PMCSsE_Backend.Modules
 
         }
 
-        internal void StartBackup()
+        public void StartBackup()
         {
             if (!CheckConfig())
             {

@@ -379,9 +379,9 @@
                         <avaloniaedit:TextEditor Grid.Row="1" Grid.Column="1" Background="#FFFFF0" BorderThickness="2" Margin="0" BorderBrush="LightGray" Grid.ColumnSpan="9" ShowLineNumbers="True" IsReadOnly="True">
 
                         </avaloniaedit:TextEditor>
-                        <TextBox Grid.Row="3" Grid.Column="1" Text="" PlaceholderText="键入命令（无需/）"/>
+                        <AutoCompleteBox ItemsSource="" Grid.Row="3" Grid.Column="1" Text="" PlaceholderText="键入命令（无需/）"/>
                         <controls:ImageButton Grid.Row="3" Grid.Column="3" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Send.png"/>
-                        <controls:ImageButton Grid.Row="3" Grid.Column="5" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Run.png"/>
+                        <controls:ImageButton Command="{Binding RunMCServerCommand}" Grid.Row="3" Grid.Column="5" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Run.png"/>
                         <controls:ImageButton Grid.Row="3" Grid.Column="7" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Shutdown.png"/>
                         <controls:ImageButton Grid.Row="3" Grid.Column="9" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/KillMCServer.png"/>
                     </Grid>

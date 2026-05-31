@@ -859,6 +859,9 @@ namespace PMCSsE_Communicator
                             case RequestTypeEnum_Private.ModifyMCServerManagerConfig:
                                 DataPackBus.Publish(Serializer.Deserialize<Pack_ModifyMCServerManagerConfig>(dataPack.AsMemory(2)));
                                 break;
+                            case RequestTypeEnum_Private.RunMCServer:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_RunMCServer>(dataPack.AsMemory(2)));
+                                break;
                             case RequestTypeEnum_Private.ConnectionAlive:
                                 break;
                             case RequestTypeEnum_Private.Close:

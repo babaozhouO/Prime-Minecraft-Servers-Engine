@@ -33,9 +33,9 @@ namespace PMCSsE_Backend.Modules
         internal event Action<bool> ReportServiceState = delegate { };
         internal bool ServiceState = false;
 
-        internal OnlineChattingSystemClass(MCServerManager singleMCServerManager)
+        internal OnlineChattingSystemClass(MCServerManager mCServerManager)
         {
-            MCServerManager = singleMCServerManager;
+            MCServerManager = mCServerManager;
         }
 
         internal void Start()
@@ -52,7 +52,7 @@ namespace PMCSsE_Backend.Modules
             }
 
             StartServer();
-            MCServerManager.ReportLog += HandleServerMessage;
+            MCServerManager.ReportManagerLog += HandleServerMessage;
             ServiceState = true;
             ReportServiceState(true);
             ReportLog("信息", "实时服内外通信和远程服务器管理器", $"已进行启动操作，如果启动失败或无法连接请以管理员身份执行以下两条命令，执行过的不用再次执行");
@@ -228,7 +228,7 @@ namespace PMCSsE_Backend.Modules
 
         internal void Stop()
         {
-            MCServerManager.ReportLog -= HandleServerMessage;
+            MCServerManager.ReportManagerLog -= HandleServerMessage;
             CancellationTokenSource?.Cancel();
             HttpListener?.Close();
             MessageRecordingsManager?.Dispose();
@@ -607,32 +607,30 @@ namespace PMCSsE_Backend.Modules
 
         [GeneratedRegex(@"<([^>]+)> (.+)$", RegexOptions.Multiline | RegexOptions.Compiled)]
         private static partial Regex MessageRegex();
-        private void HandleServerMessage(string Type, string Sender, string Log)
+        private void HandleServerMessage(string _, string Log)
         {
-            if (Sender.Contains("(服务端)"))
+            var match = MessageRegex().Match(Log);
+            if (match.Success)
             {
-                var match = MessageRegex().Match(Log);
-                if (match.Success)
+                string playerName = match.Groups[1].Value;
+                string message = match.Groups[2].Value;
+                string playerRole = "玩家";
+                foreach (var item in MCServerManager.MCServerManagerConfig.OnlineChattingSystemConfig.PlayerAccountList)
                 {
-                    string playerName = match.Groups[1].Value;
-                    string message = match.Groups[2].Value;
-                    string playerRole = "玩家";
-                    foreach (var item in MCServerManager.MCServerManagerConfig.OnlineChattingSystemConfig.PlayerAccountList)
+                    if (item.PlayerName == playerName)
                     {
-                        if (item.PlayerName == playerName)
-                        {
-                            playerRole = item.PlayerRole;
-                        }
+                        playerRole = item.PlayerRole;
                     }
-                    if (MessageRecordingsManager == null) { return; }
-                    ChatMessageClass chatMessage = new(MessageRecordingsManager.GetMessagesCount(), DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), playerName, playerRole.ToString(), message);
-                    MessageRecordingsManager.AppendMessageRecording(chatMessage);
-#pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
-                    BroadcastMessage(chatMessage);
-#pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
                 }
+                if (MessageRecordingsManager == null) { return; }
+                ChatMessageClass chatMessage = new(MessageRecordingsManager.GetMessagesCount(), DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss"), playerName, playerRole.ToString(), message);
+                MessageRecordingsManager.AppendMessageRecording(chatMessage);
+#pragma warning disable CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
+                BroadcastMessage(chatMessage);
+#pragma warning restore CS4014 // 由于此调用不会等待，因此在调用完成前将继续执行当前方法
             }
         }
+
 
         internal void Dispose()
         {

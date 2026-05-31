@@ -33,7 +33,8 @@
         /// 删除MC服务端管理器
         /// </summary>
         DeleteMCServerManager, 
-        ModifyMCServerManagerConfig
+        ModifyMCServerManagerConfig,
+        RunMCServer
     }
     internal enum RequestTypeEnum_Private
     {
@@ -45,6 +46,7 @@
         StopMCServerManager,
         DeleteMCServerManager,
         ModifyMCServerManagerConfig,
+        RunMCServer,
         ConnectionAlive,
         NeedRSAPublicKey,
         VerifyRSAPublicKeyTimeOut,

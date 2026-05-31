@@ -26,6 +26,8 @@
         DeletedMCServerManager,
         DeleteMCServerManagerFailed, 
         ModifiedMCServerManagerConfig,
+        RunMCServerSucceed,
+        RunMCServerFailed,
         ErrorInfo
 
     }
@@ -43,6 +45,8 @@
         DeletedMCServerManager,
         DeleteMCServerManagerFailed,
         ModifiedMCServerManagerConfig,
+        RunMCServerSucceed,
+        RunMCServerFailed,
         ErrorInfo,
         ConnectionAlive,
         RSAPublicKey,

@@ -6,10 +6,10 @@ using System.Text;
 
 namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
 {
-    [ProtoContract(SkipConstructor = true)]
-    public class Pack_DeletedMCServerManager : Pack_ManagerOperation
+    [ProtoContract(SkipConstructor =true)]
+    public class Pack_RunMCServerSucceed : Pack_ManagerOperation
     {
-        public Pack_DeletedMCServerManager(string managerID) : base(managerID)
+        public Pack_RunMCServerSucceed(string managerID) : base(managerID)
         {
         }
     }
