@@ -12,6 +12,7 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 
+using Org.BouncyCastle.Bcpg;
 using PMCSsE_Backend.PluginsSystem;
 using PMCSsE_Communicator;
 using PMCSsE_Communicator.DataPacks;
@@ -45,12 +46,22 @@ namespace PMCSsE_Backend.Modules
             NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManagerConfigsList>(HandlePack_GetMCServerManagersList);
             NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManager>(HandlePack_GetMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_GetSupportedMCServerTypes>(HandlePack_GetSupportedMCServerTypes);
+
             NativeServer.DataPackBus.Subscribe<Pack_CreatNewMCServerManager>(HandlePack_CreatNewMCServerManager);
+
             NativeServer.DataPackBus.Subscribe<Pack_LoadMCServerManager>(HandlePack_LoadMCServerManager);
+
             NativeServer.DataPackBus.Subscribe<Pack_StopMCServerManager>(HandlePack_StopMCServerManager);
+
             NativeServer.DataPackBus.Subscribe<Pack_DeleteMCServerManager>(HandlePack_DeleteMCServerManager);
+
             NativeServer.DataPackBus.Subscribe<Pack_ModifyMCServerManagerConfig>(HandlePack_ModifyMCServerConfig);
+
             NativeServer.DataPackBus.Subscribe<Pack_RunMCServer>(HandlePack_RunMCServer);
+            NativeServer.DataPackBus.Subscribe<Pack_SendCommand>(HandlePack_SendCommand);
+            NativeServer.DataPackBus.Subscribe<Pack_ShutdownMCServer>(HandlePack_ShutdownMCServer);
+            NativeServer.DataPackBus.Subscribe<Pack_KillMCServer>(HandlePack_KillMCServer);
+
             PluginsManager.LoadAllPlugins();
             PluginsManager.SpecialMCServerFeaturesProviders.ForEach((provider) =>
             {
@@ -195,11 +206,13 @@ namespace PMCSsE_Backend.Modules
             if (m == null)
             {
                 StaticTools.HandleLog("未找到要修改的MC服务端管理器配置");
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("未找到要修改的MC服务端管理器配置"));
                 return;
             }
             if (m.isMCServerRunning)
             {
                 StaticTools.HandleLog("前端在服务端仍在运行的情况下编辑配置文件");
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("在服务端仍在运行的情况下编辑配置文件"));
                 return;
             }
             m.MCServerManagerConfig.MCServerName = pack.MCServerManagerConfig.MCServerName;//引用，可直接修改到静态配置
@@ -225,11 +238,15 @@ namespace PMCSsE_Backend.Modules
             if (m == null)
             {
                 StaticTools.HandleLog($"未找到指定的MC服务端管理器[{pack.ManagerID}]");
+                NativeServer?.RespondClient(RespondTypeEnum.RunMCServerFailed, new Pack_RunMCServerFailed(pack.ManagerID));
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"未找到指定的MC服务端管理器[{pack.ManagerID}]"));
                 return;
             }
             if (m.isMCServerRunning)
             {
                 StaticTools.HandleLog("前端在服务端仍在运行的情况下启动服务器");
+                NativeServer?.RespondClient(RespondTypeEnum.RunMCServerFailed, new Pack_RunMCServerFailed(pack.ManagerID));
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("在服务端仍在运行的情况下启动服务器"));
                 return;
             }
             string error;
@@ -237,9 +254,7 @@ namespace PMCSsE_Backend.Modules
             {
                 case 0:
                     StaticTools.HandleLog($"服务端[{m.MCServerManagerConfig.ManagerID}]启动成功");
-                    NativeServer?.RespondClient(RespondTypeEnum.RunMCServerSucceed,new Pack_RunMCServerSucceed(pack.ManagerID));
-                    m.ReportServerLog += HandleServerLog;
-                    //m.MCServerRunningStateChanged += HandleMCServerRunningStateChanged;
+                    NativeServer?.RespondClient(RespondTypeEnum.RunMCServerSucceed, new Pack_RunMCServerSucceed(pack.ManagerID));
                     return;
                 case 1:
                     error = "目录为空";
@@ -267,9 +282,111 @@ namespace PMCSsE_Backend.Modules
             NativeServer?.RespondClient(RespondTypeEnum.RunMCServerFailed, new Pack_RunMCServerFailed(pack.ManagerID));
             NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo(error));
         }
-        private static void HandleServerLog(string managerID,string log)
+        private static void HandlePack_SendCommand(Pack_SendCommand pack)
         {
-            //NativeServer?.RespondClient(RespondTypeEnum.MCServerLog, new Pack_MCServerLog(managerID, log));
+            StaticTools.HandleLog($"前端请求向ID为[{pack.ManagerID}]的服务端发送命令[{pack.Command}]");
+            var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
+            if (m == null)
+            {
+                StaticTools.HandleLog($"未找到指定的MC服务端管理器[{pack.ManagerID}]");
+                NativeServer?.RespondClient(RespondTypeEnum.SendCommandFailed, new Pack_SendCommandFailed(pack.ManagerID));
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"未找到指定的MC服务端管理器[{pack.ManagerID}]"));
+                return;
+            }
+            if (!m.isMCServerRunning)
+            {
+                StaticTools.HandleLog("前端在服务端未在运行的情况下发送命令");
+                NativeServer?.RespondClient(RespondTypeEnum.SendCommandFailed, new Pack_SendCommandFailed(pack.ManagerID));
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"前端在服务端未在运行的情况下发送命令"));
+                return;
+            }
+            if (m.SendCommand(pack.Command))
+            {
+                StaticTools.HandleLog($"成功向ID为[{pack.ManagerID}]的服务端发送命令[{pack.Command}]");
+                NativeServer?.RespondClient(RespondTypeEnum.SendCommandSucceed, new Pack_SendCommandSucceed(pack.ManagerID));
+                return;
+            }
+            else
+            {
+                StaticTools.HandleLog($"向ID为[{pack.ManagerID}]的服务端发送命令[{pack.Command}]失败");
+                NativeServer?.RespondClient(RespondTypeEnum.SendCommandFailed, new Pack_SendCommandFailed(pack.ManagerID));
+            }
+        }
+        private static void HandlePack_ShutdownMCServer(Pack_ShutdownMCServer pack)//与强制终止同时使用会有重复响应bug，但无伤大雅
+        {
+            StaticTools.HandleLog($"前端请求停止ID为[{pack.ManagerID}]的服务端");
+            var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
+            if (m == null)
+            {
+                StaticTools.HandleLog($"未找到指定的MC服务端管理器[{pack.ManagerID}]");
+                NativeServer?.RespondClient(RespondTypeEnum.ShutdownMCServerFailed, new Pack_ShutdownMCServerFailed(pack.ManagerID));
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"未找到指定的MC服务端管理器[{pack.ManagerID}]"));
+                return;
+            }
+            if (!m.isMCServerRunning)
+            {
+                StaticTools.HandleLog("前端在服务端未在运行的情况下停止服务器");
+                NativeServer?.RespondClient(RespondTypeEnum.ShutdownMCServerFailed, new Pack_ShutdownMCServerFailed(pack.ManagerID));
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("在服务端未在运行的情况下停止服务器"));
+                return;
+            }
+            void HandleMCServerRunningStateChanged(string managerID, bool isRunning)
+            {
+                m.MCServerRunningStateChanged -= HandleMCServerRunningStateChanged;//记得取消订阅
+                if (!isRunning)
+                {
+                    NativeServer?.RespondClient(RespondTypeEnum.ShutdownMCServerSucceed, new Pack_ShutdownMCServerSucceed(managerID));
+                }
+            }
+            m.MCServerRunningStateChanged += HandleMCServerRunningStateChanged;
+            if (m.ShutdownMCServer())
+            {
+                StaticTools.HandleLog($"停止ID为[{m.MCServerManagerConfig.ManagerID}]的服务端成功");
+                return;
+            }
+            else
+            {
+                StaticTools.HandleLog($"停止ID为[{pack.ManagerID}]的服务端失败");
+                NativeServer?.RespondClient(RespondTypeEnum.ShutdownMCServerFailed, new Pack_ShutdownMCServerFailed(pack.ManagerID));
+            }
+        }
+        private static void HandlePack_KillMCServer(Pack_KillMCServer pack)
+        {
+            StaticTools.HandleLog($"前端请求强制终止ID为[{pack.ManagerID}]的服务端");
+            var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
+            if (m == null)
+            {
+                StaticTools.HandleLog($"未找到指定的MC服务端管理器[{pack.ManagerID}]");
+                NativeServer?.RespondClient(RespondTypeEnum.KillMCServerFailed, new Pack_KillMCServerFailed(pack.ManagerID));
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"未找到指定的MC服务端管理器[{pack.ManagerID}]"));
+                return;
+            }
+            if (!m.isMCServerRunning)
+            {
+                StaticTools.HandleLog("前端在服务端未在运行的情况下强制终止服务器");
+                NativeServer?.RespondClient(RespondTypeEnum.KillMCServerFailed, new Pack_KillMCServerFailed(pack.ManagerID));
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("在服务端未在运行的情况下强制终止服务器"));
+                return;
+            }
+            void HandleMCServerRunningStateChanged(string managerID, bool isRunning)
+            {
+                m.MCServerRunningStateChanged -= HandleMCServerRunningStateChanged;//记得取消订阅
+                if (!isRunning)
+                {
+                    NativeServer?.RespondClient(RespondTypeEnum.KillMCServerSucceed, new Pack_KillMCServerSucceed(managerID));
+                }
+            }
+            m.MCServerRunningStateChanged += HandleMCServerRunningStateChanged;
+            if (m.KillMCServer())
+            {
+                StaticTools.HandleLog($"强制终止ID为[{m.MCServerManagerConfig.ManagerID}]的服务端成功");
+                return;
+            }
+            else
+            {
+                StaticTools.HandleLog($"强制终止ID为[{pack.ManagerID}]的服务端失败");
+                NativeServer?.RespondClient(RespondTypeEnum.KillMCServerFailed, new Pack_KillMCServerFailed(pack.ManagerID));
+            }
         }
         private static MCServerManagerConfig? CreatNewMCServerManager()
         {
@@ -369,7 +486,7 @@ namespace PMCSsE_Backend.Modules
             }
             return 2;
         }
-        private static void HandleManagerReportLog(string managerID,string log)
+        private static void HandleManagerReportLog(string managerID, string log)
         {
             StaticTools.HandleLog($"MC服务端管理器[{managerID}]:{log}");
         }

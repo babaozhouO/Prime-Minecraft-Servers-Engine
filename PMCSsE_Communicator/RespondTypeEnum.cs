@@ -28,6 +28,12 @@
         ModifiedMCServerManagerConfig,
         RunMCServerSucceed,
         RunMCServerFailed,
+        SendCommandSucceed,
+        SendCommandFailed,
+        ShutdownMCServerSucceed,
+        ShutdownMCServerFailed,
+        KillMCServerSucceed,
+        KillMCServerFailed,
         ErrorInfo
 
     }
@@ -47,6 +53,13 @@
         ModifiedMCServerManagerConfig,
         RunMCServerSucceed,
         RunMCServerFailed,
+        SendCommandSucceed,
+        SendCommandFailed,
+        ShutdownMCServerSucceed,
+        ShutdownMCServerFailed,
+        KillMCServerSucceed,
+        KillMCServerFailed,
+        //------------------------
         ErrorInfo,
         ConnectionAlive,
         RSAPublicKey,

@@ -87,10 +87,9 @@ namespace PMCSsE_Backend.Modules
 
             if (MCServerManager.MCServerManagerConfig.BackupManagerConfig.StopServerBeforeBackup)
             {
-                Action MCServerStatueChanged = delegate { };
-                MCServerStatueChanged += () =>
+                void HandleMCServerStatueChanged(string managerID, bool isRunning)
                 {
-                    MCServerManager.MCServerRunningStateChanged -= MCServerStatueChanged;
+                    MCServerManager.MCServerRunningStateChanged -= HandleMCServerStatueChanged;
                     if (!MCServerManager.isMCServerRunning)
                     {
                         SevenZipInvokerClass = new(CancellationTokenSource);
@@ -143,18 +142,16 @@ namespace PMCSsE_Backend.Modules
                             MCServerManager.MCServerManagerConfig.MCServerDirectory);
 
                     }
-                };
-                MCServerManager.MCServerRunningStateChanged += MCServerStatueChanged;
+                }
+                ;
+                MCServerManager.MCServerRunningStateChanged += HandleMCServerStatueChanged;
                 MCServerManager.ShutdownMCServer();
 
             }
             else
             {
-                Action GameSaved = delegate { };
-                GameSaved += () =>
+                void HandleGameSaved()
                 {
-                    MCServerManager.MCServerGameSaved -= GameSaved;
-
                     SevenZipInvokerClass = new(CancellationTokenSource);
                     SevenZipInvokerClass.ReportLog += (Type, Sender, Log) =>
                     {
@@ -204,8 +201,16 @@ namespace PMCSsE_Backend.Modules
                         MCServerManager.MCServerManagerConfig.BackupManagerConfig.ExcludedFoldersList,
                         Path.Combine(MCServerManager.MCServerManagerConfig.BackupManagerConfig.BackupFileOutputDirectory, BackupFileName),
                         MCServerManager.MCServerManagerConfig.MCServerDirectory);
-                };
-                MCServerManager.MCServerGameSaved += GameSaved;
+                }
+                void HandleLog(string managerID,string log)
+                {
+                    if (log.Contains("Saved the game"))
+                    {
+                        MCServerManager.ReportServerLog -= HandleLog;
+                        HandleGameSaved();
+                    }
+                }
+                MCServerManager.ReportServerLog += HandleLog;
                 MCServerManager.SendCommand("save-off");
                 MCServerManager.SendCommand("save-all");
 

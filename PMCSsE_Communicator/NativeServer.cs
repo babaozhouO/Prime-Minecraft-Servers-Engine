@@ -862,6 +862,15 @@ namespace PMCSsE_Communicator
                             case RequestTypeEnum_Private.RunMCServer:
                                 DataPackBus.Publish(Serializer.Deserialize<Pack_RunMCServer>(dataPack.AsMemory(2)));
                                 break;
+                            case RequestTypeEnum_Private.SendCommand:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_SendCommand>(dataPack.AsMemory(2)));
+                                break;
+                            case RequestTypeEnum_Private.ShutdownMCServer:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_ShutdownMCServer>(dataPack.AsMemory(2)));
+                                break;
+                            case RequestTypeEnum_Private.KillMCServer:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_KillMCServer>(dataPack.AsMemory(2)));
+                                break;
                             case RequestTypeEnum_Private.ConnectionAlive:
                                 break;
                             case RequestTypeEnum_Private.Close:

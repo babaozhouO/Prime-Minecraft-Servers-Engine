@@ -12,7 +12,7 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 using PMCSsE_Communicator;
-using System.Reflection;
+using System.Diagnostics;
 using System.Text;
 
 namespace PMCSsE_Backend.Modules
@@ -29,7 +29,7 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// 服务端运行状态改变
         /// </summary>
-        public event Action<string,bool> MCServerRunningStateChanged = delegate { };
+        public event Action<string, bool> MCServerRunningStateChanged = delegate { };
         /// <summary>
         /// 上报管理器日志（ID，log）
         /// </summary>
@@ -38,6 +38,10 @@ namespace PMCSsE_Backend.Modules
         /// 上报服务端日志（ID，log）
         /// </summary>
         public event Action<string, string> ReportServerLog = delegate { };
+        /// <summary>
+        /// 服务端日志
+        /// </summary>
+        internal LogStore ServerLogs = new();
         /// <summary>
         /// 服务端进程
         /// </summary>
@@ -49,11 +53,11 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// 当前管理器的备份工具
         /// </summary>
-        private BackupManager BackupManager;
+        internal readonly BackupManager BackupManager;
         /// <summary>
         /// 当前管理器的在线聊天与管理工具
         /// </summary>
-        internal OnlineChattingSystemClass OnlineChattingSystem;
+        internal readonly OnlineChattingSystemClass OnlineChattingSystem;
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -68,33 +72,22 @@ namespace PMCSsE_Backend.Modules
                 EnableRaisingEvents = true
             };
 
-            MCServerProcess.OutputDataReceived += (sender, OutputDataReceived) =>
-            {
-                if (!string.IsNullOrEmpty(OutputDataReceived.Data))
-                {
-                    ReportServerLog(MCServerManagerConfig.ManagerID, OutputDataReceived.Data);
-                }
-            };
+            MCServerProcess.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
+            MCServerProcess.StartInfo.StandardErrorEncoding = System.Text.Encoding.UTF8;
+            MCServerProcess.StartInfo.StandardInputEncoding = new UTF8Encoding(false);
+            MCServerProcess.StartInfo.RedirectStandardInput = true;
+            MCServerProcess.StartInfo.RedirectStandardOutput = true;
+            MCServerProcess.StartInfo.RedirectStandardError = true;
+            MCServerProcess.StartInfo.UseShellExecute = false;
+            MCServerProcess.StartInfo.CreateNoWindow = true;
+
+            MCServerProcess.OutputDataReceived += HandleServerLogReceived;
 
 
-            MCServerProcess.ErrorDataReceived += (sender, ErrorDataReceived) =>
-            {
-                if (!string.IsNullOrEmpty(ErrorDataReceived.Data))
-                {
-                    ReportServerLog(MCServerManagerConfig.ManagerID, ErrorDataReceived.Data);
-                }
-            };
+            MCServerProcess.ErrorDataReceived += HandleServerLogReceived;
 
 
-            MCServerProcess.Exited += (sender, e) =>
-            {
-                MCServerProcess.CancelOutputRead();
-                MCServerProcess.CancelErrorRead();
-
-                isMCServerRunning = false;
-                MCServerRunningStateChanged(MCServerManagerConfig.ManagerID,false);
-                ReportManagerLog(MCServerManagerConfig.ManagerID, "服务端已停止运行。");
-            };
+            MCServerProcess.Exited += HandleServerExited;
 
             BackupManager = new(this);
             OnlineChattingSystem = new(this);
@@ -105,6 +98,24 @@ namespace PMCSsE_Backend.Modules
         }
 
         #region 服务端相关
+        private void HandleServerLogReceived(object sender, DataReceivedEventArgs e)
+        {
+            if (!string.IsNullOrEmpty(e.Data))
+            {
+                var log = e.Data;
+                ServerLogs.Add(log);
+                ReportServerLog(MCServerManagerConfig.ManagerID, log);
+            }
+        }
+        private void HandleServerExited(object? sender, EventArgs e)
+        {
+            MCServerProcess.CancelOutputRead();
+            MCServerProcess.CancelErrorRead();
+
+            isMCServerRunning = false;
+            MCServerRunningStateChanged(MCServerManagerConfig.ManagerID, false);
+            ReportManagerLog(MCServerManagerConfig.ManagerID, "服务端已停止运行。");
+        }
         /// <summary>        
         /// 启动服务端
         /// </summary>
@@ -115,14 +126,6 @@ namespace PMCSsE_Backend.Modules
             if (flag != 0) return flag;
             if (!isMCServerRunning)
             {
-                MCServerProcess.StartInfo.StandardOutputEncoding = System.Text.Encoding.UTF8;
-                MCServerProcess.StartInfo.StandardErrorEncoding = System.Text.Encoding.UTF8;
-                MCServerProcess.StartInfo.StandardInputEncoding = new UTF8Encoding(false);
-                MCServerProcess.StartInfo.RedirectStandardInput = true;
-                MCServerProcess.StartInfo.RedirectStandardOutput = true;
-                MCServerProcess.StartInfo.RedirectStandardError = true;
-                MCServerProcess.StartInfo.UseShellExecute = false;
-                MCServerProcess.StartInfo.CreateNoWindow = true;
                 MCServerProcess.StartInfo.FileName = MCServerManagerConfig.JavaPath;
                 MCServerProcess.StartInfo.Arguments = MCServerManagerConfig.StartUpArguments;
                 MCServerProcess.StartInfo.WorkingDirectory = MCServerManagerConfig.MCServerDirectory;
@@ -133,7 +136,7 @@ namespace PMCSsE_Backend.Modules
                         MCServerProcess.BeginOutputReadLine();
                         MCServerProcess.BeginErrorReadLine();
                         isMCServerRunning = true;
-                        MCServerRunningStateChanged(MCServerManagerConfig.ManagerID,true);
+                        MCServerRunningStateChanged(MCServerManagerConfig.ManagerID, true);
                         ReportManagerLog(MCServerManagerConfig.ManagerID, "MC服务端已成功启动");
                         return 0;
                     }
@@ -178,23 +181,25 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// 发送命令
         /// </summary>
-        public void SendCommand(string Command)
+        public bool SendCommand(string Command)
         {
             if (isMCServerRunning)
             {
                 if (string.IsNullOrWhiteSpace(Command))
                 {
                     ReportManagerLog(MCServerManagerConfig.ManagerID, "不可发送空命令");
-                    return;
+                    return false;
                 }
                 MCServerProcess.StandardInput.WriteLine(Command);
                 MCServerProcess.StandardInput.Flush();
 
                 ReportManagerLog(MCServerManagerConfig.ManagerID, $"已向服务端发送[{Command}]命令");
+                return true;
             }
             else
             {
                 ReportManagerLog(MCServerManagerConfig.ManagerID, "发送命令失败，服务端未启动");
+                return false;
             }
         }
         /// <summary>
@@ -273,10 +278,131 @@ namespace PMCSsE_Backend.Modules
             LogsWriter.Dispose();
             LogsWriter.ReportLog -= HandleLogsWriterLog;
             ReportManagerLog -= WriteManagerLog;
+            MCServerProcess.OutputDataReceived -= HandleServerLogReceived;
+            MCServerProcess.ErrorDataReceived -= HandleServerLogReceived;
+            MCServerProcess.Exited -= HandleServerExited;
             MCServerRunningStateChanged = delegate { };
             ReportManagerLog = delegate { };
             MCServerProcess.Dispose();
 
         }
+    }
+    /// <summary>
+    /// 来自DeepSeek，实现了日志存储
+    /// </summary>
+    internal class LogStore
+    {
+        private readonly Dictionary<ulong, string> _logs = [];
+        private readonly LinkedList<ulong> _order = new();
+        private ulong _nextId = 0;
+        private readonly int _capacity;
+        private readonly Lock _lock = new();
+
+        internal LogStore(int capacity = 10_000)
+        {
+            _capacity = capacity;
+        }
+
+        /// <summary>添加一条日志，返回其全局唯一编号。</summary>
+        internal ulong Add(string log)
+        {
+            using (_lock.EnterScope())
+            {
+                ulong id = ++_nextId;
+                _logs[id] = log;
+                _order.AddLast(id);
+
+                while (_order.Count > _capacity)
+                {
+                    ulong oldest = _order.First!.Value;
+                    _order.RemoveFirst();
+                    _logs.Remove(oldest);
+                }
+                return id;
+            }
+        }
+
+        /// <summary>获取从某个编号之后（不含）的最多 count 条日志，按时间升序返回。</summary>
+        /// <param name="after">起始编号，为 null 表示从最早可用日志开始</param>
+        /// <param name="count">最大返回条数</param>
+        /// <param name="resetHint">若因游标失效而强制返回最新日志，则设为 true</param>
+        internal List<LogEntry> GetAfter(ulong? after, int count, out bool resetHint)
+        {
+            using (_lock.EnterScope())
+            {
+                resetHint = false;
+                var result = new List<LogEntry>(count);
+
+                // 确定起始节点
+                LinkedListNode<ulong>? node;
+                if (after == null)
+                {
+                    node = _order.First;
+                }
+                else
+                {
+                    // 如果请求的 after 大于当前最大编号，说明游标失效（服务重启或日志全部淘汰）
+                    if (after.Value >= _nextId)
+                    {
+                        resetHint = true;
+                        return GetLatest(count); // 返回最新 count 条
+                    }
+
+                    node = FindFirstAfter(after.Value);
+                    // 如果 after 对应的日志已被淘汰（after < 当前最小编号），重置游标
+                    if (node == null && _order.Count > 0 && after.Value < _order.First!.Value)
+                    {
+                        resetHint = true;
+                        return GetLatest(count);
+                    }
+                }
+
+                while (node != null && result.Count < count)
+                {
+                    ulong id = node.Value;
+                    result.Add(new LogEntry { Id = id, Text = _logs[id] });
+                    node = node.Next;
+                }
+                return result;
+            }
+        }
+
+        /// <summary>获取最新 count 条日志。</summary>
+        internal List<LogEntry> GetLatest(int count)
+        {
+            using (_lock.EnterScope())
+            {
+                count = Math.Min(count, _order.Count);
+                var result = new List<LogEntry>(count);
+                var node = _order.Last;
+                var stack = new Stack<LogEntry>(count); // 用于反转顺序，保证时间升序
+                for (int i = 0; i < count && node != null; i++)
+                {
+                    stack.Push(new LogEntry { Id = node.Value, Text = _logs[node.Value] });
+                    node = node.Previous;
+                }
+                while (stack.Count > 0) result.Add(stack.Pop());
+                return result;
+            }
+        }
+
+        internal ulong CurrentMaxId
+        {
+            get { using (_lock.EnterScope()) { return _nextId; } }
+        }
+
+        internal LinkedListNode<ulong>? FindFirstAfter(ulong id)
+        {
+            var node = _order.First;
+            while (node != null && node.Value <= id)
+                node = node.Next;
+            return node;
+        }
+    }
+
+    internal class LogEntry
+    {
+        public ulong Id { get; set; }
+        public string Text { get; set; } = "";
     }
 }

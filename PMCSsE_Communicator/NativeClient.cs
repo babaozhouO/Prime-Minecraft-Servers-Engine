@@ -889,6 +889,24 @@ namespace PMCSsE_Communicator
                                 case RespondTypeEnum_Private.RunMCServerFailed:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_RunMCServerFailed>(payload));
                                     return;
+                                case RespondTypeEnum_Private.SendCommandSucceed:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_SendCommandSucceed>(payload));
+                                    return;
+                                case RespondTypeEnum_Private.SendCommandFailed:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_SendCommandFailed>(payload));
+                                    return;
+                                case RespondTypeEnum_Private.ShutdownMCServerSucceed:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_ShutdownMCServerSucceed>(payload));
+                                    return;
+                                case RespondTypeEnum_Private.ShutdownMCServerFailed:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_ShutdownMCServerFailed>(payload));
+                                    return;
+                                case RespondTypeEnum_Private.KillMCServerSucceed:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_KillMCServerSucceed>(payload));
+                                    return;
+                                case RespondTypeEnum_Private.KillMCServerFailed:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_KillMCServerFailed>(payload));
+                                    return;
                                 case RespondTypeEnum_Private.ErrorInfo:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_ErrorInfo>(payload));
                                     return;

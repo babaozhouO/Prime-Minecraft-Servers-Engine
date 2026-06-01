@@ -299,9 +299,20 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 
             nativeClient.DataPackBus.Subscribe<Pack_DeletedMCServerManager>(HandlePack_DeletedMCServerManager);
             nativeClient.DataPackBus.Subscribe<Pack_DeleteMCServerManagerFailed>(HandlePack_DeleteMCServerManagerFailed);
+
             nativeClient.DataPackBus.Subscribe<Pack_ModifiedMCServerManagerConfig>(HandlePack_ModifiedMCServerManagerConfig);
+
             nativeClient.DataPackBus.Subscribe<Pack_RunMCServerSucceed>(HandlePack_RunMCServerSucceed);
             nativeClient.DataPackBus.Subscribe<Pack_RunMCServerFailed>(HandlePack_RunMCServerFailed);
+
+            nativeClient.DataPackBus.Subscribe<Pack_SendCommandSucceed>(HandlePack_SendCommandSucceed);
+            nativeClient.DataPackBus.Subscribe<Pack_SendCommandFailed>(HandlePack_SendCommandFailed);
+
+            nativeClient.DataPackBus.Subscribe<Pack_ShutdownMCServerSucceed>(HandlePack_ShutdownMCServerSucceed);
+            nativeClient.DataPackBus.Subscribe<Pack_ShutdownMCServerFailed>(HandlePack_ShutdownMCServerFailed);
+
+            nativeClient.DataPackBus.Subscribe<Pack_KillMCServerSucceed>(HandlePack_KillMCServerSucceed);
+            nativeClient.DataPackBus.Subscribe<Pack_KillMCServerFailed>(HandlePack_KillMCServerFailed);
 
             nativeClient.DataPackBus.Subscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
             nativeClient.Connect();
@@ -546,7 +557,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         private void HandlePack_ModifiedMCServerManagerConfig(Pack_ModifiedMCServerManagerConfig pack)
         {
-            var mc= LoadedMCServerManagers_IS.FirstOrDefault(mc => mc.ManagerID == pack.MCServerManagerConfig.ManagerID);
+            var mc = LoadedMCServerManagers_IS.FirstOrDefault(mc => mc.ManagerID == pack.MCServerManagerConfig.ManagerID);
             mc.Config.MCServerName = pack.MCServerManagerConfig.MCServerName;
             mc.Config.MCServerType = pack.MCServerManagerConfig.MCServerType;
             mc.Config.MCServerDirectory = pack.MCServerManagerConfig.MCServerDirectory;
@@ -567,7 +578,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage($"启动服务端[{pack.ManagerID}]成功", 3);
                 _canRunMCServer.OnNext(false);
                 _canSendCommand.OnNext(true);
-                _canKillMCServer.OnNext(true);
+                _canStopMCServer.OnNext(true);
                 _canKillMCServer.OnNext(true);
             }, null);
         }
@@ -576,6 +587,56 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             Dispatcher.UIThread.Post((state) =>
             {
                 SendMessage($"启动服务端[{pack.ManagerID}]失败", 2);
+            }, null);
+        }
+        private void HandlePack_SendCommandSucceed(Pack_SendCommandSucceed pack)
+        {
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"向服务端[{pack.ManagerID}]发送命令成功", 3);
+            }, null);
+        }
+        private void HandlePack_SendCommandFailed(Pack_SendCommandFailed pack)
+        {
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"向服务端[{pack.ManagerID}]发送命令失败", 2);
+            }, null);
+        }
+        private void HandlePack_ShutdownMCServerSucceed(Pack_ShutdownMCServerSucceed pack)
+        {
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"停止服务端[{pack.ManagerID}]成功", 3);
+                _canRunMCServer.OnNext(true);
+                _canSendCommand.OnNext(false);
+                _canStopMCServer.OnNext(false);
+                _canKillMCServer.OnNext(false);
+            }, null);
+        }
+        private void HandlePack_ShutdownMCServerFailed(Pack_ShutdownMCServerFailed pack)
+        {
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"停止服务端[{pack.ManagerID}]失败", 2);
+            }, null);
+        }
+        private void HandlePack_KillMCServerSucceed(Pack_KillMCServerSucceed pack)
+        {
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"强制终止服务端[{pack.ManagerID}]成功", 3);
+                _canRunMCServer.OnNext(true);
+                _canSendCommand.OnNext(false);
+                _canStopMCServer.OnNext(false);
+                _canKillMCServer.OnNext(false);
+            }, null);
+        }
+        private void HandlePack_KillMCServerFailed(Pack_KillMCServerFailed pack)
+        {
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"强制终止服务端[{pack.ManagerID}]失败", 2);
             }, null);
         }
         private void HandlePack_ErrorInfo(Pack_ErrorInfo pack)
@@ -684,6 +745,21 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 
             nativeClient.DataPackBus.Unsubscribe<Pack_DeletedMCServerManager>(HandlePack_DeletedMCServerManager);
             nativeClient.DataPackBus.Unsubscribe<Pack_DeleteMCServerManagerFailed>(HandlePack_DeleteMCServerManagerFailed);
+
+            nativeClient.DataPackBus.Unsubscribe<Pack_ModifiedMCServerManagerConfig>(HandlePack_ModifiedMCServerManagerConfig);
+
+            nativeClient.DataPackBus.Unsubscribe<Pack_RunMCServerSucceed>(HandlePack_RunMCServerSucceed);
+            nativeClient.DataPackBus.Unsubscribe<Pack_RunMCServerFailed>(HandlePack_RunMCServerFailed);
+
+            nativeClient.DataPackBus.Unsubscribe<Pack_SendCommandSucceed>(HandlePack_SendCommandSucceed);
+            nativeClient.DataPackBus.Unsubscribe<Pack_SendCommandFailed>(HandlePack_SendCommandFailed);
+
+            nativeClient.DataPackBus.Unsubscribe<Pack_ShutdownMCServerSucceed>(HandlePack_ShutdownMCServerSucceed);
+            nativeClient.DataPackBus.Unsubscribe<Pack_ShutdownMCServerFailed>(HandlePack_ShutdownMCServerFailed);
+
+            nativeClient.DataPackBus.Unsubscribe<Pack_KillMCServerSucceed>(HandlePack_KillMCServerSucceed);
+            nativeClient.DataPackBus.Unsubscribe<Pack_KillMCServerFailed>(HandlePack_KillMCServerFailed);
+
 
             nativeClient.DataPackBus.Unsubscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
             nativeClient.Dispose();
@@ -867,6 +943,21 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         private string? _startArgument_Edit = string.Empty;
 
         private MCServerManager_LBItemModel? UsingManager;
+        public string? Command
+        {
+            get => _command;
+            set => this.RaiseAndSetIfChanged(ref _command, value);
+        }
+        private string? _command = string.Empty;
+        /// <summary>
+        /// 命令提示
+        /// </summary>
+        public ObservableCollection<string> CommandsSupport_IS//item source
+        {
+            get => _commandsSupport_IS;
+            set => this.RaiseAndSetIfChanged(ref _commandsSupport_IS, value);
+        }
+        private ObservableCollection<string> _commandsSupport_IS = [];
 
         public ObservableCollection<string> SupportedMCServerTypes_IS//item source
         {
@@ -881,6 +972,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             {
                 UsingManager = m;
                 MCServerName = UsingManager.ServerName;
+                LoadCommandsSupport();
                 MCServerManagerPanelVisibility = true;
 
             }
@@ -950,15 +1042,58 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         public void StopMCServerAction()
         {
-
+            if (nativeClient == null)
+            {
+                SendMessage("未连接到后端，无法停止服务端", 2);
+                return;
+            }
+            if (UsingManager == null)
+            {
+                SendMessage("UsingManager为null", 2);
+                return;
+            }
+            nativeClient.RequestBackend(RequestTypeEnum.ShutdownMCServer, new Pack_ShutdownMCServer(UsingManager.ManagerID));
+            SendMessage("已发送停止请求", 0);
         }
         public void KillMCServerAction()
         {
-
+            if (nativeClient == null)
+            {
+                SendMessage("未连接到后端，无法强制终止服务端", 2);
+                return;
+            }
+            if (UsingManager == null)
+            {
+                SendMessage("UsingManager为null", 2);
+                return;
+            }
+            nativeClient.RequestBackend(RequestTypeEnum.KillMCServer, new Pack_KillMCServer(UsingManager.ManagerID));
+            SendMessage("已发送强制终止请求", 0);
         }
         public void SendCommandAction()
         {
-
+            if (nativeClient == null)
+            {
+                SendMessage("未连接到后端，无法发送命令", 2);
+                return;
+            }
+            if (UsingManager == null)
+            {
+                SendMessage("UsingManager为null", 2);
+                return;
+            }
+            if (Command == null)
+            {
+                SendMessage("Command为null", 2);
+                return;
+            }
+            if (Command == string.Empty || Command == " ")
+            {
+                SendMessage("Command为空", 2);
+                return;
+            }
+            nativeClient.RequestBackend(RequestTypeEnum.SendCommand, new Pack_SendCommand(UsingManager.ManagerID, Command));
+            SendMessage("已发送命令", 0);
         }
         public void EditConfigAction()
         {
@@ -984,7 +1119,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             }
             nativeClient.RequestBackend(RequestTypeEnum.ModifyMCServerManagerConfig, new Pack_ModifyMCServerManagerConfig(new MCServerManagerConfig()
             {
-                ManagerID = UsingManager?.ManagerID??"",
+                ManagerID = UsingManager?.ManagerID ?? "",
                 MCServerName = MCServerName_Edit ?? "",
                 MCServerType = MCServerType_Edit ?? "",
                 MCServerDirectory = MCServerDirectory_Edit ?? "",
@@ -997,6 +1132,15 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         {
             MCServerManagerPanelVisibility = false;
             UsingManager = null;
+        }
+        private void LoadCommandsSupport()
+        {
+            if (UsingManager == null)
+            {
+                SendMessage("UsingManager为null，无法加载命令支持", 2);
+                return;
+            }
+            //从Json加载
         }
         #endregion
     }

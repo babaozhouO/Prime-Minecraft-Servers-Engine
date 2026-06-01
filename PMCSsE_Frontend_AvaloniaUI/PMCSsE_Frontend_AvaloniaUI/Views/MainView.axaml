@@ -314,9 +314,8 @@
                 </Style>
             </TabControl.Styles>
         </TabControl>
-
+        <!--叠加层-->
         <Panel Background="#FDFDFD" Classes="MCServerManager" IsVisible="{Binding MCServerManagerPanelVisibility}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
-            <!--叠加层-->
             <TextBlock Text="{Binding MCServerName}" HorizontalAlignment="Left" FontSize="16"/>
             <Line StartPoint="0,0" EndPoint="1,0" Margin="0,25,0,0" Stroke="LightGray" Stretch="Fill" StrokeThickness="2"/>
             <DrawerPage DataContext="{Binding #root.DataContext}" Background="#FFFFF0" CompactDrawerLength="26" DrawerPlacement="Right" DrawerLength="160" DrawerLayoutBehavior="CompactOverlay" Margin="0,27,0,0">
@@ -379,11 +378,11 @@
                         <avaloniaedit:TextEditor Grid.Row="1" Grid.Column="1" Background="#FFFFF0" BorderThickness="2" Margin="0" BorderBrush="LightGray" Grid.ColumnSpan="9" ShowLineNumbers="True" IsReadOnly="True">
 
                         </avaloniaedit:TextEditor>
-                        <AutoCompleteBox ItemsSource="" Grid.Row="3" Grid.Column="1" Text="" PlaceholderText="键入命令（无需/）"/>
-                        <controls:ImageButton Grid.Row="3" Grid.Column="3" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Send.png"/>
+                        <AutoCompleteBox ItemsSource="{Binding CommandsSupport_IS}" Text="{Binding Command}" Grid.Row="3" Grid.Column="1" PlaceholderText="键入命令（无需/）"/>
+                        <controls:ImageButton Command="{Binding SendCommandCommand}" Grid.Row="3" Grid.Column="3" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Send.png"/>
                         <controls:ImageButton Command="{Binding RunMCServerCommand}" Grid.Row="3" Grid.Column="5" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Run.png"/>
-                        <controls:ImageButton Grid.Row="3" Grid.Column="7" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Shutdown.png"/>
-                        <controls:ImageButton Grid.Row="3" Grid.Column="9" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/KillMCServer.png"/>
+                        <controls:ImageButton Command="{Binding StopMCServerCommand}" Grid.Row="3" Grid.Column="7" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Shutdown.png"/>
+                        <controls:ImageButton Command="{Binding KillMCServerCommand}" Grid.Row="3" Grid.Column="9" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/KillMCServer.png"/>
                     </Grid>
                     <ScrollViewer IsVisible="{Binding SettingPanelVisibility}">
                         <StackPanel IsVisible="{Binding SettingPanelVisibility}" Background="#FFFFF0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
