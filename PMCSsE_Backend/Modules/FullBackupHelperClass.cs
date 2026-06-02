@@ -15,7 +15,7 @@ using System.IO;
 
 namespace PMCSsE_Backend.Modules
 {
-    internal class FullBackupHelperClass : IDisposable, IReportLog
+    internal class FullBackupHelperClass : IDisposable
     {
         private readonly MCServerManager MCServerManager;
         private SevenZipInvokerClass? SevenZipInvokerClass;

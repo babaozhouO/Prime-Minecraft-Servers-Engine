@@ -1,4 +1,4 @@
-<ListBoxItem xmlns="https://github.com/avaloniaui"
+<UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
@@ -13,13 +13,13 @@
         <TextBlock Text="{Binding #root.ManagerID}" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1"/>
         <TextBlock Text="服务端类型:" Grid.Row="2" VerticalAlignment="Center"/>
         <TextBlock Text="{Binding #root.MCServerType}" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
-        <TextBlock Text="服务端状态:" Grid.Row="3" VerticalAlignment="Center"/>        
+        <TextBlock Text="服务端状态:" Grid.Row="3" VerticalAlignment="Center"/>
         <TextBlock Text="{Binding #root.MCServerRunningState}" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1"/>
     </Grid>
-    <ListBoxItem.Background>
+    <UserControl.Background>
         <SolidColorBrush Color="White" Opacity="0.4"/>
-    </ListBoxItem.Background>
-    <ListBoxItem.BorderBrush>
+    </UserControl.Background>
+    <UserControl.BorderBrush>
         <SolidColorBrush Color="White" Opacity="0.6"/>
-    </ListBoxItem.BorderBrush>
-</ListBoxItem>
+    </UserControl.BorderBrush>
+</UserControl>

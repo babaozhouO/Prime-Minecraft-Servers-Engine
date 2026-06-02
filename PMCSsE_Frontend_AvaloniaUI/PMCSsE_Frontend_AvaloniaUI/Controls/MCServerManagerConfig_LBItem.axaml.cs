@@ -9,7 +9,7 @@ using PMCSsE_Frontend_AvaloniaUI.Modules;
 
 namespace PMCSsE_Frontend_AvaloniaUI.Controls;
 
-public partial class MCServerManagerConfig_LBItem : ListBoxItem
+public partial class MCServerManagerConfig_LBItem : UserControl
 {
     public MCServerManagerConfig_LBItem()
     {

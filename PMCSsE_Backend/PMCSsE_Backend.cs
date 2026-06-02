@@ -15,6 +15,7 @@ using PMCSsE_Backend.Modules;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -29,16 +30,33 @@ namespace PMCSsE_Backend
             {
                 if (Paths.APPExeFile != null)
                 {
+                    if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+                    {
+                        string? exe = Assembly.GetEntryAssembly()?.Location;
+                        if (exe != null)
+                        {
+                            Console.WriteLine($"当前可执行文件路径：{exe}");
+
+                            ProcessStartInfo info_unix = new(Paths.APPExeFile)
+                            {
+                                CreateNoWindow = true,
+                                UseShellExecute = false,
+                                Arguments = exe
+                            };
+                            Process.Start(info_unix);
+                            return 0;
+                        }
+                    }
+                    Console.WriteLine($"当前可执行文件路径：{Paths.APPExeFile}");
                     ProcessStartInfo info = new(Paths.APPExeFile)
                     {
                         CreateNoWindow = true,
-                        
-                        
+                        UseShellExecute = false
                     };
                     Process.Start(info);
                     return 0;
                 }
-                
+
             }
             AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
             {
@@ -136,7 +154,7 @@ namespace PMCSsE_Backend
                     catch (SocketException ex)
                     {
                         // 10048 (Win32) 或 98 EADDRINUSE (Linux/macOS) 表示地址已在使用
-                        if (ex.ErrorCode == 10048 || ex.ErrorCode == 98) 
+                        if (ex.ErrorCode == 10048 || ex.ErrorCode == 98)
                         {
                             StaticTools.HandleLog("指定的端口号已被占用");
                             continue;
@@ -146,7 +164,7 @@ namespace PMCSsE_Backend
                         StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
                         continue;
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         StaticTools.HandleLog("检测端口号占用情况时发生异常");
                         StaticTools.HandleLog($"异常:{ex.Message}");
@@ -384,7 +402,7 @@ namespace PMCSsE_Backend
             if (!StaticAPPConfigClass.Registered)
             {
                 StaticTools.HandleLog("未执行配置流程，请在运行命令后添加“first”参数并在可交互终端环境下运行");
-                Thread.Sleep(3000);
+                Thread.Sleep(10000);
                 return 1;
             }
             CancellationTokenSource ExitTokenSource = new();
@@ -396,7 +414,7 @@ namespace PMCSsE_Backend
             MCServerManagers_ManagerClass.Initialize();
             try
             {
-                ExitTokenSource.Token.WaitHandle.WaitOne();
+                await Task.Delay(Timeout.Infinite, ExitTokenSource.Token);
             }
             catch (Exception ex)
             {

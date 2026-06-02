@@ -45,7 +45,7 @@ namespace PMCSsE_Backend.Modules
         /// <summary>
         /// 服务端进程
         /// </summary>
-        private readonly System.Diagnostics.Process MCServerProcess;
+        private readonly Process MCServerProcess;
         /// <summary>
         /// 当前管理器的配置
         /// </summary>
@@ -295,6 +295,9 @@ namespace PMCSsE_Backend.Modules
         private readonly Dictionary<ulong, string> _logs = [];
         private readonly LinkedList<ulong> _order = new();
         private ulong _nextId = 0;
+        /// <summary>
+        /// 最大持有量
+        /// </summary>
         private readonly int _capacity;
         private readonly Lock _lock = new();
 
@@ -308,13 +311,13 @@ namespace PMCSsE_Backend.Modules
         {
             using (_lock.EnterScope())
             {
-                ulong id = ++_nextId;
-                _logs[id] = log;
-                _order.AddLast(id);
+                ulong id = ++_nextId;//先+1再赋值
+                _logs[id] = log;//添加日志
+                _order.AddLast(id);//追加编号到有链表末尾
 
-                while (_order.Count > _capacity)
+                while (_order.Count > _capacity)//
                 {
-                    ulong oldest = _order.First!.Value;
+                    ulong oldest = _order.First!.Value;//获取最旧日志的编号
                     _order.RemoveFirst();
                     _logs.Remove(oldest);
                 }
@@ -322,7 +325,7 @@ namespace PMCSsE_Backend.Modules
             }
         }
 
-        /// <summary>获取从某个编号之后（不含）的最多 count 条日志，按时间升序返回。</summary>
+        /// <summary>（获取新日志）获取从某个编号之后（不含）的最多 count 条日志，按时间升序返回。</summary>
         /// <param name="after">起始编号，为 null 表示从最早可用日志开始</param>
         /// <param name="count">最大返回条数</param>
         /// <param name="resetHint">若因游标失效而强制返回最新日志，则设为 true</param>
@@ -360,7 +363,7 @@ namespace PMCSsE_Backend.Modules
                 while (node != null && result.Count < count)
                 {
                     ulong id = node.Value;
-                    result.Add(new LogEntry { Id = id, Text = _logs[id] });
+                    result.Add(new LogEntry { ID = id, Log = _logs[id] });
                     node = node.Next;
                 }
                 return result;
@@ -378,10 +381,10 @@ namespace PMCSsE_Backend.Modules
                 var stack = new Stack<LogEntry>(count); // 用于反转顺序，保证时间升序
                 for (int i = 0; i < count && node != null; i++)
                 {
-                    stack.Push(new LogEntry { Id = node.Value, Text = _logs[node.Value] });
-                    node = node.Previous;
+                    stack.Push(new LogEntry { ID = node.Value, Log = _logs[node.Value] });
+                    node = node.Previous;//向前遍历
                 }
-                while (stack.Count > 0) result.Add(stack.Pop());
+                while (stack.Count > 0) result.Add(stack.Pop());//最旧的先出栈
                 return result;
             }
         }
@@ -394,15 +397,9 @@ namespace PMCSsE_Backend.Modules
         internal LinkedListNode<ulong>? FindFirstAfter(ulong id)
         {
             var node = _order.First;
-            while (node != null && node.Value <= id)
+            while (node != null && node.Value <= id)//向后遍历找到id+1的节点
                 node = node.Next;
             return node;
         }
-    }
-
-    internal class LogEntry
-    {
-        public ulong Id { get; set; }
-        public string Text { get; set; } = "";
     }
 }

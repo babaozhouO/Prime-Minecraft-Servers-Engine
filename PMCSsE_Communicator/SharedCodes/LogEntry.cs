@@ -11,14 +11,25 @@ you may not use this file except in compliance with the License.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.*/
+using ProtoBuf;
 
-namespace PMCSsE_Backend.Modules
+namespace PMCSsE_Communicator.SharedCodes
 {
-    internal interface IReportLog
+    ///<summary>
+    /// 用以传输日志的包装类
+    ///</summary>
+    [ProtoContract]
+    public class LogEntry
     {
         /// <summary>
-        /// 上报日志事件(类别，发送者，内容)
+        /// 编号
         /// </summary>
-        internal event Action<string, string, string> ReportLog;
+        [ProtoMember(1)]
+        public ulong ID { get; set; }
+        /// <summary>
+        /// 日志文本
+        /// </summary>
+        [ProtoMember(2)]
+        public string Log { get; set; } = "";
     }
 }

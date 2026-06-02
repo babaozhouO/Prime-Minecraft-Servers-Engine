@@ -53,6 +53,18 @@
         /// 杀死服务端
         /// </summary>
         KillMCServer,
+        /// <summary>
+        /// 获取最新日志
+        /// </summary>
+        GetLatestLogs,
+        /// <summary>
+        /// 获取更新的日志
+        /// </summary>
+        GetNewerLogs,
+        /// <summary>
+        /// 获取更旧的日志
+        /// </summary>
+        GetOlderLogs,
     }
     internal enum RequestTypeEnum_Private
     {
@@ -68,6 +80,9 @@
         SendCommand,
         ShutdownMCServer,
         KillMCServer,
+        GetLatestLogs,
+        GetNewerLogs,
+        GetOlderLogs,
         //---------------------------
         ConnectionAlive,
         NeedRSAPublicKey,

@@ -375,7 +375,7 @@
                 <Panel DataContext="{Binding #root.DataContext}">
                     <Grid IsVisible="{Binding ConsolePanelVisibility}" Background="#FFFFF0" RowDefinitions="2,*,2,30,2" ColumnDefinitions="2,*,2,30,2,30,2,30,2,30,2">
                         <!-- 控制台-->
-                        <avaloniaedit:TextEditor Grid.Row="1" Grid.Column="1" Background="#FFFFF0" BorderThickness="2" Margin="0" BorderBrush="LightGray" Grid.ColumnSpan="9" ShowLineNumbers="True" IsReadOnly="True">
+                        <avaloniaedit:TextEditor Document="{Binding ServerLogsDocument}" Grid.Row="1" Grid.Column="1" Background="#FFFFF0" BorderThickness="2" Margin="0" BorderBrush="LightGray" Grid.ColumnSpan="9" ShowLineNumbers="True" IsReadOnly="True">
 
                         </avaloniaedit:TextEditor>
                         <AutoCompleteBox ItemsSource="{Binding CommandsSupport_IS}" Text="{Binding Command}" Grid.Row="3" Grid.Column="1" PlaceholderText="键入命令（无需/）"/>

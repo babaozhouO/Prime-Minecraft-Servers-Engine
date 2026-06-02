@@ -51,7 +51,7 @@
     <None Update="start_background_unix.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
-    <None Update="start_backgroung_win.bat">
+    <None Update="start_background_win.bat">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="start_foreground_unix.sh">

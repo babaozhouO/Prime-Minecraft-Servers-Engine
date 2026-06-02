@@ -1,11 +1,9 @@
 using Avalonia;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
-using PMCSsE_Frontend_AvaloniaUI.Controls;
 
 namespace PMCSsE_Frontend_AvaloniaUI.Controls;
 
-public partial class MCServerManager_LBItem : ListBoxItem
+public partial class MCServerManager_LBItem : UserControl
 {
     public MCServerManager_LBItem()
     {

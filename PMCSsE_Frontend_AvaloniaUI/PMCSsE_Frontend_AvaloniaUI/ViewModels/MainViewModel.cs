@@ -2,14 +2,13 @@
 using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
+using AvaloniaEdit.Document;
 using PMCSsE_Communicator;
 using PMCSsE_Communicator.DataPacks;
 using PMCSsE_Communicator.DataPacks.Pack_nothing;
 using PMCSsE_Communicator.DataPacks.Pack_StringOnly;
-using PMCSsE_Frontend_AvaloniaUI.Controls;
 using PMCSsE_Frontend_AvaloniaUI.Models;
 using PMCSsE_Frontend_AvaloniaUI.Modules;
-using PMCSsE_Frontend_AvaloniaUI.Views;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 using System;
@@ -469,16 +468,12 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         private void HandlePack_MCServerManagers(Pack_MCServerManagers pack)
         {
             LoadedMCServerManagers_IS.Clear();
-            pack.MCServerManagersData.MCServerManagerDataList?.ForEach((item) =>//效率低，以后再改
+            pack.MCServerManagersData.MCServerManagerDataList?.ForEach((md) =>
                 {
-                    foreach (var item1 in AllMCServerManagers_IS)
-                    {
-                        if (item.ManagerID == item1.ManagerID)
-                        {
-                            LoadedMCServerManagers_IS.Add(new MCServerManager_LBItemModel(item1.Config, item));
-                            return;
-                        }
-                    }
+                    var mc = AllMCServerManagers_IS.FirstOrDefault(mc => mc.ManagerID == md.ManagerID);
+                    if (mc == null) return;
+                    LoadedMCServerManagers_IS.Add(new MCServerManager_LBItemModel(mc.Config, md));
+                    return;
                 });
 
             Dispatcher.UIThread.Post((state) =>
@@ -500,9 +495,9 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         private void HandlePack_CreatedNewMCServerManager(Pack_CreatedNewMCServerManager pack)
         {
+            AllMCServerManagers_IS.Add(new MCServerManagerConfig_LBItemModel(pack.MCServerManagerConfig));//此集合无Sort()
             Dispatcher.UIThread.Post((state) =>
             {
-                AllMCServerManagers_IS.Add(new MCServerManagerConfig_LBItemModel(pack.MCServerManagerConfig));
                 SendMessage("新建服务端管理器成功", 3);
             }, null);
         }
@@ -558,6 +553,14 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         private void HandlePack_ModifiedMCServerManagerConfig(Pack_ModifiedMCServerManagerConfig pack)
         {
             var mc = LoadedMCServerManagers_IS.FirstOrDefault(mc => mc.ManagerID == pack.MCServerManagerConfig.ManagerID);
+            if (mc == null)
+            {
+                Dispatcher.UIThread.Post((state) =>
+                {
+                    SendMessage($"修改服务端管理器[{pack.MCServerManagerConfig.ManagerID}]的配置成功但同步失败", 2);
+                }, null);
+                return;
+            }
             mc.Config.MCServerName = pack.MCServerManagerConfig.MCServerName;
             mc.Config.MCServerType = pack.MCServerManagerConfig.MCServerType;
             mc.Config.MCServerDirectory = pack.MCServerManagerConfig.MCServerDirectory;
@@ -576,10 +579,13 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             Dispatcher.UIThread.Post((state) =>
             {
                 SendMessage($"启动服务端[{pack.ManagerID}]成功", 3);
-                _canRunMCServer.OnNext(false);
-                _canSendCommand.OnNext(true);
-                _canStopMCServer.OnNext(true);
-                _canKillMCServer.OnNext(true);
+                if (UsingManager?.ManagerID == pack.ManagerID)
+                {
+                    _canRunMCServer.OnNext(false);
+                    _canSendCommand.OnNext(true);
+                    _canStopMCServer.OnNext(true);
+                    _canKillMCServer.OnNext(true);
+                }
             }, null);
         }
         private void HandlePack_RunMCServerFailed(Pack_RunMCServerFailed pack)
@@ -608,10 +614,13 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             Dispatcher.UIThread.Post((state) =>
             {
                 SendMessage($"停止服务端[{pack.ManagerID}]成功", 3);
-                _canRunMCServer.OnNext(true);
-                _canSendCommand.OnNext(false);
-                _canStopMCServer.OnNext(false);
-                _canKillMCServer.OnNext(false);
+                if (UsingManager?.ManagerID == pack.ManagerID)
+                {
+                    _canRunMCServer.OnNext(true);
+                    _canSendCommand.OnNext(false);
+                    _canStopMCServer.OnNext(false);
+                    _canKillMCServer.OnNext(false);
+                }
             }, null);
         }
         private void HandlePack_ShutdownMCServerFailed(Pack_ShutdownMCServerFailed pack)
@@ -626,10 +635,13 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             Dispatcher.UIThread.Post((state) =>
             {
                 SendMessage($"强制终止服务端[{pack.ManagerID}]成功", 3);
-                _canRunMCServer.OnNext(true);
-                _canSendCommand.OnNext(false);
-                _canStopMCServer.OnNext(false);
-                _canKillMCServer.OnNext(false);
+                if (UsingManager?.ManagerID == pack.ManagerID)
+                {
+                    _canRunMCServer.OnNext(true);
+                    _canSendCommand.OnNext(false);
+                    _canStopMCServer.OnNext(false);
+                    _canKillMCServer.OnNext(false);
+                }
             }, null);
         }
         private void HandlePack_KillMCServerFailed(Pack_KillMCServerFailed pack)
@@ -943,6 +955,12 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         private string? _startArgument_Edit = string.Empty;
 
         private MCServerManager_LBItemModel? UsingManager;
+        public TextDocument ServerLogsDocument
+        {
+            get => _serverLogsDocument;
+            set => this.RaiseAndSetIfChanged(ref _serverLogsDocument, value);
+        }
+        private TextDocument _serverLogsDocument = new();
         public string? Command
         {
             get => _command;
@@ -957,7 +975,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             get => _commandsSupport_IS;
             set => this.RaiseAndSetIfChanged(ref _commandsSupport_IS, value);
         }
-        private ObservableCollection<string> _commandsSupport_IS = [];
+        private ObservableCollection<string> _commandsSupport_IS = ["stop","list","save-on","save-off","save-all"];
 
         public ObservableCollection<string> SupportedMCServerTypes_IS//item source
         {
@@ -972,6 +990,12 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             {
                 UsingManager = m;
                 MCServerName = UsingManager.ServerName;
+                ServerLogsDocument = new();
+                _canRunMCServer.OnNext(!UsingManager.State.IsMCServerRunning);
+                _canSendCommand.OnNext(UsingManager.State.IsMCServerRunning);
+                _canStopMCServer.OnNext(UsingManager.State.IsMCServerRunning);
+                _canKillMCServer.OnNext(UsingManager.State.IsMCServerRunning);
+                nativeClient?.RequestBackend(RequestTypeEnum.get)
                 LoadCommandsSupport();
                 MCServerManagerPanelVisibility = true;
 

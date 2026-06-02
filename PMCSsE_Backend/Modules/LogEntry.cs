@@ -11,19 +11,11 @@ you may not use this file except in compliance with the License.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.*/
-
-using System.Security.Cryptography;
-
 namespace PMCSsE_Backend.Modules
 {
-    internal static class LoginKeyGeneratorClass
+    public class LogEntry
     {
-        public static string GenerateSecureKey(int length = 16)
-        {
-            using var rng = RandomNumberGenerator.Create();
-            byte[] tokenData = new byte[length];
-            rng.GetBytes(tokenData);
-            return Convert.ToBase64String(tokenData);
-        }
+        public ulong ID { get; set; }
+        public string Log { get; set; } = "";
     }
 }

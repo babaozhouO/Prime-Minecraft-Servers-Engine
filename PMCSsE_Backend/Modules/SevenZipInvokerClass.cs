@@ -14,7 +14,7 @@ you may not use this file except in compliance with the License.
 
 namespace PMCSsE_Backend.Modules
 {
-    internal class SevenZipInvokerClass : IDisposable, IReportLog
+    internal class SevenZipInvokerClass : IDisposable
     {
 
         private readonly System.Diagnostics.Process _7ZipProcess = new() { EnableRaisingEvents = true };

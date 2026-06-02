@@ -9,7 +9,13 @@
         /// 所有MC服务端管理器的配置信息
         /// </summary>
         MCServerManagerConfigs,
+        /// <summary>
+        /// 所有已加载的MC服务端管理器
+        /// </summary>
         LoadedMCServerManagers,
+        /// <summary>
+        /// 支持的服务端类型
+        /// </summary>
         SupportedMCServerTypes,
         /// <summary>
         /// 已创建新MC服务端管理器
@@ -19,21 +25,69 @@
         /// 创建新MC服务端管理器失败
         /// </summary>
         CreatNewMCServerManagerFailed,
+        /// <summary>
+        /// 加载服务端管理器成功
+        /// </summary>
         LoadedMCServerManager,
+        /// <summary>
+        /// 加载服务端管理器失败
+        /// </summary>
         LoadMCServerManagerFailed,
+        /// <summary>
+        /// 停止服务端管理器成功
+        /// </summary>
         StoppedMCServerManager,
+        /// <summary>
+        /// 停止服务端管理器失败
+        /// </summary>
         StopMCServerManagerFailed,
+        /// <summary>
+        /// 删除服务端管理器成功
+        /// </summary>
         DeletedMCServerManager,
+        /// <summary>
+        /// 删除服务端管理器失败
+        /// </summary>
         DeleteMCServerManagerFailed, 
+        /// <summary>
+        /// 修改服务端管理器配置成功
+        /// </summary>
         ModifiedMCServerManagerConfig,
+        /// <summary>
+        /// 启动服务端成功
+        /// </summary>
         RunMCServerSucceed,
+        /// <summary>
+        /// 启动服务端失败
+        /// </summary>
         RunMCServerFailed,
+        /// <summary>
+        /// 向服务端发送命令成功
+        /// </summary>
         SendCommandSucceed,
+        /// <summary>
+        /// 向服务端发送命令失败
+        /// </summary>
         SendCommandFailed,
+        /// <summary>
+        /// 关闭服务端成功
+        /// </summary>
         ShutdownMCServerSucceed,
+        /// <summary>
+        /// 关闭服务端失败
+        /// </summary>
         ShutdownMCServerFailed,
+        /// <summary>
+        /// 杀死服务端成功
+        /// </summary>
         KillMCServerSucceed,
+        /// <summary>
+        /// 杀死服务端失败
+        /// </summary>
         KillMCServerFailed,
+        /// <summary>
+        /// 错误信息
+        /// </summary>
         ErrorInfo
 
     }
