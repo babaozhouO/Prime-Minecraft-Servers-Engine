@@ -12,6 +12,7 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 using PMCSsE_Communicator;
+using PMCSsE_Communicator.SharedCodes;
 using System.Diagnostics;
 using System.Text;
 
@@ -94,7 +95,7 @@ namespace PMCSsE_Backend.Modules
 
 
             ReportManagerLog(MCServerManagerConfig.ManagerID, "已初始化管理器");
-
+            ServerLogs.Add("管理器已初始化");
         }
 
         #region 服务端相关
@@ -311,7 +312,7 @@ namespace PMCSsE_Backend.Modules
         {
             using (_lock.EnterScope())
             {
-                ulong id = ++_nextId;//先+1再赋值
+                ulong id = _nextId++;//先赋值再+1
                 _logs[id] = log;//添加日志
                 _order.AddLast(id);//追加编号到有链表末尾
 
@@ -363,7 +364,7 @@ namespace PMCSsE_Backend.Modules
                 while (node != null && result.Count < count)
                 {
                     ulong id = node.Value;
-                    result.Add(new LogEntry { ID = id, Log = _logs[id] });
+                    result.Add(new LogEntry(id, _logs[id]));
                     node = node.Next;
                 }
                 return result;
@@ -381,7 +382,7 @@ namespace PMCSsE_Backend.Modules
                 var stack = new Stack<LogEntry>(count); // 用于反转顺序，保证时间升序
                 for (int i = 0; i < count && node != null; i++)
                 {
-                    stack.Push(new LogEntry { ID = node.Value, Log = _logs[node.Value] });
+                    stack.Push(new LogEntry(node.Value, _logs[node.Value]));
                     node = node.Previous;//向前遍历
                 }
                 while (stack.Count > 0) result.Add(stack.Pop());//最旧的先出栈
@@ -399,6 +400,67 @@ namespace PMCSsE_Backend.Modules
             var node = _order.First;
             while (node != null && node.Value <= id)//向后遍历找到id+1的节点
                 node = node.Next;
+            return node;
+        }
+
+        /// <summary>
+        /// （获取旧日志）获取某个编号之前（不含）的最多 count 条日志，按时间升序返回。
+        /// <para>参数 before 为起始编号（不含），为 null 表示返回最新的 count 条日志。</para>
+        /// <para>当传入的 before 超出当前日志范围（例如大于等于当前最大编号或小于最小可用编号）时，
+        /// 会将 resetHint 置为 true 并返回最新的 count 条日志，以提示调用方游标已失效需要重置。</para>
+        /// </summary>
+        internal List<LogEntry> GetBefore(ulong? before, int count, out bool resetHint)
+        {
+            using (_lock.EnterScope())
+            {
+                resetHint = false;
+                // null 表示请求最新的几条日志
+                if (before == null)
+                {
+                    return GetLatest(count);
+                }
+
+                // 若请求的 before 超过当前最大编号，说明游标失效，返回最新日志并提示重置
+                if (before.Value > _nextId)
+                {
+                    resetHint = true;
+                    return GetLatest(count);
+                }
+
+                // 找到第一个小于 before 的节点（即最后一个在 before 之前的节点）
+                var node = FindLastBefore(before.Value);
+
+                // 如果没有找到，可能是因为请求的 before 在可用日志之前
+                if (node == null)
+                {
+                    if (_order.Count > 0 && before.Value <= _order.First!.Value)
+                    {
+                        resetHint = true;
+                        return GetLatest(count);
+                    }
+                    return [];
+                }
+
+                // 从该节点向前收集最多 count 条（向前即时间更早），用栈反转以保持时间升序
+                var stack = new Stack<LogEntry>(count);
+                var cur = node;
+                for (int i = 0; i < count && cur != null; i++)
+                {
+                    stack.Push(new LogEntry(cur.Value, _logs[cur.Value]));
+                    cur = cur.Previous;
+                }
+
+                var result = new List<LogEntry>(stack.Count);
+                while (stack.Count > 0) result.Add(stack.Pop());
+                return result;
+            }
+        }
+
+        internal LinkedListNode<ulong>? FindLastBefore(ulong id)
+        {
+            var node = _order.Last;
+            while (node != null && node.Value >= id) // 向前遍历找到第一个小于 id 的节点
+                node = node.Previous;
             return node;
         }
     }

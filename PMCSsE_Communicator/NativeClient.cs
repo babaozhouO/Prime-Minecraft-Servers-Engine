@@ -907,6 +907,9 @@ namespace PMCSsE_Communicator
                                 case RespondTypeEnum_Private.KillMCServerFailed:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_KillMCServerFailed>(payload));
                                     return;
+                                case RespondTypeEnum_Private.MCServerLogs:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerLogs>(payload));
+                                    return;
                                 case RespondTypeEnum_Private.ErrorInfo:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_ErrorInfo>(payload));
                                     return;

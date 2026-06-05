@@ -3,6 +3,7 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using AvaloniaEdit.Document;
+using AvaloniaEdit.Utils;
 using PMCSsE_Communicator;
 using PMCSsE_Communicator.DataPacks;
 using PMCSsE_Communicator.DataPacks.Pack_nothing;
@@ -12,10 +13,14 @@ using PMCSsE_Frontend_AvaloniaUI.Modules;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
+using System.Reflection.Metadata;
+using System.Text;
 
 namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 {
@@ -313,6 +318,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             nativeClient.DataPackBus.Subscribe<Pack_KillMCServerSucceed>(HandlePack_KillMCServerSucceed);
             nativeClient.DataPackBus.Subscribe<Pack_KillMCServerFailed>(HandlePack_KillMCServerFailed);
 
+            nativeClient.DataPackBus.Subscribe<Pack_MCServerLogs>(HandlePack_MCServerLogs);
+
             nativeClient.DataPackBus.Subscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
             nativeClient.Connect();
             ConnectPageIndex = 2;
@@ -581,6 +588,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage($"启动服务端[{pack.ManagerID}]成功", 3);
                 if (UsingManager?.ManagerID == pack.ManagerID)
                 {
+                    UsingManager.State.IsMCServerRunning = true;
                     _canRunMCServer.OnNext(false);
                     _canSendCommand.OnNext(true);
                     _canStopMCServer.OnNext(true);
@@ -616,6 +624,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage($"停止服务端[{pack.ManagerID}]成功", 3);
                 if (UsingManager?.ManagerID == pack.ManagerID)
                 {
+                    UsingManager.State.IsMCServerRunning = false;
                     _canRunMCServer.OnNext(true);
                     _canSendCommand.OnNext(false);
                     _canStopMCServer.OnNext(false);
@@ -637,6 +646,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage($"强制终止服务端[{pack.ManagerID}]成功", 3);
                 if (UsingManager?.ManagerID == pack.ManagerID)
                 {
+                    UsingManager.State.IsMCServerRunning = false;
                     _canRunMCServer.OnNext(true);
                     _canSendCommand.OnNext(false);
                     _canStopMCServer.OnNext(false);
@@ -649,6 +659,72 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             Dispatcher.UIThread.Post((state) =>
             {
                 SendMessage($"强制终止服务端[{pack.ManagerID}]失败", 2);
+            }, null);
+        }
+        private ulong OldestLogID = 0;
+        private ulong LatestLogID = 0;
+        private void HandlePack_MCServerLogs(Pack_MCServerLogs pack)
+        {
+            if (UsingManager == null)
+            {
+                return;
+            }
+            if (pack.ManagerID != UsingManager.ManagerID)
+            {
+                return;
+            }
+            if (pack.ResetHint)
+            {
+                Dispatcher.UIThread.Post((state) =>
+                {
+                    ServerLogsDocument = new()
+                    {
+                        FileName = "source.log"
+                    };
+                    OldestLogID = 0;
+                    LatestLogID = 0;
+                }, null);
+            }
+            if (pack.Logs == null)
+            {
+                GetNewerLogsTimer.Start();
+                return;
+            }
+            if (pack.Logs.Count == 0)
+            {
+                GetNewerLogsTimer.Start();
+                return;
+            }
+            if (pack.Logs[^1].ID > LatestLogID)
+            {
+                LatestLogID = pack.Logs[^1].ID;
+            }
+            if (pack.Logs[0].ID < OldestLogID)
+            {
+                OldestLogID = pack.Logs[0].ID;
+            }
+            StringBuilder sb = new();
+            foreach (var log in pack.Logs)
+            {
+                sb.AppendLine(log.Log);
+            }
+            string logs = sb.ToString();
+            Dispatcher.UIThread.Post((state) =>
+            {
+                ServerLogsDocument.BeginUpdate();
+
+                ServerLogsDocument.Insert(ServerLogsDocument.TextLength, logs);
+
+                if (ServerLogsDocument.LineCount > 30000)
+                {
+                    int linesToRemove = ServerLogsDocument.LineCount - 30000;
+                    var firstLineToKeep = ServerLogsDocument.GetLineByNumber(linesToRemove + 1);
+                    int removeEndOffset = firstLineToKeep.Offset;
+                    ServerLogsDocument.Remove(0, removeEndOffset);
+                }
+
+                ServerLogsDocument.EndUpdate();
+                GetNewerLogsTimer.Start();
             }, null);
         }
         private void HandlePack_ErrorInfo(Pack_ErrorInfo pack)
@@ -880,7 +956,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             get => _mCServerManagerPanelVisibility;
             set => this.RaiseAndSetIfChanged(ref _mCServerManagerPanelVisibility, value);
         }
-        private bool _mCServerManagerPanelVisibility = false;
+        private bool _mCServerManagerPanelVisibility = true;
         public bool ConsolePanelVisibility
         {
             get => _consolePanelVisibility;
@@ -961,6 +1037,13 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _serverLogsDocument, value);
         }
         private TextDocument _serverLogsDocument = new();
+        public double ServerLogsAskInterval
+        {
+            get => _serverLogsAskInterval;
+            set => this.RaiseAndSetIfChanged(ref _serverLogsAskInterval, value);
+        }
+        private double _serverLogsAskInterval = 1000d;
+        public IList<DocumentLine> ServerLogsDocumentLines => ServerLogsDocument.Lines;
         public string? Command
         {
             get => _command;
@@ -975,7 +1058,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             get => _commandsSupport_IS;
             set => this.RaiseAndSetIfChanged(ref _commandsSupport_IS, value);
         }
-        private ObservableCollection<string> _commandsSupport_IS = ["stop","list","save-on","save-off","save-all"];
+        private ObservableCollection<string> _commandsSupport_IS = ["stop", "list", "save-on", "save-off", "save-all"];
 
         public ObservableCollection<string> SupportedMCServerTypes_IS//item source
         {
@@ -983,23 +1066,40 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _supportedMCServerTypes_IS, value);
         }
         private ObservableCollection<string> _supportedMCServerTypes_IS = [];
-
+        private readonly DispatcherTimer GetNewerLogsTimer = new() { Interval = TimeSpan.FromMicroseconds(500), IsEnabled = false };
         public void OpenSelectedMCServerManagerAction()
         {
             if (SelectedMCServerManager_LBItem is MCServerManager_LBItemModel m)
             {
                 UsingManager = m;
                 MCServerName = UsingManager.ServerName;
-                ServerLogsDocument = new();
+                ServerLogsDocument = new()
+                {
+                    FileName = "source.log"
+                };
+                OldestLogID = 0;
+                LatestLogID = 0;
                 _canRunMCServer.OnNext(!UsingManager.State.IsMCServerRunning);
                 _canSendCommand.OnNext(UsingManager.State.IsMCServerRunning);
                 _canStopMCServer.OnNext(UsingManager.State.IsMCServerRunning);
                 _canKillMCServer.OnNext(UsingManager.State.IsMCServerRunning);
-                nativeClient?.RequestBackend(RequestTypeEnum.get)
+                nativeClient?.RequestBackend(RequestTypeEnum.GetLatestLogs, new Pack_GetLatestMCServerLogs(UsingManager.ManagerID, 200));
+                GetNewerLogsTimer.Tick += HandleGetNewerLogsTick;
                 LoadCommandsSupport();
                 MCServerManagerPanelVisibility = true;
 
             }
+        }
+        private void HandleGetNewerLogsTick(object? sender, EventArgs e)
+        {
+            GetNewerLogsTimer.Stop();
+            GetNewerLogsTimer.Interval = TimeSpan.FromMilliseconds(ServerLogsAskInterval);
+            if (UsingManager == null)//exit
+            {
+                GetNewerLogsTimer.Tick -= HandleGetNewerLogsTick;
+                return;
+            }
+            nativeClient?.RequestBackend(RequestTypeEnum.GetNewerLogs, new Pack_GetNewerMCServerLogs(UsingManager.ManagerID, LatestLogID, 200));
         }
         public void ChangePageAction(string pageName)
         {

@@ -871,6 +871,15 @@ namespace PMCSsE_Communicator
                             case RequestTypeEnum_Private.KillMCServer:
                                 DataPackBus.Publish(Serializer.Deserialize<Pack_KillMCServer>(dataPack.AsMemory(2)));
                                 break;
+                            case RequestTypeEnum_Private.GetLatestLogs:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetLatestMCServerLogs>(dataPack.AsMemory(2)));
+                                break;
+                            case RequestTypeEnum_Private.GetNewerLogs:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetNewerMCServerLogs>(dataPack.AsMemory(2)));
+                                break;
+                            case RequestTypeEnum_Private.GetOlderLogs:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetOlderMCServerLogs>(dataPack.AsMemory(2)));
+                                break;
                             case RequestTypeEnum_Private.ConnectionAlive:
                                 break;
                             case RequestTypeEnum_Private.Close:

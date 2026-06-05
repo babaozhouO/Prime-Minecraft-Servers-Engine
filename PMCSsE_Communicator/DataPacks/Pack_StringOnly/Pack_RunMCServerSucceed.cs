@@ -6,6 +6,10 @@ using System.Text;
 
 namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
 {
+    /// <summary>
+    /// 数据包：通知运行 MCServer 成功的响应。
+    /// 继承自 Pack_ManagerOperation，包含 ManagerID 标识目标。
+    /// </summary>
     [ProtoContract(SkipConstructor =true)]
     public class Pack_RunMCServerSucceed : Pack_ManagerOperation
     {

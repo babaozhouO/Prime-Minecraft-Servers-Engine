@@ -317,6 +317,8 @@
         <!--叠加层-->
         <Panel Background="#FDFDFD" Classes="MCServerManager" IsVisible="{Binding MCServerManagerPanelVisibility}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <TextBlock Text="{Binding MCServerName}" HorizontalAlignment="Left" FontSize="16"/>
+            <TextBlock Text="日志轮询间隔" HorizontalAlignment="Right" Margin="0,0,230,0" FontSize="16"/>
+            <Slider Value="{Binding ServerLogsAskInterval}" Minimum="250" Maximum="10000" Margin="0,-13,26,0" Height="35" Width="200" HorizontalAlignment="Right" VerticalAlignment="Top"/>
             <Line StartPoint="0,0" EndPoint="1,0" Margin="0,25,0,0" Stroke="LightGray" Stretch="Fill" StrokeThickness="2"/>
             <DrawerPage DataContext="{Binding #root.DataContext}" Background="#FFFFF0" CompactDrawerLength="26" DrawerPlacement="Right" DrawerLength="160" DrawerLayoutBehavior="CompactOverlay" Margin="0,27,0,0">
                 <DrawerPage.Drawer>
@@ -375,7 +377,11 @@
                 <Panel DataContext="{Binding #root.DataContext}">
                     <Grid IsVisible="{Binding ConsolePanelVisibility}" Background="#FFFFF0" RowDefinitions="2,*,2,30,2" ColumnDefinitions="2,*,2,30,2,30,2,30,2,30,2">
                         <!-- 控制台-->
-                        <avaloniaedit:TextEditor Document="{Binding ServerLogsDocument}" Grid.Row="1" Grid.Column="1" Background="#FFFFF0" BorderThickness="2" Margin="0" BorderBrush="LightGray" Grid.ColumnSpan="9" ShowLineNumbers="True" IsReadOnly="True">
+                        <avaloniaedit:TextEditor Name="ServerLogsShower" Document="{Binding ServerLogsDocument}"
+                                                 HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible"
+                                                 Grid.Row="1" Grid.Column="1" Background="#FFFFF0" BorderThickness="2"
+                                                 BorderBrush="LightGray" Grid.ColumnSpan="9" ShowLineNumbers="True"
+                                                 IsReadOnly="False">
 
                         </avaloniaedit:TextEditor>
                         <AutoCompleteBox ItemsSource="{Binding CommandsSupport_IS}" Text="{Binding Command}" Grid.Row="3" Grid.Column="1" PlaceholderText="键入命令（无需/）"/>
@@ -415,13 +421,9 @@
                                 </Style>
                             </StackPanel.Styles>
                         </StackPanel>
-
                     </ScrollViewer>
-
                 </Panel>
-
             </DrawerPage>
-
         </Panel>
         <ListBox ItemsSource="{Binding Messages_IS}" MaxHeight="260" Background="Transparent" VerticalAlignment="Bottom" HorizontalAlignment="Left"><!--消息列表-->
         <ListBox.ItemTemplate>

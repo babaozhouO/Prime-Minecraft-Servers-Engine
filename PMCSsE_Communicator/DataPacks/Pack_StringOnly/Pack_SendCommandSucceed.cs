@@ -6,6 +6,10 @@ using System.Text;
 
 namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
 {
+    /// <summary>
+    /// 数据包：通知发送命令成功的响应。
+    /// 继承自 Pack_ManagerOperation，包含 ManagerID。
+    /// </summary>
     [ProtoContract(SkipConstructor =true)]
     public class Pack_SendCommandSucceed : Pack_ManagerOperation
     {

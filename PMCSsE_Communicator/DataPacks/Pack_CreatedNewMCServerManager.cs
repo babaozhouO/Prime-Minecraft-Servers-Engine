@@ -5,14 +5,14 @@ using System.Text;
 
 namespace PMCSsE_Communicator.DataPacks
 {
+    /// <summary>
+    /// 数据包：通知新建的 MCServer 管理器及其配置。
+    /// 用于在创建管理器成功后将 MCServerManagerConfig 发送给接收端。
+    /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_CreatedNewMCServerManager
+    public class Pack_CreatedNewMCServerManager(MCServerManagerConfig mCServerManagerConfig)
     {
-        public Pack_CreatedNewMCServerManager(MCServerManagerConfig mCServerManagerConfig)
-        {
-            MCServerManagerConfig = mCServerManagerConfig;
-        }
         [ProtoMember(1)]
-        public MCServerManagerConfig MCServerManagerConfig;
+        public MCServerManagerConfig MCServerManagerConfig = mCServerManagerConfig;
     }
 }

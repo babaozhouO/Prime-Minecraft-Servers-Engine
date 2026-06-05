@@ -18,18 +18,18 @@ namespace PMCSsE_Communicator.SharedCodes
     ///<summary>
     /// 用以传输日志的包装类
     ///</summary>
-    [ProtoContract]
-    public class LogEntry
+    [ProtoContract(SkipConstructor = true)]
+    public class LogEntry(ulong id, string log)
     {
         /// <summary>
         /// 编号
         /// </summary>
         [ProtoMember(1)]
-        public ulong ID { get; set; }
+        public ulong ID = id;
         /// <summary>
         /// 日志文本
         /// </summary>
         [ProtoMember(2)]
-        public string Log { get; set; } = "";
+        public string Log = log;
     }
 }

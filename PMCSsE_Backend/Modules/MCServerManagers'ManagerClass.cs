@@ -62,6 +62,9 @@ namespace PMCSsE_Backend.Modules
             NativeServer.DataPackBus.Subscribe<Pack_ShutdownMCServer>(HandlePack_ShutdownMCServer);
             NativeServer.DataPackBus.Subscribe<Pack_KillMCServer>(HandlePack_KillMCServer);
 
+            NativeServer.DataPackBus.Subscribe<Pack_GetLatestMCServerLogs>(HandlePack_GetLatestMCServerLogs);
+            NativeServer.DataPackBus.Subscribe<Pack_GetNewerMCServerLogs>(HandlePack_GetNewerMCServerLogs);
+            NativeServer.DataPackBus.Subscribe<Pack_GetOlderMCServerLogs>(HandlePack_GetOlderMCServerLogs);
             PluginsManager.LoadAllPlugins();
             PluginsManager.SpecialMCServerFeaturesProviders.ForEach((provider) =>
             {
@@ -92,7 +95,7 @@ namespace PMCSsE_Backend.Modules
         {
             if (NativeServer == null) { return; }
             StaticTools.HandleLog($"客户端请求获取支持的服务端类型");
-            NativeServer.RespondClient(RespondTypeEnum.SupportedMCServerTypes, new Pack_SupportedMCServerTypes() { SupportedMCServerTypes = SupportedMCServerTypes });
+            NativeServer.RespondClient(RespondTypeEnum.SupportedMCServerTypes, new Pack_SupportedMCServerTypes(SupportedMCServerTypes));
 
         }
         private static void HandlePack_CreatNewMCServerManager(Pack_CreatNewMCServerManager _)
@@ -387,6 +390,42 @@ namespace PMCSsE_Backend.Modules
                 StaticTools.HandleLog($"强制终止ID为[{pack.ManagerID}]的服务端失败");
                 NativeServer?.RespondClient(RespondTypeEnum.KillMCServerFailed, new Pack_KillMCServerFailed(pack.ManagerID));
             }
+        }
+        private static void HandlePack_GetLatestMCServerLogs(Pack_GetLatestMCServerLogs pack)
+        {
+            StaticTools.HandleLog($"前端请求获取ID为[{pack.ManagerID}]的服务端的{pack.Count}条最新日志");
+            var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
+            if (m == null)
+            {
+                StaticTools.HandleLog($"未找到指定的MC服务端管理器[{pack.ManagerID}]");
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"未找到指定的MC服务端管理器[{pack.ManagerID}]"));
+                return;
+            }
+            NativeServer?.RespondClient(RespondTypeEnum.MCServerLogs, new Pack_MCServerLogs(pack.ManagerID, m.ServerLogs.GetLatest(pack.Count),true));
+        }
+        private static void HandlePack_GetNewerMCServerLogs(Pack_GetNewerMCServerLogs pack)
+        {
+            StaticTools.HandleLog($"前端请求获取ID为[{pack.ManagerID}]的服务端的第{pack.StartIndex}~{pack.StartIndex + (ulong)pack.Count}条日志");
+            var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
+            if (m == null)
+            {
+                StaticTools.HandleLog($"未找到指定的MC服务端管理器[{pack.ManagerID}]");
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"未找到指定的MC服务端管理器[{pack.ManagerID}]"));
+                return;
+            }
+            NativeServer?.RespondClient(RespondTypeEnum.MCServerLogs, new Pack_MCServerLogs(pack.ManagerID, m.ServerLogs.GetAfter(pack.StartIndex,pack.Count,out bool resetHint),resetHint));
+        }
+        private static void HandlePack_GetOlderMCServerLogs(Pack_GetOlderMCServerLogs pack)
+        {
+            StaticTools.HandleLog($"前端请求获取ID为[{pack.ManagerID}]的服务端的第{pack.EndIndex - (ulong)pack.Count}~{pack.EndIndex}条日志");
+            var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
+            if (m == null)
+            {
+                StaticTools.HandleLog($"未找到指定的MC服务端管理器[{pack.ManagerID}]");
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"未找到指定的MC服务端管理器[{pack.ManagerID}]"));
+                return;
+            }
+            NativeServer?.RespondClient(RespondTypeEnum.MCServerLogs, new Pack_MCServerLogs(pack.ManagerID, m.ServerLogs.GetBefore(pack.EndIndex,pack.Count,out bool resetHint),resetHint));
         }
         private static MCServerManagerConfig? CreatNewMCServerManager()
         {

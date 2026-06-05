@@ -86,6 +86,10 @@
         /// </summary>
         KillMCServerFailed,
         /// <summary>
+        /// 服务端日志
+        /// </summary>
+        MCServerLogs,
+        /// <summary>
         /// 错误信息
         /// </summary>
         ErrorInfo
@@ -113,8 +117,9 @@
         ShutdownMCServerFailed,
         KillMCServerSucceed,
         KillMCServerFailed,
-        //------------------------
+        MCServerLogs,
         ErrorInfo,
+        //------------------------
         ConnectionAlive,
         RSAPublicKey,
         NeedAES,
