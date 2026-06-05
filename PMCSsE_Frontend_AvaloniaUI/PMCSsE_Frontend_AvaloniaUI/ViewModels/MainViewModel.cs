@@ -848,6 +848,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             nativeClient.DataPackBus.Unsubscribe<Pack_KillMCServerSucceed>(HandlePack_KillMCServerSucceed);
             nativeClient.DataPackBus.Unsubscribe<Pack_KillMCServerFailed>(HandlePack_KillMCServerFailed);
 
+            nativeClient.DataPackBus.Unsubscribe<Pack_MCServerLogs>(HandlePack_MCServerLogs);
 
             nativeClient.DataPackBus.Unsubscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
             nativeClient.Dispose();
@@ -956,7 +957,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             get => _mCServerManagerPanelVisibility;
             set => this.RaiseAndSetIfChanged(ref _mCServerManagerPanelVisibility, value);
         }
-        private bool _mCServerManagerPanelVisibility = true;
+        private bool _mCServerManagerPanelVisibility = false;
         public bool ConsolePanelVisibility
         {
             get => _consolePanelVisibility;

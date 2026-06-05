@@ -81,9 +81,11 @@ namespace PMCSsE_Backend.PluginsSystem
                 target = Plugins.FirstOrDefault(p =>
                    string.Equals(p.PluginName, pluginName, StringComparison.OrdinalIgnoreCase));
                 if (target != null)
+                {
                     Plugins.Remove(target);
-                if (target.Plugin is ISpecialMCServerFeaturesProvider provider)
-                    SpecialMCServerFeaturesProviders.Remove(provider);
+                    if (target.Plugin is ISpecialMCServerFeaturesProvider provider)
+                        SpecialMCServerFeaturesProviders.Remove(provider);
+                }
             }
 
             if (target == null)
