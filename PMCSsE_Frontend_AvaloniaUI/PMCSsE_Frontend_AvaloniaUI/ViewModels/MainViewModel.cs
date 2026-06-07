@@ -204,6 +204,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             ChangePageCommand = ReactiveCommand.Create<string>(ChangePageAction, _canChangePage, uiScheduler);
             RunMCServerCommand = ReactiveCommand.Create(RunMCServerAction, _canRunMCServer, uiScheduler);
             SendCommandCommand = ReactiveCommand.Create(SendCommandAction, _canSendCommand, uiScheduler);
+            GetOlderLogsCommand = ReactiveCommand.Create(GetOlderLogsAction, _canGetOlderLogs, uiScheduler);
             StopMCServerCommand = ReactiveCommand.Create(StopMCServerAction, _canStopMCServer, uiScheduler);
             KillMCServerCommand = ReactiveCommand.Create(KillMCServerAction, _canKillMCServer, uiScheduler);
             EditConfigCommand = ReactiveCommand.Create(EditConfigAction, _canEditConfig, uiScheduler);
@@ -661,8 +662,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage($"强制终止服务端[{pack.ManagerID}]失败", 2);
             }, null);
         }
-        private ulong OldestLogID = 0;
-        private ulong LatestLogID = 0;
+        private ulong OldestLogID = ulong.MaxValue;
+        private ulong LatestLogID = ulong.MinValue;//0代表没有
         private void HandlePack_MCServerLogs(Pack_MCServerLogs pack)
         {
             if (UsingManager == null)
@@ -681,8 +682,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                     {
                         FileName = "source.log"
                     };
-                    OldestLogID = 0;
-                    LatestLogID = 0;
+                    OldestLogID = ulong.MaxValue;
+                    LatestLogID = ulong.MinValue;
                 }, null);
             }
             if (pack.Logs == null)
@@ -695,37 +696,65 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 GetNewerLogsTimer.Start();
                 return;
             }
-            if (pack.Logs[^1].ID > LatestLogID)
-            {
-                LatestLogID = pack.Logs[^1].ID;
-            }
-            if (pack.Logs[0].ID < OldestLogID)
-            {
-                OldestLogID = pack.Logs[0].ID;
-            }
+
             StringBuilder sb = new();
             foreach (var log in pack.Logs)
             {
                 sb.AppendLine(log.Log);
             }
             string logs = sb.ToString();
-            Dispatcher.UIThread.Post((state) =>
+
+            if (LatestLogID == ulong.MinValue)//初次
             {
-                ServerLogsDocument.BeginUpdate();
-
-                ServerLogsDocument.Insert(ServerLogsDocument.TextLength, logs);
-
-                if (ServerLogsDocument.LineCount > 30000)
+                OldestLogID = pack.Logs[0].ID;
+                LatestLogID = pack.Logs[^1].ID;
+                Dispatcher.UIThread.Post((state) =>
                 {
-                    int linesToRemove = ServerLogsDocument.LineCount - 30000;
-                    var firstLineToKeep = ServerLogsDocument.GetLineByNumber(linesToRemove + 1);
-                    int removeEndOffset = firstLineToKeep.Offset;
-                    ServerLogsDocument.Remove(0, removeEndOffset);
-                }
+                    ServerLogsDocument.BeginUpdate();
 
-                ServerLogsDocument.EndUpdate();
-                GetNewerLogsTimer.Start();
-            }, null);
+                    ServerLogsDocument.Insert(ServerLogsDocument.TextLength, logs);
+
+                    ServerLogsDocument.EndUpdate();
+                    _canGetOlderLogs.OnNext(true);
+                    GetNewerLogsTimer.Start();
+                }, null);
+                return;
+            }
+            if (pack.Logs[0].ID > LatestLogID)//包里最旧新于当前最新
+            {
+                LatestLogID = pack.Logs[^1].ID;
+                Dispatcher.UIThread.Post((state) =>
+                {
+                    ServerLogsDocument.BeginUpdate();
+
+                    ServerLogsDocument.Insert(ServerLogsDocument.TextLength, logs);
+
+                    if (ServerLogsDocument.LineCount > 30000)
+                    {
+                        int linesToRemove = ServerLogsDocument.LineCount - 30000;
+                        var firstLineToKeep = ServerLogsDocument.GetLineByNumber(linesToRemove + 1);
+                        int removeEndOffset = firstLineToKeep.Offset;
+                        ServerLogsDocument.Remove(0, removeEndOffset);
+                    }
+
+                    ServerLogsDocument.EndUpdate();
+                    GetNewerLogsTimer.Start();
+                }, null);
+                return;
+            }
+            if (pack.Logs[^1].ID < OldestLogID)//包里最新旧于当前最旧
+            {
+                OldestLogID = pack.Logs[0].ID;
+                Dispatcher.UIThread.Post((state) =>
+                {
+                    ServerLogsDocument.BeginUpdate();
+
+                    ServerLogsDocument.Insert(0, logs);
+
+                    ServerLogsDocument.EndUpdate();
+                }, null);
+                return;
+            }
         }
         private void HandlePack_ErrorInfo(Pack_ErrorInfo pack)
         {
@@ -884,7 +913,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         private void HandleNeedPasswordEvent()
         {
             if (ConnectingNativeServer == null) return;
-            if (ConnectingNativeServer.Password != string.Empty)
+            if (!string.IsNullOrEmpty(ConnectingNativeServer.Password))
             {
                 nativeClient!.TypePassword(ConnectingNativeServer.Password);
             }
@@ -947,6 +976,9 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         private readonly BehaviorSubject<bool> _canSendCommand = new(false);
         public ReactiveCommand<Unit, Unit> SendCommandCommand { get; }
 
+        private readonly BehaviorSubject<bool> _canGetOlderLogs = new(false);
+        public ReactiveCommand<Unit, Unit> GetOlderLogsCommand { get; }
+
         private readonly BehaviorSubject<bool> _canStopMCServer = new(false);
         public ReactiveCommand<Unit, Unit> StopMCServerCommand { get; }
 
@@ -957,7 +989,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             get => _mCServerManagerPanelVisibility;
             set => this.RaiseAndSetIfChanged(ref _mCServerManagerPanelVisibility, value);
         }
-        private bool _mCServerManagerPanelVisibility = false;
+        private bool _mCServerManagerPanelVisibility = false;//
         public bool ConsolePanelVisibility
         {
             get => _consolePanelVisibility;
@@ -1078,16 +1110,16 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 {
                     FileName = "source.log"
                 };
-                OldestLogID = 0;
-                LatestLogID = 0;
+                OldestLogID = ulong.MaxValue;
+                LatestLogID = ulong.MinValue;
                 _canRunMCServer.OnNext(!UsingManager.State.IsMCServerRunning);
                 _canSendCommand.OnNext(UsingManager.State.IsMCServerRunning);
                 _canStopMCServer.OnNext(UsingManager.State.IsMCServerRunning);
                 _canKillMCServer.OnNext(UsingManager.State.IsMCServerRunning);
-                nativeClient?.RequestBackend(RequestTypeEnum.GetLatestLogs, new Pack_GetLatestMCServerLogs(UsingManager.ManagerID, 200));
                 GetNewerLogsTimer.Tick += HandleGetNewerLogsTick;
                 LoadCommandsSupport();
                 MCServerManagerPanelVisibility = true;
+                nativeClient?.RequestBackend(RequestTypeEnum.GetLatestLogs, new Pack_GetLatestMCServerLogs(UsingManager.ManagerID, 200));
 
             }
         }
@@ -1195,6 +1227,27 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             nativeClient.RequestBackend(RequestTypeEnum.KillMCServer, new Pack_KillMCServer(UsingManager.ManagerID));
             SendMessage("已发送强制终止请求", 0);
         }
+        public void GetOlderLogsAction()
+        {
+            if (nativeClient == null)
+            {
+                SendMessage("未连接到后端，无法获取旧日志", 2);
+                return;
+            }
+            if (UsingManager == null)
+            {
+                SendMessage("UsingManager为null", 2);
+                return;
+            }
+            if (OldestLogID == 1)
+            {
+                SendMessage("没有更旧的日志了", 0);
+                return;
+            }
+            nativeClient.RequestBackend(RequestTypeEnum.GetOlderLogs, new Pack_GetOlderMCServerLogs(UsingManager.ManagerID, OldestLogID, 200));
+            SendMessage("已发送获取旧日志请求", 0);
+
+        }
         public void SendCommandAction()
         {
             if (nativeClient == null)
@@ -1255,6 +1308,9 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         public void ExitManagerPanelAction()
         {
+            _canGetOlderLogs.OnNext(false);
+            GetNewerLogsTimer.Stop();
+            GetNewerLogsTimer.Tick -= HandleGetNewerLogsTick;
             MCServerManagerPanelVisibility = false;
             UsingManager = null;
         }

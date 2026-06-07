@@ -318,7 +318,7 @@
         <Panel Background="#FDFDFD" Classes="MCServerManager" IsVisible="{Binding MCServerManagerPanelVisibility}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <TextBlock Text="{Binding MCServerName}" HorizontalAlignment="Left" FontSize="16"/>
             <TextBlock Text="日志轮询间隔" HorizontalAlignment="Right" Margin="0,0,230,0" FontSize="16"/>
-            <Slider Value="{Binding ServerLogsAskInterval}" Minimum="250" Maximum="10000" Margin="0,-13,26,0" Height="35" Width="200" HorizontalAlignment="Right" VerticalAlignment="Top"/>
+            <Slider Value="{Binding ServerLogsAskInterval}" Minimum="50" Maximum="10000" Margin="0,-13,26,0" Height="35" Width="200" HorizontalAlignment="Right" VerticalAlignment="Top"/>
             <Line StartPoint="0,0" EndPoint="1,0" Margin="0,25,0,0" Stroke="LightGray" Stretch="Fill" StrokeThickness="2"/>
             <DrawerPage DataContext="{Binding #root.DataContext}" Background="#FFFFF0" CompactDrawerLength="26" DrawerPlacement="Right" DrawerLength="160" DrawerLayoutBehavior="CompactOverlay" Margin="0,27,0,0">
                 <DrawerPage.Drawer>
@@ -375,20 +375,20 @@
                     <controls:MyButton Command="{Binding ExitManagerPanelCommand}" Height="45" Text="返回" Image="avares://PMCSsE_Frontend_AvaloniaUI/Icons/ExitApp.png"/>
                 </DrawerPage.DrawerFooter>
                 <Panel DataContext="{Binding #root.DataContext}">
-                    <Grid IsVisible="{Binding ConsolePanelVisibility}" Background="#FFFFF0" RowDefinitions="2,*,2,30,2" ColumnDefinitions="2,*,2,30,2,30,2,30,2,30,2">
+                    <Grid IsVisible="{Binding ConsolePanelVisibility}" Background="#FFFFF0" RowDefinitions="2,*,2,30,2" ColumnDefinitions="2,*,2,30,2,30,2,30,2,30,2,30,2">
                         <!-- 控制台-->
                         <avaloniaedit:TextEditor Name="ServerLogsShower" Document="{Binding ServerLogsDocument}"
                                                  HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible"
                                                  Grid.Row="1" Grid.Column="1" Background="#FFFFF0" BorderThickness="2"
-                                                 BorderBrush="LightGray" Grid.ColumnSpan="9" ShowLineNumbers="True"
+                                                 BorderBrush="LightGray" Grid.ColumnSpan="11" ShowLineNumbers="True"
                                                  IsReadOnly="False">
-
                         </avaloniaedit:TextEditor>
                         <AutoCompleteBox ItemsSource="{Binding CommandsSupport_IS}" Text="{Binding Command}" Grid.Row="3" Grid.Column="1" PlaceholderText="键入命令（无需/）"/>
                         <controls:ImageButton Command="{Binding SendCommandCommand}" Grid.Row="3" Grid.Column="3" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Send.png"/>
-                        <controls:ImageButton Command="{Binding RunMCServerCommand}" Grid.Row="3" Grid.Column="5" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Run.png"/>
-                        <controls:ImageButton Command="{Binding StopMCServerCommand}" Grid.Row="3" Grid.Column="7" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Shutdown.png"/>
-                        <controls:ImageButton Command="{Binding KillMCServerCommand}" Grid.Row="3" Grid.Column="9" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/KillMCServer.png"/>
+                        <controls:ImageButton Command="{Binding GetOlderLogsCommand}" Name="GetOlderLogsButton" Grid.Row="3" Grid.Column="5" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Store.png"/>
+                        <controls:ImageButton Command="{Binding RunMCServerCommand}" Grid.Row="3" Grid.Column="7" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Run.png"/>
+                        <controls:ImageButton Command="{Binding StopMCServerCommand}" Grid.Row="3" Grid.Column="9" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Shutdown.png"/>
+                        <controls:ImageButton Command="{Binding KillMCServerCommand}" Grid.Row="3" Grid.Column="11" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/KillMCServer.png"/>
                     </Grid>
                     <ScrollViewer IsVisible="{Binding SettingPanelVisibility}">
                         <StackPanel IsVisible="{Binding SettingPanelVisibility}" Background="#FFFFF0" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">

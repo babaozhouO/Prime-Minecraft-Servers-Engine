@@ -257,6 +257,12 @@ namespace PMCSsE_Backend.Modules
             {
                 case 0:
                     StaticTools.HandleLog($"服务端[{m.MCServerManagerConfig.ManagerID}]启动成功");
+                    static void HandleMCServerExited(string managerID, bool state)
+                    {
+                        if (!state)
+                            NativeServer?.RespondClient(RespondTypeEnum.ShutdownMCServerSucceed, new Pack_ShutdownMCServerSucceed(managerID));
+                    }
+                    m.MCServerRunningStateChanged += HandleMCServerExited;
                     NativeServer?.RespondClient(RespondTypeEnum.RunMCServerSucceed, new Pack_RunMCServerSucceed(pack.ManagerID));
                     return;
                 case 1:
@@ -401,11 +407,11 @@ namespace PMCSsE_Backend.Modules
                 NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"未找到指定的MC服务端管理器[{pack.ManagerID}]"));
                 return;
             }
-            NativeServer?.RespondClient(RespondTypeEnum.MCServerLogs, new Pack_MCServerLogs(pack.ManagerID, m.ServerLogs.GetLatest(pack.Count),true));
+            NativeServer?.RespondClient(RespondTypeEnum.MCServerLogs, new Pack_MCServerLogs(pack.ManagerID, m.ServerLogs.GetLatest(pack.Count), false));
         }
         private static void HandlePack_GetNewerMCServerLogs(Pack_GetNewerMCServerLogs pack)
         {
-            StaticTools.HandleLog($"前端请求获取ID为[{pack.ManagerID}]的服务端的第{pack.StartIndex}~{pack.StartIndex + (ulong)pack.Count}条日志");
+            StaticTools.HandleLog($"前端请求获取ID为[{pack.ManagerID}]的服务端的第{pack.StartIndex+1}~{pack.StartIndex+1 + (ulong)pack.Count}条日志");
             var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
             if (m == null)
             {
@@ -413,11 +419,27 @@ namespace PMCSsE_Backend.Modules
                 NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"未找到指定的MC服务端管理器[{pack.ManagerID}]"));
                 return;
             }
-            NativeServer?.RespondClient(RespondTypeEnum.MCServerLogs, new Pack_MCServerLogs(pack.ManagerID, m.ServerLogs.GetAfter(pack.StartIndex,pack.Count,out bool resetHint),resetHint));
+            NativeServer?.RespondClient(RespondTypeEnum.MCServerLogs, new Pack_MCServerLogs(pack.ManagerID, m.ServerLogs.GetAfter(pack.StartIndex, pack.Count, out bool resetHint), resetHint));
         }
         private static void HandlePack_GetOlderMCServerLogs(Pack_GetOlderMCServerLogs pack)
         {
-            StaticTools.HandleLog($"前端请求获取ID为[{pack.ManagerID}]的服务端的第{pack.EndIndex - (ulong)pack.Count}~{pack.EndIndex}条日志");
+            if (pack.Count > 2000)
+            {
+                StaticTools.HandleLog("请求数量过多");
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"请求数量过多"));
+                return;
+            }
+            if (pack.EndIndex == 1)
+            {
+                StaticTools.HandleLog("没有更旧的日志了");
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"没有更旧的日志了"));
+                return;
+            }
+            if (pack.Count > pack.EndIndex-1)
+            {
+                pack.Count = (uint)pack.EndIndex-1;
+            }
+            StaticTools.HandleLog($"前端请求获取ID为[{pack.ManagerID}]的服务端的第{pack.EndIndex-1 - pack.Count}~{pack.EndIndex-1}条日志");
             var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
             if (m == null)
             {
@@ -425,7 +447,9 @@ namespace PMCSsE_Backend.Modules
                 NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"未找到指定的MC服务端管理器[{pack.ManagerID}]"));
                 return;
             }
-            NativeServer?.RespondClient(RespondTypeEnum.MCServerLogs, new Pack_MCServerLogs(pack.ManagerID, m.ServerLogs.GetBefore(pack.EndIndex,pack.Count,out bool resetHint),resetHint));
+            NativeServer?.RespondClient(RespondTypeEnum.MCServerLogs, new Pack_MCServerLogs(pack.ManagerID, m.ServerLogs.GetBefore(pack.EndIndex, (int)pack.Count, out bool resetHint), resetHint));
+
+
         }
         private static MCServerManagerConfig? CreatNewMCServerManager()
         {

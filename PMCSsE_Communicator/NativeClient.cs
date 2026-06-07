@@ -872,7 +872,7 @@ namespace PMCSsE_Communicator
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_StoppedMCServerManager>(payload));
                                     return;
                                 case RespondTypeEnum_Private.StopMCServerManagerFailed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_StopMCServerManager>(payload));
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_StopMCServerManagerFailed>(payload));
                                     return;
                                 case RespondTypeEnum_Private.DeletedMCServerManager:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_DeletedMCServerManager>(payload));

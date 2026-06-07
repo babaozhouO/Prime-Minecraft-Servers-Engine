@@ -10,7 +10,7 @@ namespace PMCSsE_Communicator.DataPacks
     /// 客户端可使用该包向服务器请求以 endIndex-1 结束的历史日志，最多 count 条。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_GetOlderMCServerLogs(string managerID, ulong endIndex, int count)
+    public class Pack_GetOlderMCServerLogs(string managerID, ulong endIndex, uint count)
     {
         /// <summary>
         /// 管理器ID
@@ -26,6 +26,6 @@ namespace PMCSsE_Communicator.DataPacks
         /// 获取数量
         /// </summary>
         [ProtoMember(3)]
-        public int Count = count;
+        public uint Count = count;
     }
 }

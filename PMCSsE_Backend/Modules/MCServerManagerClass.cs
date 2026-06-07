@@ -295,7 +295,7 @@ namespace PMCSsE_Backend.Modules
     {
         private readonly Dictionary<ulong, string> _logs = [];
         private readonly LinkedList<ulong> _order = new();
-        private ulong _nextId = 0;
+        private ulong _nextId = 1;
         /// <summary>
         /// 最大持有量
         /// </summary>
