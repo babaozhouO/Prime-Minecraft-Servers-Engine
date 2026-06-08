@@ -381,7 +381,7 @@
                                                  HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Visible"
                                                  Grid.Row="1" Grid.Column="1" Background="#FFFFF0" BorderThickness="2"
                                                  BorderBrush="LightGray" Grid.ColumnSpan="11" ShowLineNumbers="True"
-                                                 IsReadOnly="False">
+                                                 IsReadOnly="True">
                         </avaloniaedit:TextEditor>
                         <AutoCompleteBox ItemsSource="{Binding CommandsSupport_IS}" Text="{Binding Command}" Grid.Row="3" Grid.Column="1" PlaceholderText="键入命令（无需/）"/>
                         <controls:ImageButton Command="{Binding SendCommandCommand}" Grid.Row="3" Grid.Column="3" Image_IB="avares://PMCSsE_Frontend_AvaloniaUI/Icons/Send.png"/>

@@ -44,9 +44,9 @@ public partial class MainView : UserControl
             bool isAtTop = scrollViewer.Offset.Y <= 0.1;
             if (isAtTop)
             {
-                if (GetOlderLogsButton.Command?.CanExecute(null) != true)
+                if (GetOlderLogsButton.Command == null || GetOlderLogsButton.Command.CanExecute(null) != true)
                     return;
-                GetOlderLogsButton.Command?.Execute(null);
+                GetOlderLogsButton.Command.Execute(null);
             }
         }
     }

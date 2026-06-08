@@ -257,8 +257,9 @@ namespace PMCSsE_Backend.Modules
             {
                 case 0:
                     StaticTools.HandleLog($"服务端[{m.MCServerManagerConfig.ManagerID}]启动成功");
-                    static void HandleMCServerExited(string managerID, bool state)
+                    void HandleMCServerExited(string managerID, bool state)
                     {
+                        m.MCServerRunningStateChanged -= HandleMCServerExited;
                         if (!state)
                             NativeServer?.RespondClient(RespondTypeEnum.ShutdownMCServerSucceed, new Pack_ShutdownMCServerSucceed(managerID));
                     }
