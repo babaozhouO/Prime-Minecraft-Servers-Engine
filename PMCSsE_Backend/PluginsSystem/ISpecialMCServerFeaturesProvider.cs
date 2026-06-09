@@ -14,7 +14,10 @@ namespace PMCSsE_Backend.PluginsSystem
         /// 服务端种类
         /// </summary>
         public string TargetMCServerType { get; }
-        public IReadOnlyList<IAsyncSpecialMCServerFeature> Features { get; }
+        /// <summary>
+        /// 功能列表，编译时固定，包含该服务端种类的所有特殊功能定义。
+        /// </summary>
+        public IAsyncSpecialMCServerFeature[] Features { get; }
     }
     /// <summary>
     /// 异步特殊功能定义接口。为特定服务端种类提供可在服务端运行时调用的异步功能。

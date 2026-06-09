@@ -10,18 +10,13 @@ namespace PMCSsE_Communicator.SharedCodes
     /// 使用 AssemblyDependencyResolver 解析插件目录下的依赖程序集，
     /// 对于共享接口程序集则回退到默认加载上下文以避免重复加载。
     /// </summary>
-    public class PluginLoadContext : AssemblyLoadContext
+    /// <remarks>
+    /// 使用指定的插件路径初始化可回收的加载上下文。
+    /// </remarks>
+    /// <param name="pluginPath">插件程序集文件的完整路径。</param>
+    public class PluginLoadContext(string pluginPath) : AssemblyLoadContext(isCollectible: true)
     {
-        private AssemblyDependencyResolver _resolver;
-
-        /// <summary>
-        /// 使用指定的插件路径初始化可回收的加载上下文。
-        /// </summary>
-        /// <param name="pluginPath">插件程序集文件的完整路径。</param>
-        public PluginLoadContext(string pluginPath) : base(isCollectible: true) // 可回收！
-        {
-            _resolver = new AssemblyDependencyResolver(pluginPath);
-        }
+        private AssemblyDependencyResolver _resolver = new AssemblyDependencyResolver(pluginPath);
 
         /// <summary>
         /// 加载指定名称的程序集。优先使用依赖解析器从插件目录加载；

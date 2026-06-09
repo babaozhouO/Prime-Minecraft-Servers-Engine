@@ -11,10 +11,7 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
     /// 继承自 Pack_ManagerOperation，包含 ManagerID。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_SendCommandFailed : Pack_ManagerOperation
+    public class Pack_SendCommandFailed(string managerID) : Pack_ManagerOperation(managerID)
     {
-        public Pack_SendCommandFailed(string managerID) : base(managerID)
-        {
-        }
     }
 }

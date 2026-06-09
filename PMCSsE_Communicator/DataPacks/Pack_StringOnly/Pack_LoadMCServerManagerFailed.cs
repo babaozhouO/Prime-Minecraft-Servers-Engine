@@ -11,10 +11,7 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
     /// 继承自 Pack_ManagerOperation，包含 ManagerID 用于定位失败目标。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_LoadMCServerManagerFailed : Pack_ManagerOperation
+    public class Pack_LoadMCServerManagerFailed(string managerID) : Pack_ManagerOperation(managerID)
     {
-        public Pack_LoadMCServerManagerFailed(string managerID) : base(managerID)
-        {
-        }
     }
 }

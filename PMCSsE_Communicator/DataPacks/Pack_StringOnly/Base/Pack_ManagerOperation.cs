@@ -6,6 +6,10 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly.Base
     /// 管理器操作数据包的基类，包含 ManagerID 字段并注册所有子类型的 ProtoInclude 映射。
     /// 所有针对特定管理器的请求/响应数据包均继承自此基类。
     /// </summary>
+    /// <remarks>
+    /// 使用指定的管理器ID初始化操作包。
+    /// </remarks>
+    /// <param name="managerID">目标管理器的唯一标识符。</param>
     [ProtoContract(SkipConstructor = true)]
     [ProtoInclude(1, typeof(Pack_LoadMCServerManager))]
     [ProtoInclude(2, typeof(Pack_LoadedMCServerManager))]
@@ -28,20 +32,12 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly.Base
     [ProtoInclude(20, typeof(Pack_KillMCServer))]
     [ProtoInclude(21, typeof(Pack_KillMCServerSucceed))]
     [ProtoInclude(22, typeof(Pack_KillMCServerFailed))]
-    public class Pack_ManagerOperation
+    public class Pack_ManagerOperation(string managerID)
     {
-        /// <summary>
-        /// 使用指定的管理器ID初始化操作包。
-        /// </summary>
-        /// <param name="managerID">目标管理器的唯一标识符。</param>
-        public Pack_ManagerOperation(string managerID)
-        {
-            ManagerID = managerID;
-        }
         /// <summary>
         /// 目标管理器的唯一标识符。
         /// </summary>
         [ProtoMember(10)]
-        public string ManagerID;
+        public string ManagerID = managerID;
     }
 }

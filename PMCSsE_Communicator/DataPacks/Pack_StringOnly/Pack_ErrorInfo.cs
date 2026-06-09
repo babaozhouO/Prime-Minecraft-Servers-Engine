@@ -10,16 +10,12 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
     /// 包含一个 ErrorInfo 字段用于传递错误文本给接收端。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_ErrorInfo
+    public class Pack_ErrorInfo(string errorInfo)
     {
-        public Pack_ErrorInfo(string errorInfo)
-        {
-            ErrorInfo = errorInfo;
-        }
         /// <summary>
         /// 错误信息文本，用于向接收端传递详细的错误描述。
         /// </summary>
         [ProtoMember(1)]
-        public string ErrorInfo;
+        public string ErrorInfo = errorInfo;
     }
 }

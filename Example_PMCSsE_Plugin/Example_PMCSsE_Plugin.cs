@@ -37,7 +37,7 @@ namespace Example_PMCSsE_Plugin
         /// <summary>
         /// 为此服务端类型提供的特殊功能列表。
         /// </summary>
-        public IReadOnlyList<IAsyncSpecialMCServerFeature> Features =>
+        public IAsyncSpecialMCServerFeature[] Features =>
             [
             new VanillaServerFeature_GetServerVersion()
             ];

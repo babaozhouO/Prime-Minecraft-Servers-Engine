@@ -11,10 +11,7 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
     /// 继承自 Pack_ManagerOperation，构造时需提供 ManagerID。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_DeleteMCServerManager : Pack_ManagerOperation
+    public class Pack_DeleteMCServerManager(string managerID) : Pack_ManagerOperation(managerID)
     {
-        public Pack_DeleteMCServerManager(string managerID) : base(managerID)
-        {
-        }
     }
 }

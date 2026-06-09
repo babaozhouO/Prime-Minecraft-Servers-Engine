@@ -96,10 +96,13 @@ namespace PMCSsE_Backend.PluginsSystem
 
             try
             {
-                target.UnloadPlugin();
+                target.StopPlugin();
+#pragma warning disable CS8601 // 引用类型赋值可能为 null。
                 target.PluginStarted -= HandlePluginStarted;
                 target.PluginReportLog -= HandlePluginReportLog;
                 target.PluginStopped -= HandlePluginStopped;
+#pragma warning restore CS8601 // 引用类型赋值可能为 null。
+                target.UnloadPlugin();
                 StaticTools.HandleLog($"插件已卸载：{pluginName}");
                 return true;
             }
