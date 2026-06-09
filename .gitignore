@@ -363,3 +363,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /PMCSsE_Frontend_AvaloniaUI/PMCSsE_Frontend_AvaloniaUI.Android/PMCSsE_Frontend_AvaloniaUI.keystore
 /PMCSsE_Frontend_AvaloniaUI/PMCSsE_Frontend_AvaloniaUI.Android/publish.bat
+/.deepcode/settings.json
