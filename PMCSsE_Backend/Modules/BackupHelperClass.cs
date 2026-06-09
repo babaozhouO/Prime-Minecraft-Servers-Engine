@@ -26,6 +26,9 @@ namespace PMCSsE_Backend.Modules
         internal bool IsBackupHelperRunning = false;
 
         internal event Action<bool> ReportServiceRunningStatue = delegate { };
+        /// <summary>
+        /// 上报日志事件，参数依次为：日志级别、模块名称、日志内容。
+        /// </summary>
         public event Action<string, string, string> ReportLog = delegate { };
         internal event Action<string, byte, string, byte> ReportProgress = delegate { };
 
@@ -35,6 +38,10 @@ namespace PMCSsE_Backend.Modules
         private DateTime NextExecuteTime;
         private TimeSpan NextExecuteTimeSpan;
 
+        /// <summary>
+        /// 使用指定的 MC 服务端管理器初始化备份管理器，并启动定时备份服务。
+        /// </summary>
+        /// <param name="mCServerManagerClass">关联的 MC 服务端管理器实例。</param>
         public BackupManager(MCServerManager mCServerManagerClass)
         {
             MCServerManager = mCServerManagerClass;
@@ -72,6 +79,9 @@ namespace PMCSsE_Backend.Modules
             }
         }
 
+        /// <summary>
+        /// 启动定时备份服务，根据配置的备份模式和时间间隔计算下次执行时间。
+        /// </summary>
         public void StartService()
         {
             DateTime NowTime = DateTime.Now;
@@ -127,6 +137,9 @@ namespace PMCSsE_Backend.Modules
 
         }
 
+        /// <summary>
+        /// 停止定时备份服务，停止倒计时和进度报告。
+        /// </summary>
         public void StopService()
         {
             IsWaitingForBackup = false;
@@ -139,6 +152,9 @@ namespace PMCSsE_Backend.Modules
 
         }
 
+        /// <summary>
+        /// 立即执行一次备份任务。根据配置的备份模式选择全量、文件级增量或块级增量备份。
+        /// </summary>
         public void StartBackup()
         {
             if (!CheckConfig())
@@ -185,6 +201,9 @@ namespace PMCSsE_Backend.Modules
             return IsConfigValid;
         }
 
+        /// <summary>
+        /// 释放备份管理器的所有资源，包括定时器和事件订阅。
+        /// </summary>
         public void Dispose()
         {
             CountDownTimer?.Dispose();

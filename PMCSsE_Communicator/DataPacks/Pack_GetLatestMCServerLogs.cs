@@ -12,8 +12,14 @@ namespace PMCSsE_Communicator.DataPacks
     [ProtoContract(SkipConstructor =true)]
     public class Pack_GetLatestMCServerLogs(string managerID, int count)
     {
+        /// <summary>
+        /// 目标管理器的唯一标识符。
+        /// </summary>
         [ProtoMember(1)]
         public string ManagerID = managerID;
+        /// <summary>
+        /// 希望获取的日志条目数量。
+        /// </summary>
         [ProtoMember(2)]
         public int Count = count;
     }

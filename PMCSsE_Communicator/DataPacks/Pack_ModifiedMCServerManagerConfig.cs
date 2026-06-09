@@ -11,6 +11,9 @@ namespace PMCSsE_Communicator.DataPacks
     [ProtoContract(SkipConstructor = true)]
     public class Pack_ModifiedMCServerManagerConfig(MCServerManagerConfig config)
     {
+        /// <summary>
+        /// 已修改后的管理器配置对象。
+        /// </summary>
         [ProtoMember(1)]
         public MCServerManagerConfig MCServerManagerConfig = config;
     }

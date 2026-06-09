@@ -3,15 +3,39 @@ using System.Reflection;
 
 namespace PMCSsE_Communicator.SharedCodes
 {
+    /// <summary>
+    /// 插件加载器，负责从 DLL 文件加载、启动、停止和卸载插件。
+    /// 使用可回收的 AssemblyLoadContext 实现插件热加载与卸载。
+    /// </summary>
     public class PluginLoader
     {
         private PluginLoadContext? _context;
+        /// <summary>
+        /// 已加载的插件实例。若未加载插件则为 null。
+        /// </summary>
         public IPlugin? Plugin;
         private WeakReference? _contextWeakRef; // 用于验证卸载
+        /// <summary>
+        /// 已加载插件的名称。若未加载插件则为 null。
+        /// </summary>
         public string? PluginName => Plugin?.Name;
+        /// <summary>
+        /// 插件启动时触发，参数为插件名称。
+        /// </summary>
         public Action<string> PluginStarted = delegate { };
+        /// <summary>
+        /// 插件上报日志时触发，参数为插件名称和日志内容。
+        /// </summary>
         public Action<string,string> PluginReportLog = delegate { };
+        /// <summary>
+        /// 插件停止时触发，参数为插件名称。
+        /// </summary>
         public Action<string> PluginStopped = delegate { };
+        /// <summary>
+        /// 从指定路径加载插件程序集，查找并实例化 IPlugin 实现，然后执行初始化。
+        /// 若加载失败会抛出异常，并自动清理已创建的对象。
+        /// </summary>
+        /// <param name="pluginAssemblyPath">插件 DLL 文件的完整路径。</param>
         public void LoadPlugin(string pluginAssemblyPath)
         {
             // 防止重复加载，先卸载现有的
@@ -54,6 +78,9 @@ namespace PMCSsE_Communicator.SharedCodes
             }
         }
 
+        /// <summary>
+        /// 启动已加载的插件。若未加载插件则抛出 InvalidOperationException。
+        /// </summary>
         public void StartPlugin()
         {
             if (Plugin == null)
@@ -68,6 +95,10 @@ namespace PMCSsE_Communicator.SharedCodes
             }
         }
 
+        /// <summary>
+        /// 卸载当前插件。依次调用插件的 Stop/Dispose 方法，卸载 AssemblyLoadContext，
+        /// 并执行多次 GC 回收以验证程序集已完全卸载。若卸载可能不完整则抛出异常。
+        /// </summary>
         public void UnloadPlugin()
         {
             // 1. 先通知插件进行清理（捕获所有异常，不能影响后续卸载）
@@ -116,6 +147,9 @@ namespace PMCSsE_Communicator.SharedCodes
                 throw new Exception("Plugin context may not be fully unloaded; check for memory leaks.");
             }
         }
+        /// <summary>
+        /// 停止已加载的插件（仅调用 Stop，不卸载程序集）。若未加载插件则抛出 InvalidOperationException。
+        /// </summary>
         public void StopPlugin()
         {
             if (Plugin == null)

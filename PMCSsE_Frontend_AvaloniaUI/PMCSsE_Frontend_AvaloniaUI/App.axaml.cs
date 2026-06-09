@@ -20,8 +20,14 @@ using System.Linq;
 
 namespace PMCSsE_Frontend_AvaloniaUI
 {
+    /// <summary>
+    /// Avalonia 应用程序入口类，负责初始化框架并根据平台创建对应的主窗口/视图。
+    /// </summary>
     public partial class App : Application
     {
+        /// <summary>
+        /// 加载 XAML 资源并在调试模式下附加开发者工具。
+        /// </summary>
         public override void Initialize()
         {
             AvaloniaXamlLoader.Load(this);
@@ -30,6 +36,9 @@ namespace PMCSsE_Frontend_AvaloniaUI
 #endif
         }
 
+        /// <summary>
+        /// 框架初始化完成后的回调。根据应用程序生命周期类型创建对应平台的主视图。
+        /// </summary>
         public override void OnFrameworkInitializationCompleted()
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)

@@ -16,6 +16,9 @@ using PMCSsE_Frontend_AvaloniaUI.Modules;
 
 namespace PMCSsE_Frontend_AvaloniaUI.Models
 {
+    /// <summary>
+    /// 连接历史列表项的视图模型，封装 NativeServerHistory 数据用于前端展示。
+    /// </summary>
     public class ConnectHistory_LBItemModel
     {
         internal ConnectHistory_LBItemModel(NativeServerHistory nsh)

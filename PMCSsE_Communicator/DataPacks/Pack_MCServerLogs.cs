@@ -14,10 +14,19 @@ namespace PMCSsE_Communicator.DataPacks
     [ProtoContract(SkipConstructor = true)]
     public class Pack_MCServerLogs(string managerID, List<LogEntry> logs, bool resetHint)
     {
+        /// <summary>
+        /// 日志所属管理器的唯一标识符。
+        /// </summary>
         [ProtoMember(1)]
         public string ManagerID = managerID;
+        /// <summary>
+        /// 日志条目列表。
+        /// </summary>
         [ProtoMember(2)]
         public List<LogEntry> Logs = logs;
+        /// <summary>
+        /// 是否提示前端重置日志视图（如清空现有日志重新加载）。
+        /// </summary>
         [ProtoMember(3)]
         public bool ResetHint=resetHint;
     }

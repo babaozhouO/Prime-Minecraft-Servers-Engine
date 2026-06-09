@@ -12,6 +12,9 @@ using System.Diagnostics;
 
 namespace PMCSsE_Frontend_AvaloniaUI.Android
 {
+    /// <summary>
+    /// Android 平台的主 Activity，继承自 AvaloniaMainActivity，配置全屏沉浸式体验。
+    /// </summary>
     [Activity(
         Label = "PMCSsE-前端",
         Theme = "@style/MyTheme.NoActionBar",

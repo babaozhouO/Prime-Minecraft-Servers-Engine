@@ -16,10 +16,23 @@ namespace PMCSsE_Backend.PluginsSystem
         public string TargetMCServerType { get; }
         public IReadOnlyList<IAsyncSpecialMCServerFeature> Features { get; }
     }
+    /// <summary>
+    /// 异步特殊功能定义接口。为特定服务端种类提供可在服务端运行时调用的异步功能。
+    /// </summary>
     public interface IAsyncSpecialMCServerFeature
     {
+        /// <summary>
+        /// 功能名称。
+        /// </summary>
         public string FeatureName { get; }
+        /// <summary>
+        /// 功能描述文本。
+        /// </summary>
         public string FeatureDescription { get; }
+        /// <summary>
+        /// 异步执行该功能。接收目标 MCServerManager 作为上下文参数。
+        /// </summary>
+        /// <param name="mCServerManager">目标 MC 服务端管理器实例。</param>
         public Task AsyncFeature(MCServerManager mCServerManager);
     }
 }

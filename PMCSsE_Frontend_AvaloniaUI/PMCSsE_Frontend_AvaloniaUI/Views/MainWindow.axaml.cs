@@ -15,8 +15,14 @@ using Avalonia.Controls;
 
 namespace PMCSsE_Frontend_AvaloniaUI.Views
 {
+    /// <summary>
+    /// 应用程序主窗口。Desktop 平台启动时使用的顶层窗口。
+    /// </summary>
     public partial class MainWindow : Window
     {
+        /// <summary>
+        /// 初始化主窗口并加载 XAML 组件。
+        /// </summary>
         public MainWindow()
         {
             InitializeComponent();

@@ -5,6 +5,9 @@ using System.Text;
 
 namespace PMCSsE_Frontend_AvaloniaUI.Models
 {
+    /// <summary>
+    /// 消息视图模型，包含消息文本和根据日志级别映射的颜色。
+    /// </summary>
     public class MessageModel
     {
         internal MessageModel(string message, byte level)
@@ -19,7 +22,13 @@ namespace PMCSsE_Frontend_AvaloniaUI.Models
                 _ => new SolidColorBrush { Color = Colors.White },
             };
         }
+        /// <summary>
+        /// 消息文本内容。
+        /// </summary>
         public string Message { get; set; }
+        /// <summary>
+        /// 消息显示颜色笔刷。
+        /// </summary>
         public IBrush Color { get; set; }
     }
 }

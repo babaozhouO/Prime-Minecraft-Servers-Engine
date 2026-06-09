@@ -10,6 +10,10 @@ internal sealed partial class Program
             .WithInterFont()
             .StartBrowserAppAsync("out");
 
+    /// <summary>
+    /// 构建并配置 Avalonia 浏览器应用程序的 AppBuilder。
+    /// </summary>
+    /// <returns>配置好的 AppBuilder 实例。</returns>
     public static AppBuilder BuildAvaloniaApp()
         => AppBuilder.Configure<App>();
 }

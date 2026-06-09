@@ -51,6 +51,10 @@ namespace Prime_Minecraft_Servers_Engine.Modules
             }
         }
 
+        /// <summary>
+        /// 获取当前系统内存信息。
+        /// </summary>
+        /// <returns>包含总内存、已用内存和空闲内存（单位：MB）的元组。</returns>
         public static (double Total, double Used, double Free) GetMemoryInfo()
         {
             var memStatus = new MEMORYSTATUSEX().Init();

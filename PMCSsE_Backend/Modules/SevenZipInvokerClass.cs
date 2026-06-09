@@ -27,6 +27,9 @@ namespace PMCSsE_Backend.Modules
 
         private bool IsProcessKilled = false;
 
+        /// <summary>
+        /// 上报日志事件，参数依次为：日志级别、模块名称、日志内容。
+        /// </summary>
         public event Action<string, string, string> ReportLog = delegate { };
 
         internal event Action ProcessExited = delegate { };
@@ -201,6 +204,9 @@ namespace PMCSsE_Backend.Modules
             }
         }
 
+        /// <summary>
+        /// 释放 7-Zip 进程和定时器资源，清空所有事件订阅。
+        /// </summary>
         public void Dispose()
         {
             _7ZipProcess?.Dispose();

@@ -16,6 +16,9 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
         {
             ErrorInfo = errorInfo;
         }
+        /// <summary>
+        /// 错误信息文本，用于向接收端传递详细的错误描述。
+        /// </summary>
         [ProtoMember(1)]
         public string ErrorInfo;
     }

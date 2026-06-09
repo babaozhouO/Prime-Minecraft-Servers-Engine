@@ -7,21 +7,40 @@ using System.Text.RegularExpressions;
 
 namespace PMCSsE_FrontendAndBackendCommunicator
 {
+    /// <summary>
+    /// Web + WebSocket 服务器，提供静态网页服务和实时双向通信。
+    /// 支持 HTTP 静态文件服务（用于前端网页）和 WebSocket 连接（用于实时聊天与远程管理）。
+    /// </summary>
     public class WebServer
     {
         private HttpListener HttpListener;
         private CancellationTokenSource CancellationTokenSource;
         private readonly List<WebSocket> WebSocketClients = [];
+        /// <summary>
+        /// 上报日志事件，参数依次为：日志级别、模块名称、日志内容。
+        /// </summary>
         public event Action<string, string, string> ReportLog = delegate { };
         private Thread HttpListenerThread;
+        /// <summary>
+        /// 报告服务运行状态变化事件，参数表示服务是否正在运行。
+        /// </summary>
         public event Action<bool> ReportServiceState = delegate { };
+        /// <summary>
+        /// 当前服务是否正在运行。
+        /// </summary>
         public bool ServiceState = false;
 
+        /// <summary>
+        /// 初始化 WebServer 的新实例。
+        /// </summary>
         public WebServer()
         {
             
         }
 
+        /// <summary>
+        /// 启动 Web 服务和 WebSocket 服务，开始监听配置的地址和端口。
+        /// </summary>
         public void Start()
         {
 
@@ -34,6 +53,10 @@ namespace PMCSsE_FrontendAndBackendCommunicator
             ReportLog("信息", "实时服内外通信和远程服务器管理器", $"在浏览器中输入[http://{SingleMCServerManager.ThisMCServerManagerConfigInfo.OnlineChattingAndManagerConfigInfo.ServerIP}:{SingleMCServerManager.ThisMCServerManagerConfigInfo.OnlineChattingAndManagerConfigInfo.ServerPort}/OnlineChatAndManageWebPage.html]可打开网页端\n（若您配置的IP为0.0.0.0，则请输入[http://localhost:{SingleMCServerManager.ThisMCServerManagerConfigInfo.OnlineChattingAndManagerConfigInfo.ServerPort}/OnlineChatAndManageWebPage.html]）");
         }
 
+        /// <summary>
+        /// 处理管理命令（以 '/' 开头的命令），如列出账户、设置身份、删除账户等。
+        /// </summary>
+        /// <param name="Command">用户输入的命令字符串。</param>
         public void HandleCommand(string Command)
         {
             if (Command.StartsWith('/'))
@@ -199,6 +222,9 @@ namespace PMCSsE_FrontendAndBackendCommunicator
             }
         }
 
+        /// <summary>
+        /// 停止 Web 服务和 WebSocket 服务，释放所有资源。
+        /// </summary>
         public void Stop()
         {
             SingleMCServerManager.ReportLog -= HandleServerMessage;
@@ -464,6 +490,9 @@ namespace PMCSsE_FrontendAndBackendCommunicator
 
 
 
+        /// <summary>
+        /// 释放 WebServer 占用的所有资源，停止监听并清空事件订阅。
+        /// </summary>
         public void Dispose()
         {
             CancellationTokenSource?.Cancel();

@@ -21,7 +21,13 @@ namespace PMCSsE_Backend.Modules
         private SevenZipInvokerClass? SevenZipInvokerClass;
         private readonly CancellationTokenSource CancellationTokenSource;
         private string BackupFileName = "";
+        /// <summary>
+        /// 上报日志事件，参数依次为：日志级别、模块名称、日志内容。
+        /// </summary>
         public event Action<string, string, string> ReportLog = delegate { };
+        /// <summary>
+        /// 备份任务完成时触发。
+        /// </summary>
         public event Action TaskDone = delegate { };
         internal FullBackupHelperClass(MCServerManager mCServerManagerClass, CancellationTokenSource CancellationTokenSource)
         {
@@ -217,6 +223,9 @@ namespace PMCSsE_Backend.Modules
             }
 
         }
+        /// <summary>
+        /// 释放资源，清空事件订阅。
+        /// </summary>
         public void Dispose()
         {
             ReportLog = delegate { };

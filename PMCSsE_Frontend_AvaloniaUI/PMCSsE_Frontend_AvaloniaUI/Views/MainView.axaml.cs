@@ -8,8 +8,14 @@ using TextMateSharp.Grammars;
 
 namespace PMCSsE_Frontend_AvaloniaUI.Views;
 
+/// <summary>
+/// 主视图控件，承载前端的主要 UI 布局和交互逻辑。
+/// </summary>
 public partial class MainView : UserControl
 {
+    /// <summary>
+    /// 初始化主视图，设置 DataContext 并配置日志编辑器的语法高亮。
+    /// </summary>
     public MainView()
     {
         InitializeComponent();

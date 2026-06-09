@@ -12,7 +12,12 @@ namespace PMCSsE_Communicator
     {
         private readonly ConcurrentDictionary<Type, Delegate> _handlers = new();
         internal event Action<string> PulishedDataType = delegate { };
-        // 订阅
+        /// <summary>
+        /// 订阅指定类型的消息。当该类型的消息被发布时，handler 将被调用。
+        /// 支持同一类型多个订阅者，handler 会被依次调用。
+        /// </summary>
+        /// <typeparam name="T">消息类型。</typeparam>
+        /// <param name="handler">处理消息的回调委托。</param>
         public void Subscribe<T>(Action<T> handler)
         {
             _handlers.AddOrUpdate(
@@ -21,7 +26,11 @@ namespace PMCSsE_Communicator
                 (_, existing) => Delegate.Combine(existing, handler));
         }
 
-        // 取消订阅（修复版）
+        /// <summary>
+        /// 取消订阅指定类型的消息。使用循环重试机制保证并发更新成功。
+        /// </summary>
+        /// <typeparam name="T">消息类型。</typeparam>
+        /// <param name="handler">要移除的处理回调委托。</param>
         public void Unsubscribe<T>(Action<T> handler)
         {
             var key = typeof(T);
@@ -50,7 +59,12 @@ namespace PMCSsE_Communicator
             }
         }
 
-        // 发布
+        /// <summary>
+        /// 发布指定类型的消息。所有订阅了该类型的 handler 将被同步调用。
+        /// 发布时会触发 PulishedDataType 事件记录消息类型。
+        /// </summary>
+        /// <typeparam name="T">消息类型。</typeparam>
+        /// <param name="message">要发布的消息实例。</param>
         public void Publish<T>(T message)
         {
             if (_handlers.TryGetValue(typeof(T), out var del) && del is Action<T> action)
@@ -60,6 +74,9 @@ namespace PMCSsE_Communicator
 
             }
         }
+        /// <summary>
+        /// 释放所有已注册的订阅处理程序，清空内部字典。
+        /// </summary>
         public void Dispose()
         {
             _handlers.Clear();

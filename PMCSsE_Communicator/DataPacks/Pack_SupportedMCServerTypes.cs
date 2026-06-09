@@ -12,6 +12,9 @@ namespace PMCSsE_Communicator.DataPacks
     [ProtoContract(SkipConstructor =true)]
     public class Pack_SupportedMCServerTypes(List<string> supportedMCServerTypes)
     {
+        /// <summary>
+        /// 后端支持的 Minecraft 服务端类型名称列表。
+        /// </summary>
         [ProtoMember(1)]
         public List<string> SupportedMCServerTypes = supportedMCServerTypes;
     }

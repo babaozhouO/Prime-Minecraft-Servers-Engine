@@ -28,6 +28,10 @@ namespace PMCSsE_Backend.Modules
         private static readonly List<MCServerManager> LoadedMCServerManagersList = [];
         internal static readonly List<string> SupportedMCServerTypes = ["Vanilla"];
         internal static event Action ExitCalled = delegate { };
+        /// <summary>
+        /// 获取原生服务器的数据包总线，用于订阅和发布数据包。
+        /// 若原生服务器未初始化则返回 null。
+        /// </summary>
         public static DataPackBus? DataPackBus => NativeServer?.DataPackBus;
         internal static void Initialize()
         {

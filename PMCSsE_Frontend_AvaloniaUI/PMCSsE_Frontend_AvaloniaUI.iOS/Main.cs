@@ -2,6 +2,9 @@ using UIKit;
 
 namespace PMCSsE_Frontend_AvaloniaUI.iOS
 {
+    /// <summary>
+    /// iOS 平台应用程序入口类。
+    /// </summary>
     public class Application
     {
         // This is the main entry point of the application.

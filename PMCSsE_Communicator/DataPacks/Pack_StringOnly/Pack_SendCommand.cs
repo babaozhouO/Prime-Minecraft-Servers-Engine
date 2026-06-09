@@ -17,6 +17,9 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
         {
             Command = command;
         }
+        /// <summary>
+        /// 要发送到 Minecraft 服务器的控制台命令文本。
+        /// </summary>
         [ProtoMember(2)]
         public string Command;
     }

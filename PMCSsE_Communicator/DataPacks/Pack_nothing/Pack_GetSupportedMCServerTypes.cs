@@ -5,6 +5,9 @@ using System.Text;
 
 namespace PMCSsE_Communicator.DataPacks.Pack_nothing
 {
+    /// <summary>
+    /// 数据包：请求获取后端支持的 Minecraft 服务端类型列表。空包体，仅用作信号通知。
+    /// </summary>
     [ProtoContract]
     public class Pack_GetSupportedMCServerTypes
     {

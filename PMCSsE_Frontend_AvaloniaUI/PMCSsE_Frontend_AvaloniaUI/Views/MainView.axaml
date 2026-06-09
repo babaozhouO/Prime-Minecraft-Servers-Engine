@@ -320,7 +320,7 @@
             <TextBlock Text="日志轮询间隔" HorizontalAlignment="Right" Margin="0,0,230,0" FontSize="16"/>
             <Slider Value="{Binding ServerLogsAskInterval}" Minimum="50" Maximum="10000" Margin="0,-13,26,0" Height="35" Width="200" HorizontalAlignment="Right" VerticalAlignment="Top"/>
             <Line StartPoint="0,0" EndPoint="1,0" Margin="0,25,0,0" Stroke="LightGray" Stretch="Fill" StrokeThickness="2"/>
-            <DrawerPage DataContext="{Binding #root.DataContext}" Background="#FFFFF0" CompactDrawerLength="26" DrawerPlacement="Right" DrawerLength="160" DrawerLayoutBehavior="CompactOverlay" Margin="0,27,0,0">
+            <DrawerPage DataContext="{Binding #root.DataContext}" Background="#89C2FF" CompactDrawerLength="26" DrawerPlacement="Right" DrawerLength="160" DrawerLayoutBehavior="CompactOverlay" Margin="0,27,0,0">
                 <DrawerPage.Drawer>
                     <ScrollViewer>
                         <StackPanel DataContext="{Binding #root.DataContext}">

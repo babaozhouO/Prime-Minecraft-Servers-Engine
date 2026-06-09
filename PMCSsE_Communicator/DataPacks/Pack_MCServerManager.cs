@@ -12,6 +12,9 @@ namespace PMCSsE_Communicator.DataPacks
     [ProtoContract(SkipConstructor = true)]
     public class Pack_MCServerManagers(MCServerManagersData mCServerManagersData)
     {
+        /// <summary>
+        /// 包含多个管理器状态信息的聚合数据对象。
+        /// </summary>
         [ProtoMember(1)]
         public MCServerManagersData MCServerManagersData = mCServerManagersData;
     }
