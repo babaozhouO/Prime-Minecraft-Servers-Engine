@@ -177,6 +177,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         #endregion
         public MainViewModel()
         {
+            App.MainViewModel = this;
             string error = StaticConfigManagerClass.LoadConfig();
             if (error != string.Empty)
             {
@@ -263,10 +264,20 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             }
             NativeServerHistory nativeServerHistory = new() { IP = iP, Port = iPort, RSAPublicKeyHash = string.Empty, Password = DisplayingPassword };
             StaticAPPConfigClass.NativeServerHistories.Add(nativeServerHistory);
-            StaticConfigManagerClass.SaveAPPConfig();
+
+            string result = StaticConfigManagerClass.SaveAPPConfig();
+            if (result == string.Empty)
+            {
+                SendMessage($"添加成功", 3);
+            }
+            else
+            {
+                SendMessage(result, 2);
+            }
+
             ConnectHistory_LBItemModel model = new(nativeServerHistory);
             Histories_IS.Add(model);
-            SendMessage($"添加成功", 3);
+
             DisplayingIP = string.Empty;
             DisplayingPort = string.Empty;
             DisplayingPassword = string.Empty;
@@ -275,9 +286,11 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 
         private NativeClient? nativeClient;
         private NativeServerHistory? ConnectingNativeServer;
+        private bool IsVerifyingRSAPublicKey = false;
         public void ConnectAction(NativeServerHistory nsh)
         {
             ConnectingNativeServer = nsh;
+            IsVerifyingRSAPublicKey = false;//保底重置
             nativeClient = new(ConnectingNativeServer.IP, ConnectingNativeServer.Port);
             nativeClient.ReportLog += HandleLog;
             nativeClient.NeedToVerifyRSAPublicKey += HandleVerifyRSAPublicKey;
@@ -319,6 +332,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             nativeClient.DataPackBus.Subscribe<Pack_KillMCServerSucceed>(HandlePack_KillMCServerSucceed);
             nativeClient.DataPackBus.Subscribe<Pack_KillMCServerFailed>(HandlePack_KillMCServerFailed);
 
+            nativeClient.DataPackBus.Subscribe<Pack_MCServerExited>(HandlePack_MCServerExited);
+
             nativeClient.DataPackBus.Subscribe<Pack_MCServerLogs>(HandlePack_MCServerLogs);
 
             nativeClient.DataPackBus.Subscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
@@ -328,7 +343,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         public void VerifyAction()
         {
             if (nativeClient == null) return;
-            nativeClient.IsRSAPublicKeyRight = true;
+            nativeClient.VerifyRSAPublicKey(true);
+            IsVerifyingRSAPublicKey = false;
             StaticConfigManagerClass.SaveAPPConfig();
             _canVerify.OnNext(false);
         }
@@ -351,6 +367,17 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             {
                 ConnectingNativeServer.RSAPublicKeyHash = string.Empty;
                 StaticConfigManagerClass.SaveAPPConfig();
+            }
+            if (IsVerifyingRSAPublicKey)
+            {
+                nativeClient?.VerifyRSAPublicKey(false);
+                IsVerifyingRSAPublicKey = false;
+                _canConnect.OnNext(true);
+                _canVerify.OnNext(false);
+                _canSendPassword.OnNext(false);
+                _canDisconnect.OnNext(false);
+                PasswordEnterControlVisibility = false;
+                return;
             }
             nativeClient?.Disconnect();
             _canConnect.OnNext(true);
@@ -622,29 +649,36 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         {
             Dispatcher.UIThread.Post((state) =>
             {
-                SendMessage($"停止服务端[{pack.ManagerID}]成功", 3);
-                if (UsingManager?.ManagerID == pack.ManagerID)
-                {
-                    UsingManager.State.IsMCServerRunning = false;
-                    _canRunMCServer.OnNext(true);
-                    _canSendCommand.OnNext(false);
-                    _canStopMCServer.OnNext(false);
-                    _canKillMCServer.OnNext(false);
-                }
+                SendMessage($"对服务端[{pack.ManagerID}]进行停止操作成功", 3);
             }, null);
         }
         private void HandlePack_ShutdownMCServerFailed(Pack_ShutdownMCServerFailed pack)
         {
             Dispatcher.UIThread.Post((state) =>
             {
-                SendMessage($"停止服务端[{pack.ManagerID}]失败", 2);
+                SendMessage($"对服务端[{pack.ManagerID}]进行停止操作失败", 2);
             }, null);
         }
         private void HandlePack_KillMCServerSucceed(Pack_KillMCServerSucceed pack)
         {
             Dispatcher.UIThread.Post((state) =>
             {
-                SendMessage($"强制终止服务端[{pack.ManagerID}]成功", 3);
+                SendMessage($"对服务端[{pack.ManagerID}]进行强制终止操作成功", 3);
+            }, null);
+        }
+        private void HandlePack_KillMCServerFailed(Pack_KillMCServerFailed pack)
+        {
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"对服务端[{pack.ManagerID}]进行强制终止操作失败", 2);
+            }, null);
+        }
+
+        private void HandlePack_MCServerExited(Pack_MCServerExited pack)
+        {
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage($"服务端[{pack.ManagerID}]进程已退出", 3);
                 if (UsingManager?.ManagerID == pack.ManagerID)
                 {
                     UsingManager.State.IsMCServerRunning = false;
@@ -654,14 +688,9 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                     _canKillMCServer.OnNext(false);
                 }
             }, null);
+
         }
-        private void HandlePack_KillMCServerFailed(Pack_KillMCServerFailed pack)
-        {
-            Dispatcher.UIThread.Post((state) =>
-            {
-                SendMessage($"强制终止服务端[{pack.ManagerID}]失败", 2);
-            }, null);
-        }
+
         private ulong OldestLogID = ulong.MaxValue;
         private ulong LatestLogID = ulong.MinValue;//0代表没有
         private void HandlePack_MCServerLogs(Pack_MCServerLogs pack)
@@ -768,10 +797,12 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             if (ConnectingNativeServer == null || nativeClient == null) { return; }
             if (rsa == ConnectingNativeServer.RSAPublicKeyHash)
             {
-                nativeClient.IsRSAPublicKeyRight = true;
+                nativeClient.VerifyRSAPublicKey(true);
+                IsVerifyingRSAPublicKey = false;
             }
             else
             {
+                IsVerifyingRSAPublicKey = true;
                 if (ConnectingNativeServer.RSAPublicKeyHash != string.Empty)
                 {
                     Dispatcher.UIThread.Post((state) =>
@@ -781,7 +812,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 }
                 Dispatcher.UIThread.Post((state) =>
                 {
-                    ConnectLogs += $"请比对与RSA公钥指纹是否与原生服务器显示的一致(限时60s){Environment.NewLine}{rsa}{Environment.NewLine}";
+                    ConnectLogs += $"请比对与RSA公钥指纹是否与原生服务器显示的一致{Environment.NewLine}{rsa}{Environment.NewLine}";
                     _canVerify.OnNext(true);
                 }, null);
             }
@@ -790,6 +821,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         private void HandleDisconnected(NativeClient.DisconnectedReasonEnum nativeClientDisconnectedReasons)
         {
+            IsVerifyingRSAPublicKey = false;
             nativeClient!.ReportLog -= HandleLog;
             nativeClient!.NeedPassword -= HandleNeedPasswordEvent;
             nativeClient!.NeedToVerifyRSAPublicKey -= HandleVerifyRSAPublicKey;
@@ -877,6 +909,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             nativeClient.DataPackBus.Unsubscribe<Pack_KillMCServerSucceed>(HandlePack_KillMCServerSucceed);
             nativeClient.DataPackBus.Unsubscribe<Pack_KillMCServerFailed>(HandlePack_KillMCServerFailed);
 
+            nativeClient.DataPackBus.Unsubscribe<Pack_MCServerExited>(HandlePack_MCServerExited);
+
             nativeClient.DataPackBus.Unsubscribe<Pack_MCServerLogs>(HandlePack_MCServerLogs);
 
             nativeClient.DataPackBus.Unsubscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
@@ -889,6 +923,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 
         private void HandleConnected()
         {
+            IsVerifyingRSAPublicKey = false;
             nativeClient!.NeedPassword -= HandleNeedPasswordEvent;
             nativeClient!.NeedToVerifyRSAPublicKey -= HandleVerifyRSAPublicKey;
             nativeClient!.Connected -= HandleConnected;
@@ -1322,6 +1357,22 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 return;
             }
             //从Json加载
+        }
+        #endregion
+        #region 清理
+        /// <summary>
+        /// 应用退出时的清理操作：断开连接、释放 NativeClient 资源。
+        /// </summary>
+        public void CleanupOnExit()
+        {
+            GetNewerLogsTimer.Stop();
+            GetNewerLogsTimer.Tick -= HandleGetNewerLogsTick;
+            if (nativeClient != null)
+            {
+                nativeClient.Disconnect();
+                nativeClient.Dispose();
+                nativeClient = null;
+            }
         }
         #endregion
     }

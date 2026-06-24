@@ -16,6 +16,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -410,6 +411,35 @@ namespace PMCSsE_Backend
             {
                 ExitTokenSource.Cancel();
             };
+
+            // ---- 拦截退出信号，触发安全关闭流程 ----
+            using var sigint = PosixSignalRegistration.Create(PosixSignal.SIGINT, ctx =>
+            {
+                ctx.Cancel = true; // 阻止默认行为（立即杀进程），改为自己清理
+                StaticTools.HandleLog("收到 SIGINT 信号（Ctrl+C），正在安全退出...");
+                ExitTokenSource.Cancel();
+            });
+            using var sigterm = PosixSignalRegistration.Create(PosixSignal.SIGTERM, ctx =>
+            {
+                ctx.Cancel = true;
+                StaticTools.HandleLog("收到 SIGTERM 信号，正在安全退出...");
+                ExitTokenSource.Cancel();
+            });
+            // Linux 下关闭终端 / SSH 断开 会发送 SIGHUP
+            using var sighup = PosixSignalRegistration.Create(PosixSignal.SIGHUP, ctx =>
+            {
+                ctx.Cancel = true;
+                StaticTools.HandleLog("收到 SIGHUP 信号（终端关闭/SSH断开），正在安全退出...");
+                ExitTokenSource.Cancel();
+            });
+            // Windows 下 Console.CancelKeyPress 作为双保险
+            Console.CancelKeyPress += (_, e) =>
+            {
+                e.Cancel = true;
+                ExitTokenSource.Cancel();
+            };
+            // ---- 退出信号拦截结束 ----
+
             StaticTools.HandleLog($"将在*:{StaticAPPConfigClass.ListenPort}上监听前端连接请求");
             MCServerManagers_ManagerClass.Initialize();
             try

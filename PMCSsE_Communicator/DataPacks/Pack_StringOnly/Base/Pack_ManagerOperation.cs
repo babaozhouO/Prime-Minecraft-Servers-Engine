@@ -32,6 +32,7 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly.Base
     [ProtoInclude(20, typeof(Pack_KillMCServer))]
     [ProtoInclude(21, typeof(Pack_KillMCServerSucceed))]
     [ProtoInclude(22, typeof(Pack_KillMCServerFailed))]
+    [ProtoInclude(23, typeof(Pack_MCServerExited))]
     public class Pack_ManagerOperation(string managerID)
     {
         /// <summary>

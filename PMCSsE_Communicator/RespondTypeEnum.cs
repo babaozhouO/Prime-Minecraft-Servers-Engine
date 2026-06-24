@@ -86,6 +86,10 @@
         /// </summary>
         KillMCServerFailed,
         /// <summary>
+        /// 服务端进程已退出
+        /// </summary>
+        MCServerExited,
+        /// <summary>
         /// 服务端日志
         /// </summary>
         MCServerLogs,
@@ -117,6 +121,7 @@
         ShutdownMCServerFailed,
         KillMCServerSucceed,
         KillMCServerFailed,
+        MCServerExited,
         MCServerLogs,
         ErrorInfo,
         //------------------------

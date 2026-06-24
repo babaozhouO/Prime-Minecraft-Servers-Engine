@@ -81,9 +81,9 @@
                                     <ListBox.ItemTemplate>
                                         <DataTemplate>
                                             <controls:ConnectHistory_LBItem
-                                            ConnectCommand="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).ConnectCommand}"
-                                            MyNativeServerHistory="{Binding MyNativeServerHistory}"
-                                            DisplayText="{Binding DisplayText}" />
+                                                ConnectCommand="{Binding $parent[ListBox].((vm:MainViewModel)DataContext).ConnectCommand}"
+                                                MyNativeServerHistory="{Binding MyNativeServerHistory}"
+                                                DisplayText="{Binding DisplayText}" />
                                         </DataTemplate>
                                     </ListBox.ItemTemplate>
                                     <ListBox.Styles>

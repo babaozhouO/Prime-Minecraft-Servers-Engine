@@ -35,7 +35,7 @@ namespace PMCSsE_Backend.Modules
         public static DataPackBus? DataPackBus => NativeServer?.DataPackBus;
         internal static void Initialize()
         {
-            NativeServer = new(IPAddress.Any, StaticAPPConfigClass.ListenPort, StaticAPPConfigClass.SaltedPasswordHash, StaticAPPConfigClass.Salt, RunningStateRecorder.Debug);
+            NativeServer = new(IPAddress.IPv6Any, StaticAPPConfigClass.ListenPort, StaticAPPConfigClass.SaltedPasswordHash, StaticAPPConfigClass.Salt, true, RunningStateRecorder.Debug);
 
             NativeServer.ReportLog += (log) =>
             {
@@ -261,13 +261,18 @@ namespace PMCSsE_Backend.Modules
             {
                 case 0:
                     StaticTools.HandleLog($"服务端[{m.MCServerManagerConfig.ManagerID}]启动成功");
+
                     void HandleMCServerExited(string managerID, bool state)
                     {
                         m.MCServerRunningStateChanged -= HandleMCServerExited;
                         if (!state)
-                            NativeServer?.RespondClient(RespondTypeEnum.ShutdownMCServerSucceed, new Pack_ShutdownMCServerSucceed(managerID));
+                        {
+                            StaticTools.HandleLog($"服务端[{pack.ManagerID}]进程已退出");
+                            NativeServer?.RespondClient(RespondTypeEnum.MCServerExited, new Pack_MCServerExited(managerID));
+                        }
                     }
                     m.MCServerRunningStateChanged += HandleMCServerExited;
+
                     NativeServer?.RespondClient(RespondTypeEnum.RunMCServerSucceed, new Pack_RunMCServerSucceed(pack.ManagerID));
                     return;
                 case 1:
@@ -344,23 +349,15 @@ namespace PMCSsE_Backend.Modules
                 NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("在服务端未在运行的情况下停止服务器"));
                 return;
             }
-            void HandleMCServerRunningStateChanged(string managerID, bool isRunning)
-            {
-                m.MCServerRunningStateChanged -= HandleMCServerRunningStateChanged;//记得取消订阅
-                if (!isRunning)
-                {
-                    NativeServer?.RespondClient(RespondTypeEnum.ShutdownMCServerSucceed, new Pack_ShutdownMCServerSucceed(managerID));
-                }
-            }
-            m.MCServerRunningStateChanged += HandleMCServerRunningStateChanged;
             if (m.ShutdownMCServer())
             {
-                StaticTools.HandleLog($"停止ID为[{m.MCServerManagerConfig.ManagerID}]的服务端成功");
+                StaticTools.HandleLog($"对ID为[{m.MCServerManagerConfig.ManagerID}]的服务端进行停止操作成功");
+                NativeServer?.RespondClient(RespondTypeEnum.ShutdownMCServerSucceed, new Pack_ShutdownMCServerSucceed(pack.ManagerID));
                 return;
             }
             else
             {
-                StaticTools.HandleLog($"停止ID为[{pack.ManagerID}]的服务端失败");
+                StaticTools.HandleLog($"对ID为[{m.MCServerManagerConfig.ManagerID}]的服务端进行停止操作失败");
                 NativeServer?.RespondClient(RespondTypeEnum.ShutdownMCServerFailed, new Pack_ShutdownMCServerFailed(pack.ManagerID));
             }
         }
@@ -382,23 +379,15 @@ namespace PMCSsE_Backend.Modules
                 NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("在服务端未在运行的情况下强制终止服务器"));
                 return;
             }
-            void HandleMCServerRunningStateChanged(string managerID, bool isRunning)
-            {
-                m.MCServerRunningStateChanged -= HandleMCServerRunningStateChanged;//记得取消订阅
-                if (!isRunning)
-                {
-                    NativeServer?.RespondClient(RespondTypeEnum.KillMCServerSucceed, new Pack_KillMCServerSucceed(managerID));
-                }
-            }
-            m.MCServerRunningStateChanged += HandleMCServerRunningStateChanged;
             if (m.KillMCServer())
             {
-                StaticTools.HandleLog($"强制终止ID为[{m.MCServerManagerConfig.ManagerID}]的服务端成功");
+                StaticTools.HandleLog($"对ID为[{m.MCServerManagerConfig.ManagerID}]的服务端进行强制终止操作成功");
+                NativeServer?.RespondClient(RespondTypeEnum.KillMCServerSucceed, new Pack_KillMCServerSucceed(pack.ManagerID));
                 return;
             }
             else
             {
-                StaticTools.HandleLog($"强制终止ID为[{pack.ManagerID}]的服务端失败");
+                StaticTools.HandleLog($"对ID为[{m.MCServerManagerConfig.ManagerID}]的服务端进行强制终止操作失败");
                 NativeServer?.RespondClient(RespondTypeEnum.KillMCServerFailed, new Pack_KillMCServerFailed(pack.ManagerID));
             }
         }
@@ -416,7 +405,7 @@ namespace PMCSsE_Backend.Modules
         }
         private static void HandlePack_GetNewerMCServerLogs(Pack_GetNewerMCServerLogs pack)
         {
-            StaticTools.HandleLog($"前端请求获取ID为[{pack.ManagerID}]的服务端的第{pack.StartIndex+1}~{pack.StartIndex+1 + (ulong)pack.Count}条日志");
+            StaticTools.HandleLog($"前端请求获取ID为[{pack.ManagerID}]的服务端的第{pack.StartIndex + 1}~{pack.StartIndex + 1 + (ulong)pack.Count}条日志");
             var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
             if (m == null)
             {
@@ -440,11 +429,11 @@ namespace PMCSsE_Backend.Modules
                 NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"没有更旧的日志了"));
                 return;
             }
-            if (pack.Count > pack.EndIndex-1)
+            if (pack.Count > pack.EndIndex - 1)
             {
-                pack.Count = (uint)pack.EndIndex-1;
+                pack.Count = (uint)pack.EndIndex - 1;
             }
-            StaticTools.HandleLog($"前端请求获取ID为[{pack.ManagerID}]的服务端的第{pack.EndIndex-1 - pack.Count}~{pack.EndIndex-1}条日志");
+            StaticTools.HandleLog($"前端请求获取ID为[{pack.ManagerID}]的服务端的第{pack.EndIndex - 1 - pack.Count}~{pack.EndIndex - 1}条日志");
             var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
             if (m == null)
             {

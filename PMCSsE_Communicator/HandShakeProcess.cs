@@ -22,13 +22,22 @@
     }
     internal enum HandShakeProcess_Client
     {
-        Beginning, 
+        Beginning,
         SendingNeedRSAPublicKey,
         SentNeedRSAPublicKey,
         WaitingRSAPublicKey,
         ReceivedRSAPublicKey,
         SendingGotRSAPublicKey,
         SentGotRSAPublicKey,
+        WaitingNeedAES,
+        ReceivedNeedAES,
+        SendingAESKey,
+        SentAESKey,
+        WaitingGotAES,
+        ReceivedGotAES,
+        SendingLogin,
+        SentLogin,
+        WaitingSucceed,
         Finished
     }
 

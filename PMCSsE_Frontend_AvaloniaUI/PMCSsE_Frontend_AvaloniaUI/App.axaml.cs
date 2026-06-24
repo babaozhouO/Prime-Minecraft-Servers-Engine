@@ -15,6 +15,7 @@ using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
+using PMCSsE_Frontend_AvaloniaUI.ViewModels;
 using PMCSsE_Frontend_AvaloniaUI.Views;
 using System.Linq;
 
@@ -25,6 +26,11 @@ namespace PMCSsE_Frontend_AvaloniaUI
     /// </summary>
     public partial class App : Application
     {
+        /// <summary>
+        /// 全局 MainViewModel 引用，供退出清理使用。
+        /// </summary>
+        internal static MainViewModel? MainViewModel { get; set; }
+
         /// <summary>
         /// 加载 XAML 资源并在调试模式下附加开发者工具。
         /// </summary>
@@ -43,9 +49,8 @@ namespace PMCSsE_Frontend_AvaloniaUI
         {
             if (ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
             {
-                // Avoid duplicate validations from both Avalonia and the CommunityToolkit. 
-                // More info: https://docs.avaloniaui.net/docs/guides/development-guides/data-validation#manage-validationplugins
                 desktop.MainWindow = new MainWindow();
+                desktop.Exit += (s, e) => MainViewModel?.CleanupOnExit();
 
             }
             else if (ApplicationLifetime is IActivityApplicationLifetime activityLifetime)
