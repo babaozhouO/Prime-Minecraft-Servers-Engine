@@ -13,7 +13,7 @@ you may not use this file except in compliance with the License.
    limitations under the License.*/
 using Avalonia.Threading;
 using PMCSsE_Frontend_AvaloniaUI.ViewModels;
-using ProtoBuf;
+using LightProto;
 using System;
 using System.IO;
 
@@ -28,6 +28,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.Modules
                 APPConfigClass APPConfig = new() { NativeServerHistories = StaticAPPConfigClass.NativeServerHistories };
                 using FileStream appConfigFile = File.Create(PathsClass.APPConfigPath);
                 Serializer.Serialize<APPConfigClass>(appConfigFile, APPConfig);
+                APPConfig.ToByteArray();
                 return string.Empty;
             }
             catch (Exception ex)

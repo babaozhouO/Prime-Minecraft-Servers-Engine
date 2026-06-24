@@ -1,5 +1,5 @@
 ﻿using PMCSsE_Communicator.DataPacks.Pack_StringOnly.Base;
-using ProtoBuf;
+using LightProto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -15,7 +15,7 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
     /// </remarks>
     /// <param name="managerID">目标管理器ID。</param>
     [ProtoContract(SkipConstructor =true)]
-    public class Pack_MCServerExited(string managerID):Pack_ManagerOperation(managerID)
+    public partial class Pack_MCServerExited(string managerID):Pack_ManagerOperation(managerID)
     {
 
     }

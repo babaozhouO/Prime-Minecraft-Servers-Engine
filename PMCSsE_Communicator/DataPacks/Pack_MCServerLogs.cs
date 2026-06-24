@@ -1,6 +1,6 @@
 ﻿using PMCSsE_Communicator.DataPacks.Pack_StringOnly.Base;
 using PMCSsE_Communicator.SharedCodes;
-using ProtoBuf;
+using LightProto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -12,7 +12,7 @@ namespace PMCSsE_Communicator.DataPacks
     /// 通常用于同步或推送管理器的历史或实时日志。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_MCServerLogs(string managerID, List<LogEntry> logs, bool resetHint)
+    public partial class Pack_MCServerLogs(string managerID, List<LogEntry> logs, bool resetHint)
     {
         /// <summary>
         /// 日志所属管理器的唯一标识符。

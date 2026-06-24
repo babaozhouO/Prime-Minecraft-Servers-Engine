@@ -1,8 +1,7 @@
 ﻿using PMCSsE_Communicator.DataPacks;
 using PMCSsE_Communicator.DataPacks.Pack_nothing;
 using PMCSsE_Communicator.DataPacks.Pack_StringOnly;
-using ProtoBuf;
-using ProtoBuf.Meta;
+using LightProto;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Net;
@@ -69,7 +68,6 @@ namespace PMCSsE_Communicator
             IP = ip;
             Port = port;
             StopToken = new();
-            RuntimeTypeModel.Default.CompileInPlace();//提前编译序列化器
         }
 
         /// <summary>
@@ -511,7 +509,7 @@ namespace PMCSsE_Communicator
         /// </summary>
         /// <param name="requestTypeEnum">请求的枚举类型</param>
         /// <param name="payloadObject"></param>
-        public void RequestBackend<T>(RequestTypeEnum requestTypeEnum, T payloadObject)
+        public void RequestBackend<T>(RequestTypeEnum requestTypeEnum, T payloadObject)where T:IProtoParser<T>
         {
             if (!HandShakeFinished || ClientInfo == null)
                 return;
@@ -542,13 +540,11 @@ namespace PMCSsE_Communicator
                 ReportLog("回复心跳包失败");
             }
         }
-        private (byte[] payload, bool succeed) SerializePayloadObject<T>(T payloadObject)
+        private (byte[] payload, bool succeed) SerializePayloadObject<T>(T payloadObject) where T : IProtoParser<T>
         {
             try
             {
-                MemoryStream ms = new();
-                Serializer.Serialize(ms, payloadObject);
-                return (ms.ToArray(), true);
+                return (payloadObject.ToByteArray(), true);
             }
             catch (Exception ex)
             {
@@ -557,7 +553,7 @@ namespace PMCSsE_Communicator
             return ([], false);
         }
         /// <summary>
-        /// 生成数据包（HTTP风格的包体包含类型标识和ProtoBuf序列化内容）
+        /// 生成数据包（HTTP风格的包体包含类型标识和LightProto序列化内容）
         /// </summary>
         private (byte[] dataPack, bool succeed) GenerateDataPack(RequestTypeEnum_Private type, byte[] payload, bool needAes = true)
         {
@@ -870,7 +866,7 @@ namespace PMCSsE_Communicator
                     RespondTypeEnum_Private respondType = (RespondTypeEnum_Private)type2;
                     if (dataPack.Length > 2)
                     {
-                        ReadOnlyMemory<byte> payload = dataPack.AsMemory(2);
+                        ReadOnlySpan<byte> payload = dataPack.AsSpan(2);
                         try
                         {
                             switch (respondType)
@@ -948,7 +944,7 @@ namespace PMCSsE_Communicator
                         }
                         catch (Exception ex)
                         {
-                            ReportLog($"ProtoBuf 反序列化响应内容失败 (类型: {respondType})：{ex.Message}");
+                            ReportLog($"LightProto 反序列化响应内容失败 (类型: {respondType})：{ex.Message}");
                             return;
                         }
                     }
@@ -986,7 +982,7 @@ namespace PMCSsE_Communicator
         {
             using (ClientInfo!.TasksQueueLock.EnterScope())
             {
-                ClientInfo.TasksQueue.Enqueue(async()=>await SendLoginAsync(password));
+                ClientInfo.TasksQueue.Enqueue(async () => await SendLoginAsync(password));
             }
         }
         /// <summary>

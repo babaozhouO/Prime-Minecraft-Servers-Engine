@@ -1,4 +1,4 @@
-﻿using ProtoBuf;
+﻿using LightProto;
 
 namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly.Base
 {
@@ -33,7 +33,7 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly.Base
     [ProtoInclude(21, typeof(Pack_KillMCServerSucceed))]
     [ProtoInclude(22, typeof(Pack_KillMCServerFailed))]
     [ProtoInclude(23, typeof(Pack_MCServerExited))]
-    public class Pack_ManagerOperation(string managerID)
+    public partial class Pack_ManagerOperation(string managerID)
     {
         /// <summary>
         /// 目标管理器的唯一标识符。

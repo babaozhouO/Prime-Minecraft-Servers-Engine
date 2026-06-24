@@ -1,4 +1,4 @@
-﻿using ProtoBuf;
+﻿using LightProto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +10,7 @@ namespace PMCSsE_Communicator.DataPacks
     /// 用于在创建管理器成功后将 MCServerManagerConfig 发送给接收端。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_CreatedNewMCServerManager(MCServerManagerConfig mCServerManagerConfig)
+    public partial class Pack_CreatedNewMCServerManager(MCServerManagerConfig mCServerManagerConfig)
     {
         /// <summary>
         /// 新创建的管理器配置对象。

@@ -1,4 +1,4 @@
-﻿using ProtoBuf;
+﻿using LightProto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,7 +9,7 @@ namespace PMCSsE_Communicator.DataPacks
      /// 包含需要修改或已修改的 MCServerManagerConfig 对象。
      /// </summary>
     [ProtoContract(SkipConstructor =true)]
-    public class Pack_ModifyMCServerManagerConfig(MCServerManagerConfig config)
+    public partial class Pack_ModifyMCServerManagerConfig(MCServerManagerConfig config)
     {
         /// <summary>
         /// 需要修改或已修改的管理器配置对象。

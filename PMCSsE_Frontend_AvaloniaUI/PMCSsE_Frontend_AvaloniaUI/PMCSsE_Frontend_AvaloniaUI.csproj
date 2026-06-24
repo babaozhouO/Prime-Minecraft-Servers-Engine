@@ -30,6 +30,7 @@
 		<PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
 		<PackageReference Include="CommunityToolkit.Mvvm" />
+		<PackageReference Include="LightProto" />
 		<PackageReference Include="ReactiveUI.Avalonia" />
 	</ItemGroup>
 

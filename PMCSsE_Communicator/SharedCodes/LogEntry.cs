@@ -11,7 +11,7 @@ you may not use this file except in compliance with the License.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.*/
-using ProtoBuf;
+using LightProto;
 
 namespace PMCSsE_Communicator.SharedCodes
 {
@@ -19,7 +19,7 @@ namespace PMCSsE_Communicator.SharedCodes
     /// 用以传输日志的包装类
     ///</summary>
     [ProtoContract(SkipConstructor = true)]
-    public class LogEntry(ulong id, string log)
+    public partial class LogEntry(ulong id, string log)
     {
         /// <summary>
         /// 编号

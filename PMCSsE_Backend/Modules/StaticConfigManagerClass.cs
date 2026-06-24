@@ -12,7 +12,7 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 using PMCSsE_Communicator;
-using ProtoBuf;
+using LightProto;
 using System.Text.Json;
 
 namespace PMCSsE_Backend.Modules

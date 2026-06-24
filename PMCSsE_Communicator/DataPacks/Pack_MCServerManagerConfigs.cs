@@ -1,4 +1,4 @@
-﻿using ProtoBuf;
+﻿using LightProto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +10,7 @@ namespace PMCSsE_Communicator.DataPacks
     /// 用于客户端获取或更新所有管理器的配置集合。
     /// </summary>
     [ProtoContract(SkipConstructor =true)]
-    public class Pack_MCServerManagerConfigs(MCServerManagerConfigs MCServerManagerConfigs)
+    public partial class Pack_MCServerManagerConfigs(MCServerManagerConfigs MCServerManagerConfigs)
     {
         /// <summary>
         /// 所有管理器的配置集合，包含版本号和配置列表。

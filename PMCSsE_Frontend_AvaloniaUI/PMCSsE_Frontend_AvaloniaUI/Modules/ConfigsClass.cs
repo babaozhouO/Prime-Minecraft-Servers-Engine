@@ -11,7 +11,7 @@ you may not use this file except in compliance with the License.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.*/
-using ProtoBuf;
+using LightProto;
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
@@ -30,7 +30,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.Modules
     }
 
     [ProtoContract]
-    internal class APPConfigClass
+    internal partial class APPConfigClass
     {
         [ProtoMember(1)]
         internal List<NativeServerHistory> NativeServerHistories { get; set; } = [];
@@ -40,8 +40,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.Modules
         internal static List<NativeServerHistory> NativeServerHistories { get; set; } = [];
     }
 
-    [ProtoContract]
-    public class NativeServerHistory
+    [ProtoContract(SkipConstructor =true)]
+    public partial class NativeServerHistory
     {
         [ProtoMember(1)]
         internal string IP { get; set; } = "";

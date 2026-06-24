@@ -1,4 +1,4 @@
-﻿using ProtoBuf;
+﻿using LightProto;
 
 namespace PMCSsE_Communicator
 {
@@ -6,7 +6,7 @@ namespace PMCSsE_Communicator
     /// 多个 MC 服务端管理器数据的聚合容器，用于一次性传输所有管理器的状态信息。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class MCServerManagersData
+    public partial class MCServerManagersData
     {
         /// <summary>
         /// MC 服务端管理器数据列表。
@@ -18,7 +18,7 @@ namespace PMCSsE_Communicator
     /// 单个 MC 服务端管理器的运行时状态数据，包含管理器的唯一标识和运行状态。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class MCServerManagerData
+    public partial class MCServerManagerData
     {
         /// <summary>
         /// 管理器的唯一标识符。
@@ -35,8 +35,8 @@ namespace PMCSsE_Communicator
     /// <summary>
     /// MC服务端配置类,包含多个MC服务端管理实例的配置和版本号
     /// </summary>
-    [ProtoContract]
-    public class MCServerManagerConfigs
+    [ProtoContract(SkipConstructor = true)]
+    public partial class MCServerManagerConfigs
     {
         /// <summary>
         /// 版本号
@@ -67,7 +67,7 @@ namespace PMCSsE_Communicator
     /// 单个MC服务端管理实例的配置结构
     /// </summary>
     [ProtoContract]
-    public class MCServerManagerConfig
+    public partial class MCServerManagerConfig
     {
         /// <summary>
         /// MC服务端管理实例ID
@@ -114,8 +114,8 @@ namespace PMCSsE_Communicator
     /// <summary>
     /// 备份工具配置
     /// </summary>
-    [ProtoContract]
-    public class BackupManagerConfig
+    [ProtoContract(SkipConstructor =true)]
+    public partial class BackupManagerConfig
     {
         //-----------------------------------------------备份器配置-------------------------------//
         /// <summary>
@@ -224,8 +224,8 @@ namespace PMCSsE_Communicator
     /// <summary>
     /// SFTP客户端配置
     /// </summary>
-    [ProtoContract]
-    public class SFTPClientConfig
+    [ProtoContract(SkipConstructor = true)]
+    public partial class SFTPClientConfig
     {
         /// <summary>
         /// 是否启用
@@ -262,7 +262,7 @@ namespace PMCSsE_Communicator
     /// 在线聊天系统配置
     /// </summary>
     [ProtoContract]
-    public class OnlineChattingSystemConfig
+    public partial class OnlineChattingSystemConfig
     {
         /// <summary>
         /// 监听连接请求的端口
@@ -283,8 +283,8 @@ namespace PMCSsE_Communicator
     /// <summary>
     /// 玩家账户类
     /// </summary>
-    [ProtoContract]
-    public class PlayerAccount
+    [ProtoContract(SkipConstructor = true)]
+    public partial class PlayerAccount
     {
         /// <summary>
         /// 是否已审核通过

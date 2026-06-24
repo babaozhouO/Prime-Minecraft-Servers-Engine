@@ -1,4 +1,4 @@
-﻿using ProtoBuf;
+﻿using LightProto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +10,7 @@ namespace PMCSsE_Communicator.DataPacks
     /// 客户端可使用该包向服务器请求从 startIndex 开始的后续日志，最多 count 条。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_GetNewerMCServerLogs(string managerID, ulong startIndex, int count)
+    public partial class Pack_GetNewerMCServerLogs(string managerID, ulong startIndex, int count)
     {
         /// <summary>
         /// 管理器ID

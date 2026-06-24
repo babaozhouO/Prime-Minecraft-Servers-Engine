@@ -1,4 +1,4 @@
-﻿using ProtoBuf;
+﻿using LightProto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +10,7 @@ namespace PMCSsE_Communicator.DataPacks
     /// 用于一次性将多个管理器的信息发送给客户端或接收端。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_MCServerManagers(MCServerManagersData mCServerManagersData)
+    public partial class Pack_MCServerManagers(MCServerManagersData mCServerManagersData)
     {
         /// <summary>
         /// 包含多个管理器状态信息的聚合数据对象。

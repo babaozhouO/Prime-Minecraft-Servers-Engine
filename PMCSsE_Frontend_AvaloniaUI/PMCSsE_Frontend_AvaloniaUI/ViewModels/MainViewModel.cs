@@ -499,29 +499,29 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         private void HandlePack_MCServerManagers(Pack_MCServerManagers pack)
         {
-            LoadedMCServerManagers_IS.Clear();
-            pack.MCServerManagersData.MCServerManagerDataList?.ForEach((md) =>
-                {
-                    var mc = AllMCServerManagers_IS.FirstOrDefault(mc => mc.ManagerID == md.ManagerID);
-                    if (mc == null) return;
-                    LoadedMCServerManagers_IS.Add(new MCServerManager_LBItemModel(mc.Config, md));
-                    return;
-                });
 
             Dispatcher.UIThread.Post((state) =>
             {
+                LoadedMCServerManagers_IS.Clear();
+                pack.MCServerManagersData.MCServerManagerDataList?.ForEach((md) =>
+                    {
+                        var mc = AllMCServerManagers_IS.FirstOrDefault(mc => mc.ManagerID == md.ManagerID);
+                        if (mc == null) return;
+                        LoadedMCServerManagers_IS.Add(new MCServerManager_LBItemModel(mc.Config, md));
+                        return;
+                    });
                 SendMessage($"刷新已加载的服务端管理器成功", 3);
             }, null);
         }
         private void HandlePack_SupportedMCServerTypes(Pack_SupportedMCServerTypes pack)
         {
-            SupportedMCServerTypes_IS.Clear();
-            foreach (var type in pack.SupportedMCServerTypes)
-            {
-                SupportedMCServerTypes_IS.Add(type);
-            }
             Dispatcher.UIThread.Post((state) =>
             {
+                SupportedMCServerTypes_IS.Clear();
+                foreach (var type in pack.SupportedMCServerTypes)
+                {
+                    SupportedMCServerTypes_IS.Add(type);
+                }
                 SendMessage("获取支持的服务端类型成功", 3);
             }, null);
         }

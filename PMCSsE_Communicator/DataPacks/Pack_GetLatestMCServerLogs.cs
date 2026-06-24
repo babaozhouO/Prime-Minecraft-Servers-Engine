@@ -1,4 +1,4 @@
-﻿using ProtoBuf;
+﻿using LightProto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -10,7 +10,7 @@ namespace PMCSsE_Communicator.DataPacks
     /// 包含目标管理器 ID 与希望获取的日志数量。
     /// </summary>
     [ProtoContract(SkipConstructor =true)]
-    public class Pack_GetLatestMCServerLogs(string managerID, int count)
+    public partial class Pack_GetLatestMCServerLogs(string managerID, int count)
     {
         /// <summary>
         /// 目标管理器的唯一标识符。

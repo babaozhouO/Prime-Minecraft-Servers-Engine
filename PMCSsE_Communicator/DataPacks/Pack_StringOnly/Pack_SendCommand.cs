@@ -1,5 +1,5 @@
 ﻿using PMCSsE_Communicator.DataPacks.Pack_StringOnly.Base;
-using ProtoBuf;
+using LightProto;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -11,7 +11,7 @@ namespace PMCSsE_Communicator.DataPacks.Pack_StringOnly
     /// 继承自 Pack_ManagerOperation，包含 ManagerID 与 Command 字段。
     /// </summary>
     [ProtoContract(SkipConstructor = true)]
-    public class Pack_SendCommand(string managerID, string command) : Pack_ManagerOperation(managerID)
+    public partial class Pack_SendCommand(string managerID, string command) : Pack_ManagerOperation(managerID)
     {
         /// <summary>
         /// 要发送到 Minecraft 服务器的控制台命令文本。

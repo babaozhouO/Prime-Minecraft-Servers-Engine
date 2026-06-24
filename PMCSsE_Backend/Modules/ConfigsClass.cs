@@ -11,7 +11,7 @@ you may not use this file except in compliance with the License.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.*/
-using ProtoBuf;
+using LightProto;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -42,8 +42,8 @@ namespace PMCSsE_Backend.Modules
         internal static readonly string PluginsDir = Path.Combine(APPDir, "plugins");
     }
 
-    [ProtoContract]
-    internal class APPConfigClass
+    [ProtoContract(SkipConstructor =true)]
+    internal partial class APPConfigClass
     {
         [ProtoMember(1)]
         internal int ListenPort { get; set; } = 20000;

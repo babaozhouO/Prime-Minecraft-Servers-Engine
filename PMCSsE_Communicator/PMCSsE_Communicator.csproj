@@ -44,8 +44,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="LightProto" Version="1.3.2" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
-    <PackageReference Include="protobuf-net" Version="3.2.56" />
   </ItemGroup>
 
   <ItemGroup>
@@ -54,7 +54,7 @@
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Update="Licenses\Google.Protobuf-3.33.2-LICENSE.txt">
+    <None Update="Licenses\Google.LightProto-3.33.2-LICENSE.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Update="Licenses\Grpc.Tools-2.76.0-LICENSE.txt">
