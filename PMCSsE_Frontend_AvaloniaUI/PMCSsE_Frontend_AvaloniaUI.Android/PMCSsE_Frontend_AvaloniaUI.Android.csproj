@@ -1,46 +1,48 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
-    <TargetFramework>net10.0-android36.0</TargetFramework>
-    <SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
-    <Nullable>enable</Nullable>
-    <ApplicationId>com.CompanyName.PMCSsE_Frontend_AvaloniaUI</ApplicationId>
-    <ApplicationVersion>1</ApplicationVersion>
-    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
-    <AndroidPackageFormat>apk</AndroidPackageFormat>
-    <AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
-    <ImplicitUsings>disable</ImplicitUsings>
-    <AndroidSigningKeyStore>.\..\..\..\PMCSsE_Frontend_AvaloniaUI.keystore</AndroidSigningKeyStore>
-    <BaseOutputPath>.\..\..\生成\PMCSsE_Frontend_AvaloniaUI.Android</BaseOutputPath>
-    <!-- Minimum Android SDK required by some AndroidX libraries -->
-    <AndroidMinSdkVersion>23</AndroidMinSdkVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DebugType>embedded</DebugType>
-    <AndroidSigningKeyAlias>PMCSsE_Frontend_AvaloniaUI</AndroidSigningKeyAlias>
-    <AndroidApkSignerAdditionalArguments>--v2-signing-enabled true</AndroidApkSignerAdditionalArguments>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <DebugType>embedded</DebugType>
-    <AndroidSigningKeyAlias>PMCSsE_Frontend_AvaloniaUI</AndroidSigningKeyAlias>
-    <AndroidApkSignerAdditionalArguments>--v2-signing-enabled true</AndroidApkSignerAdditionalArguments>
-  </PropertyGroup>
-  <PropertyGroup Label="Avalonia">
-    <AvaloniaUseCompiledBindingsByDefault>True</AvaloniaUseCompiledBindingsByDefault>
-    <SignAssembly>False</SignAssembly>
-  </PropertyGroup>
-  <ItemGroup>
-    <None Remove="Icon.png" />
-    <None Remove="PMCSsE_Frontend_AvaloniaUI.keystore" />
-    <None Remove="publish.bat" />
-  </ItemGroup>
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<TargetFramework>net10.0-android36.0</TargetFramework>
+		<SupportedOSPlatformVersion>23</SupportedOSPlatformVersion>
+		<Nullable>enable</Nullable>
+		<ApplicationId>com.CompanyName.PMCSsE_Frontend_AvaloniaUI</ApplicationId>
+		<ApplicationVersion>1</ApplicationVersion>
+		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<AndroidPackageFormat>apk</AndroidPackageFormat>
+		<AndroidEnableProfiledAot>false</AndroidEnableProfiledAot>
+		<ImplicitUsings>disable</ImplicitUsings>
+		<AndroidSigningKeyStore>.\..\..\..\PMCSsE_Frontend_AvaloniaUI.keystore</AndroidSigningKeyStore>
+		<BaseOutputPath>.\..\..\生成\PMCSsE_Frontend_AvaloniaUI.Android</BaseOutputPath>
+		<!-- Minimum Android SDK required by some AndroidX libraries -->
+		<AndroidMinSdkVersion>23</AndroidMinSdkVersion>
+		<!--<PublishAot>true</PublishAot>-->
+		<IsAotCompatible>true</IsAotCompatible>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+		<DebugType>embedded</DebugType>
+		<AndroidSigningKeyAlias>PMCSsE_Frontend_AvaloniaUI</AndroidSigningKeyAlias>
+		<AndroidApkSignerAdditionalArguments>--v2-signing-enabled true</AndroidApkSignerAdditionalArguments>
+	</PropertyGroup>
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+		<DebugType>embedded</DebugType>
+		<AndroidSigningKeyAlias>PMCSsE_Frontend_AvaloniaUI</AndroidSigningKeyAlias>
+		<AndroidApkSignerAdditionalArguments>--v2-signing-enabled true</AndroidApkSignerAdditionalArguments>
+	</PropertyGroup>
+	<PropertyGroup Label="Avalonia">
+		<AvaloniaUseCompiledBindingsByDefault>True</AvaloniaUseCompiledBindingsByDefault>
+		<SignAssembly>False</SignAssembly>
+	</PropertyGroup>
+	<ItemGroup>
+		<None Remove="Icon.png" />
+		<None Remove="PMCSsE_Frontend_AvaloniaUI.keystore" />
+		<None Remove="publish.bat" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Avalonia.Android" />
-    <PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Avalonia.Android" />
+		<PackageReference Include="Xamarin.AndroidX.Core.SplashScreen" />
+	</ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\PMCSsE_Frontend_AvaloniaUI\PMCSsE_Frontend_AvaloniaUI.csproj" />
-  </ItemGroup>
+	<ItemGroup>
+		<ProjectReference Include="..\PMCSsE_Frontend_AvaloniaUI\PMCSsE_Frontend_AvaloniaUI.csproj" />
+	</ItemGroup>
 </Project>

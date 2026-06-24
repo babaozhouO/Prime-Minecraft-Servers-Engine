@@ -3,7 +3,6 @@ using Avalonia.Media.Imaging;
 using Avalonia.Platform;
 using Avalonia.Threading;
 using AvaloniaEdit.Document;
-using AvaloniaEdit.Utils;
 using PMCSsE_Communicator;
 using PMCSsE_Communicator.DataPacks;
 using PMCSsE_Communicator.DataPacks.Pack_nothing;
@@ -13,18 +12,16 @@ using PMCSsE_Frontend_AvaloniaUI.Modules;
 using ReactiveUI;
 using ReactiveUI.Avalonia;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
-using System.Reflection.Metadata;
 using System.Text;
 
 namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 {
-    public class MainViewModel : ViewModelBase
+    public class MainViewModel : ReactiveObject
     {
         private readonly IImage ConnectedImage = new Bitmap(AssetLoader.Open(new Uri("avares://PMCSsE_Frontend_AvaloniaUI/Icons/Link.png")));
         private readonly IImage DisconnectedImage = new Bitmap(AssetLoader.Open(new Uri("avares://PMCSsE_Frontend_AvaloniaUI/Icons/Unlink.png")));

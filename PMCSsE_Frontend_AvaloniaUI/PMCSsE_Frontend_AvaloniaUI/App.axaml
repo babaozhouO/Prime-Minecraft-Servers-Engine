@@ -13,14 +13,9 @@ See the License for the specific language governing permissions and
 limitations under the License.-->
 <Application xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:local="using:PMCSsE_Frontend_AvaloniaUI"
-             xmlns:msbox="using:MsBox.Avalonia.Controls"
              x:Class="PMCSsE_Frontend_AvaloniaUI.App"
              RequestedThemeVariant="Light">
     <!-- "Default" ThemeVariant follows system theme variant. "Dark" or "Light" are other available options. -->
-    <Application.DataTemplates>
-        <local:ViewLocator/>
-    </Application.DataTemplates>
     <Application.Styles>
         <FluentTheme/>
         <StyleInclude Source="avares://AvaloniaEdit/Themes/Fluent/AvaloniaEdit.xaml"/>

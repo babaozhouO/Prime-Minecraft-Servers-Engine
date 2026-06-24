@@ -6,7 +6,6 @@ using ProtoBuf.Meta;
 using System.Buffers.Binary;
 using System.Net;
 using System.Net.Sockets;
-using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Text;
 

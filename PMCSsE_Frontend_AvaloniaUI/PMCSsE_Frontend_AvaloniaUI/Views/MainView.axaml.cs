@@ -1,9 +1,9 @@
 ﻿using Avalonia.Controls;
 using Avalonia.VisualTree;
-using AvaloniaEdit;
-using AvaloniaEdit.Document;
 using AvaloniaEdit.TextMate;
 using PMCSsE_Frontend_AvaloniaUI.ViewModels;
+using ReactiveUI;
+using ReactiveUI.Avalonia;
 using TextMateSharp.Grammars;
 
 namespace PMCSsE_Frontend_AvaloniaUI.Views;
@@ -11,7 +11,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.Views;
 /// <summary>
 /// 主视图控件，承载前端的主要 UI 布局和交互逻辑。
 /// </summary>
-public partial class MainView : UserControl
+public partial class MainView : ReactiveUserControl<MainViewModel>
 {
     /// <summary>
     /// 初始化主视图，设置 DataContext 并配置日志编辑器的语法高亮。

@@ -18,7 +18,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.iOS
         protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
         {
             return base.CustomizeAppBuilder(builder)
-                .WithInterFont();
+                .WithSystemFontSource(new System.Uri("avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf#Source Han Sans SC"));
         }
     }
 }

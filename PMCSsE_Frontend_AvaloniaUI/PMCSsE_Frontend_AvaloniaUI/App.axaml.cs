@@ -51,7 +51,6 @@ namespace PMCSsE_Frontend_AvaloniaUI
             {
                 desktop.MainWindow = new MainWindow();
                 desktop.Exit += (s, e) => MainViewModel?.CleanupOnExit();
-
             }
             else if (ApplicationLifetime is IActivityApplicationLifetime activityLifetime)
             {
