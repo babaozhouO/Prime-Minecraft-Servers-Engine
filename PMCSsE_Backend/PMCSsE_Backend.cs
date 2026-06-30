@@ -61,13 +61,13 @@ namespace PMCSsE_Backend
             }
             AppDomain.CurrentDomain.UnhandledException += (sender, e) =>
             {
+                var ex = (Exception)e.ExceptionObject;
+                StaticTools.HandleLog($"发生未处理的异常，请复制此消息并反馈: {ex.Message}{Environment.NewLine}{ex.StackTrace}{Environment.NewLine}内部异常：{ex.InnerException?.Message}");
                 MCServerManagers_ManagerClass.ShutDown();
                 StaticTools.HandleLog("正在停止日志记录");
                 StaticTools.LogsWriter.Dispose();
                 StaticTools.HandleLog("已停止日志记录");
                 StaticTools.HandleLog("程序已停止并释放资源");
-                var ex = (Exception)e.ExceptionObject;
-                try { StaticTools.HandleLog($"发生未处理的异常，请复制此消息并反馈: {ex.Message}{Environment.NewLine}{ex.StackTrace}{Environment.NewLine}内部异常：{ex.InnerException?.Message}"); } catch { }
                 Thread.Sleep(10000);//10s
                 try { Console.ReadLine(); } catch { }
                 try { Environment.Exit(1); } catch { }
@@ -81,29 +81,136 @@ namespace PMCSsE_Backend
                 if (Console.IsInputRedirected)
                 {
                     StaticTools.HandleLog("初次启动需要进行交互以配置程序，但当前输入流已被重定向");
-                    StaticTools.HandleLog("若使用Linux，请尝试直接使用SSH连接");
+                    StaticTools.HandleLog("若使用Linux，请尝试使用SSH直接连接，部分远程面板会重定向输入");
                     return 1;
                 }
                 StaticTools.HandleLog($"PMCSsE正在启动（配置模式）{(RunningStateRecorder.Debug ? "（调试模式）" : "")}");
                 StaticTools.HandleLog("项目网址：https://github.com/babaozhouO/Prime-Minecraft-Servers-Engine");
-                StaticTools.HandleLog($"此模式下，你可以：");
-                StaticTools.HandleLog($"配置/修改端口号");
-                StaticTools.HandleLog($"配置/修改访问密钥");
-                if (!StaticConfigManagerClass.LoadConfig())
+                switch (StaticConfigManagerClass.ConfigFilesState)
                 {
-                    StaticTools.HandleLog("按Enter键退出");
-                    try
-                    {
-                        Console.ReadLine();
-                    }
-                    catch { }
-                    return 1;
+                    case StaticConfigManagerClass.ConfigFilesStateEnum.Good:
+                        StaticTools.HandleLog($"当前配置文件状态：正常");
+                        StaticTools.HandleLog($"此模式下，你可以：");
+                        StaticTools.HandleLog($"修改监听地址及端口号");
+                        StaticTools.HandleLog($"修改访问密钥");
+                        if (!StaticConfigManagerClass.LoadConfig_Plaintext())
+                        {
+                            StaticTools.HandleLog("按Enter键退出");
+                            try
+                            {
+                                Console.ReadLine();
+                            }
+                            catch { }
+                            return 1;
+                        }
+                        break;
+                    case StaticConfigManagerClass.ConfigFilesStateEnum.WhereIsThePlaintextConfig:
+                        StaticTools.HandleLog($"当前配置文件状态：明文部分缺失");
+                        StaticTools.HandleLog("请检查配置文件是否被意外删除");
+                        StaticTools.HandleLog($"若你想删除配置文件，请将两个文件一并删除");
+                        StaticTools.HandleLog($"若你忘记密码，只能删除所有配置，无任何手段找回密码");
+                        StaticTools.HandleLog($"请退出程序，处理配置文件异常");
+                        StaticTools.HandleLog("按Enter键退出");
+                        try
+                        {
+                            Console.ReadLine();
+                        }
+                        catch { }
+                        return 1;
+                    case StaticConfigManagerClass.ConfigFilesStateEnum.WhereIsTheCiphertextConfig:
+                        StaticTools.HandleLog($"当前配置文件状态：密文部分缺失");
+                        StaticTools.HandleLog("请检查配置文件是否被意外删除");
+                        StaticTools.HandleLog($"若你想删除配置文件，请将两个文件一并删除");
+                        StaticTools.HandleLog($"若你忘记密码，只能删除所有配置，无任何手段找回密码");
+                        StaticTools.HandleLog($"请退出程序，处理配置文件异常");
+                        StaticTools.HandleLog("按Enter键退出");
+                        try
+                        {
+                            Console.ReadLine();
+                        }
+                        catch { }
+                        return 1;
+                    case StaticConfigManagerClass.ConfigFilesStateEnum.Welcome:
+                        StaticTools.HandleLog($"当前配置文件状态：未初始化");
+                        StaticTools.HandleLog($"此模式下，你可以：");
+                        StaticTools.HandleLog($"配置监听地址及端口号");
+                        StaticTools.HandleLog($"配置访问密钥");
+                        break;
                 }
                 while (true)
                 {
-                    StaticTools.HandleLog("请设置前端的连接端口，纯数字（0~65535）");
-                    StaticTools.HandleLog("应避免使用网络服务中的常用端口号，如Web(80)，SSH(22)");
-                    string? input;
+                    // 构建可选地址列表
+                    var options = new List<string>
+                    {
+                        "All",
+                        "0.0.0.0",
+                        "::",
+                        "127.0.0.1",
+                        "::1"
+                    };
+                    try
+                    {
+                        var hostEntry = Dns.GetHostEntry(Dns.GetHostName());
+                        foreach (var iPAddress in hostEntry.AddressList)
+                        {
+                            options.Add(iPAddress.ToString());
+                        }
+                    }
+                    catch (SocketException ex)
+                    {
+                        StaticTools.HandleLog($"获取本机可用地址时发生Socket异常：{ex.Message}，错误码：{ex.SocketErrorCode}，堆栈：{ex.StackTrace}");
+                    }
+                    catch (Exception ex)
+                    {
+                        StaticTools.HandleLog($"获取本机可用地址时发生异常：{ex.Message}，堆栈：{ex.StackTrace}");
+                    }
+
+                    // 输出列表供用户选择
+                    StaticTools.HandleLog("请选择要监听的 IP 地址 (输入对应序号):");
+                    for (int i = 0; i < options.Count; i++)
+                    {
+                        switch (i)
+                        {
+                            case 0:
+                                StaticTools.HandleLog($"[{i}] {options[i]} (所有IPv4和IPv6地址)");
+                                break;
+                            case 1:
+                                StaticTools.HandleLog($"[{i}] {options[i]} (所有IPv4地址)");
+                                break;
+                            case 2:
+                                StaticTools.HandleLog($"[{i}] {options[i]} (所有IPv6地址)");
+                                break;
+                            case 3:
+                                StaticTools.HandleLog($"[{i}] {options[i]} (本机IPv4回环)");
+                                break;
+                            case 4:
+                                StaticTools.HandleLog($"[{i}] {options[i]} (本机IPv6回环)");
+                                break;
+                            default:
+                                StaticTools.HandleLog($"[{i}] {options[i]}");
+                                break;
+                        }
+                    }
+
+                    StaticTools.HandleLog("请输入序号: ");
+                    string? input = Console.ReadLine();
+                    while (true)
+                    {
+                        if (!int.TryParse(input, out int selectedIndex) || selectedIndex < 0 || selectedIndex >= options.Count)
+                        {
+                            StaticTools.HandleLog("输入无效");
+                            continue;
+                        }
+                        StaticConfig_Plaintext.ListenAddress = options[selectedIndex];
+                        StaticTools.HandleLog($"选择的地址：{StaticConfig_Plaintext.ListenAddress}");
+                        break;
+                    }
+
+                    StaticTools.HandleLog("请设置前端的连接端口，纯数字（1~65535）");
+                    StaticTools.HandleLog("应避免使用网络服务中的常用端口号");
+                    StaticTools.HandleLog("如Web(80)，SSH(22)，以及其它具有特殊作用的端口");
+                    StaticTools.HandleLog("若使用低端口号（1~1023），启动监听需要以管理员身份运行");
+
                     try
                     {
                         input = Console.ReadLine();
@@ -141,9 +248,9 @@ namespace PMCSsE_Backend
                         StaticTools.HandleLog("数字过大");
                         continue;
                     }
-                    if (port < 0 || port > 65535)
+                    if (port < 1 || port > 65535)
                     {
-                        StaticTools.HandleLog("超出端口号范围（0~65535）");
+                        StaticTools.HandleLog("超出端口号范围（1~65535）");
                         continue;
                     }
                     try
@@ -174,10 +281,11 @@ namespace PMCSsE_Backend
                     }
                     //检查通过
                     StaticTools.HandleLog($"端口号可用性验证通过");
-                    StaticAPPConfigClass.ListenPort = port;
+                    StaticConfig_Plaintext.ListenPort = port;
+                    StaticConfigManagerClass.SaveConfig_Plaintext();
                     break;
                 }
-                while (StaticAPPConfigClass.Registered)
+                while (!StaticConfig_Plaintext.SaltOfCipherConfigKey.Equals(Array.Empty<byte>()))
                 {
                     StaticTools.HandleLog($"已设置访问密钥，修改需输入旧访问密钥，不输入任何文字并按Enter可取消修改");
                     string? input;
@@ -200,6 +308,11 @@ namespace PMCSsE_Backend
                     }
                     if (!string.IsNullOrEmpty(input))
                     {
+                        if (input.Length < 8 && !RunningStateRecorder.Debug)//方便调试
+                        {
+                            StaticTools.HandleLog("密钥长度过短，应大于或等于8个字符");
+                            continue;
+                        }
                         byte[] passwordBytes;
                         try
                         {
@@ -212,32 +325,32 @@ namespace PMCSsE_Backend
                             StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
                             continue;
                         }
-                        //迭代次数合理，算法跨平台，sha256全平台支持，输出长度合理，不会发生异常
-                        byte[] saltedPasswordHash = Rfc2898DeriveBytes.Pbkdf2(
-                            passwordBytes,
-                            StaticAPPConfigClass.Salt,
-                            iterations: 100000,//迭代次数
-                            hashAlgorithm: HashAlgorithmName.SHA256,
-                            outputLength: 32
-                        );
-                        if (saltedPasswordHash.SequenceEqual(StaticAPPConfigClass.SaltedPasswordHash))
-                        {
-                            StaticTools.HandleLog("密钥正确");
-                            StaticAPPConfigClass.Registered = false;
-                            break;
-                        }
-                        else
-                        {
-                            StaticTools.HandleLog("密钥错误");
-                            continue;
-                        }
+                        ////迭代次数合理，算法跨平台，sha256全平台支持，输出长度合理，不会发生异常
+                        //byte[] saltedPasswordHash = Rfc2898DeriveBytes.Pbkdf2(
+                        //    passwordBytes,
+                        //    StaticConfig_Ciphertext.SaltOfLoginKey,
+                        //    iterations: 100000,//迭代次数
+                        //    hashAlgorithm: HashAlgorithmName.SHA256,
+                        //    outputLength: 32
+                        //);
+                        //if (saltedPasswordHash.SequenceEqual(StaticConfig_Ciphertext.SaltedLoginKeyHash))
+                        //{
+                        //    StaticTools.HandleLog("密钥正确");
+                        //    StaticConfig_Ciphertext.Registered = false;
+                        //    break;
+                        //}
+                        //else
+                        //{
+                        //    StaticTools.HandleLog("密钥错误");
+                        //    continue;
+                        //}
                     }
                     else
                     {
                         break;
                     }
                 }
-                while (!StaticAPPConfigClass.Registered)
+                while (StaticConfig_Plaintext.SaltOfCipherConfigKey.Equals(Array.Empty<byte>()))
                 {
                     StaticTools.HandleLog("为保证安全，必须设置访问密钥");
                     StaticTools.HandleLog("是否让程序自动生成一个（Y/N）");
@@ -280,19 +393,9 @@ namespace PMCSsE_Backend
                                 hashAlgorithm: HashAlgorithmName.SHA256,
                                 outputLength: 32
                             );
-                            StaticAPPConfigClass.SaltedPasswordHash = saltedPasswordHash;
-                            StaticAPPConfigClass.Salt = salt;
-                            StaticAPPConfigClass.Registered = true;
-                            if (!StaticConfigManagerClass.SaveAPPConfig())
-                            {
-                                StaticTools.HandleLog("按Enter键退出");
-                                try
-                                {
-                                    Console.ReadLine();
-                                }
-                                catch { }
-                                return 1;
-                            }
+                            StaticConfig_Ciphertext.SaltedLoginKeyHash = saltedPasswordHash;
+                            StaticConfig_Ciphertext.SaltOfLoginKey = salt;
+                            //StaticConfig_Ciphertext.Registered = true;
                             StaticTools.HandleLog("以后请使用以下密钥登录");
                             StaticTools.HandleLog(password, true);//已做保护，密钥不会记录在日志里
                             StaticTools.HandleLog("请妥善保管密钥，丢失后无法找回");
@@ -324,6 +427,12 @@ namespace PMCSsE_Backend
 
                             if (!string.IsNullOrEmpty(password))
                             {
+
+                                if (password.Length < 8 && !RunningStateRecorder.Debug)//方便调试
+                                {
+                                    StaticTools.HandleLog("密钥长度过短，应大于或等于8个字符");
+                                    continue;
+                                }
                                 byte[] passwordBytes;
                                 try
                                 {
@@ -348,19 +457,9 @@ namespace PMCSsE_Backend
                                     hashAlgorithm: HashAlgorithmName.SHA256,
                                     outputLength: 32
                                 );
-                                StaticAPPConfigClass.SaltedPasswordHash = saltedPasswordHash;
-                                StaticAPPConfigClass.Salt = salt;
-                                StaticAPPConfigClass.Registered = true;
-                                if (!StaticConfigManagerClass.SaveAPPConfig())
-                                {
-                                    StaticTools.HandleLog("按Enter键退出");
-                                    try
-                                    {
-                                        Console.ReadLine();
-                                    }
-                                    catch { }
-                                    return 1;
-                                }
+                                StaticConfig_Ciphertext.SaltedLoginKeyHash = saltedPasswordHash;
+                                StaticConfig_Ciphertext.SaltOfLoginKey = salt;
+                                //StaticConfig_Ciphertext.Registered = true;
                                 StaticTools.HandleLog("以后请使用以下密钥登录");
                                 StaticTools.HandleLog(password, true);//已做保护，密钥不会记录在日志里
                                 StaticTools.HandleLog("请妥善保管密钥，丢失后无法找回");
@@ -379,6 +478,16 @@ namespace PMCSsE_Backend
                         StaticTools.HandleLog("请选择其中之一");
                     }
                 }
+                //if (!StaticConfigManagerClass.SaveAPPConfig())
+                //{
+                //    StaticTools.HandleLog("按Enter键退出");
+                //    try
+                //    {
+                //        Console.ReadLine();
+                //    }
+                //    catch { }
+                //    return 1;
+                //}
                 //配置完成
                 StaticTools.HandleLog("已完成配置流程，此后不再要求使用可交互终端也不接受任何命令");
                 StaticTools.HandleLog($"所有操作均在前端的图形化界面上完成");
@@ -390,7 +499,7 @@ namespace PMCSsE_Backend
             StaticTools.HandleLog($"PMCSsE正在启动{(RunningStateRecorder.Debug ? "（调试模式）" : "")}");
             StaticTools.HandleLog("项目网址：https://github.com/babaozhouO/Prime-Minecraft-Servers-Engine");
             StaticTools.HandleLog($"系统命令行使用的编码：{RunningStateRecorder.SystemCommandLineEncoding.EncodingName}");
-            if (!StaticConfigManagerClass.LoadConfig())
+            if (!StaticConfigManagerClass.LoadConfig_Plaintext())
             {
                 StaticTools.HandleLog("按Enter键退出");//保留原因：后台运行时，console.readline会直接报错跳过，前台运行时，显示报错信息
                 try
@@ -400,12 +509,7 @@ namespace PMCSsE_Backend
                 catch { }
                 return 1;
             }
-            if (!StaticAPPConfigClass.Registered)
-            {
-                StaticTools.HandleLog("未执行配置流程，请在运行命令后添加“first”参数并在可交互终端环境下运行");
-                Thread.Sleep(10000);
-                return 1;
-            }
+
             CancellationTokenSource ExitTokenSource = new();
             MCServerManagers_ManagerClass.ExitCalled += () =>
             {
@@ -440,7 +544,7 @@ namespace PMCSsE_Backend
             };
             // ---- 退出信号拦截结束 ----
 
-            StaticTools.HandleLog($"将在*:{StaticAPPConfigClass.ListenPort}上监听前端连接请求");
+            StaticTools.HandleLog($"将在{StaticConfig_Plaintext.ListenAddress}:{StaticConfig_Plaintext.ListenPort}上监听前端连接请求");
             MCServerManagers_ManagerClass.Initialize();
             try
             {

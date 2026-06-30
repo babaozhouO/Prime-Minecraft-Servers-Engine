@@ -17,6 +17,10 @@ namespace PMCSsE_Communicator
     public partial class NativeClient
     {
         /// <summary>
+        /// 最大数据包长度(当前：16MB)
+        /// </summary>
+        private const int MAXDATAPACKLENGHT = 1024 * 1024 * 16;
+        /// <summary>
         /// 调试模式,此模式下要尽可能详细地输出日志
         /// </summary>
         public bool DebugMode;
@@ -393,24 +397,6 @@ namespace PMCSsE_Communicator
             HandShakeStep = HandShakeProcess_Client.WaitingRSAPublicKey;
         }
 
-        private async Task AskUserToVerifyRSAPublicKey()
-        {
-            string rsaFingerprint;
-            try
-            {
-                rsaFingerprint = GetSHA256FromTextClass.GetSHA256FromText(RSAPublicKey);
-            }
-            catch (Exception ex)
-            {
-                ReportLog($"计算RSA公钥指纹失败：{ex.Message}，断开连接");
-                Disconnect();
-                return;
-            }
-            ReportLog($"RSA公钥指纹：{rsaFingerprint}");
-            ReportLog("请检查RSA公钥指纹与后端是否一致，如果一致，请确认连接");
-            NeedToVerifyRSAPublicKey(rsaFingerprint);
-        }
-
         private async Task SendGotRSAPublicKeyAsync()
         {
             HandShakeStep = HandShakeProcess_Client.SendingGotRSAPublicKey;
@@ -658,7 +644,16 @@ namespace PMCSsE_Communicator
             int contentLength = BinaryPrimitives.ReadInt32BigEndian(header);
             if (contentLength <= 0)
                 return null;
-
+            if (contentLength > MAXDATAPACKLENGHT)
+            {
+                try
+                {
+                    StopToken.Cancel();
+                }
+                catch { }
+                ReportLog($"前端发送过大的数据包，可能为攻击者恶意发送，长度：{contentLength}");
+                return [];
+            }//修复大数据包攻击
             byte[] content = new byte[contentLength];
             read = 0;
             while (ClientInfo.TcpClient.Connected && read < contentLength && !StopToken.IsCancellationRequested)

@@ -52,8 +52,8 @@ namespace PMCSsE_Backend.Modules
         internal MessageRecordingsManagerClass(MCServerManagerConfig singleMCServerManagerConfigInfo)
         {
             SingleMCServerManagerConfigInfo = singleMCServerManagerConfigInfo;
-            ThisMCServerChatMessageRecordingsFilePath = Path.Combine(Paths.MessageRecordingsDir, $"MCServer - {SingleMCServerManagerConfigInfo.ManagerID}", "MeaasageRecordings.json");
-            ThisMCServerChatMessageRecordingsIndexFilePath = Path.Combine(Paths.MessageRecordingsDir, $"MCServer - {SingleMCServerManagerConfigInfo.ManagerID}", "MeaasageRecordings.json.index");
+            ThisMCServerChatMessageRecordingsFilePath = Path.Combine(Paths.MessageRecordsDir, $"MCServer - {SingleMCServerManagerConfigInfo.ManagerID}", "MeaasageRecordings.json");
+            ThisMCServerChatMessageRecordingsIndexFilePath = Path.Combine(Paths.MessageRecordsDir, $"MCServer - {SingleMCServerManagerConfigInfo.ManagerID}", "MeaasageRecordings.json.index");
             EachMessageRecordingEndingPositionList = [];
         }
 
@@ -63,7 +63,7 @@ namespace PMCSsE_Backend.Modules
             ReportLog("信息", "聊天记录管理器", $"聊天记录索引文件路径:{ThisMCServerChatMessageRecordingsIndexFilePath}");
 
 
-            string serverRecordingsDirectory = Path.Combine(Paths.MessageRecordingsDir, $"MCServer - {SingleMCServerManagerConfigInfo.ManagerID}");
+            string serverRecordingsDirectory = Path.Combine(Paths.MessageRecordsDir, $"MCServer - {SingleMCServerManagerConfigInfo.ManagerID}");
 
             try
             {

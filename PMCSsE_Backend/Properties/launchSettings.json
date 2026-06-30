@@ -2,7 +2,7 @@
   "profiles": {
     "PMCSsE_Backend": {
       "commandName": "Project",
-      "commandLineArgs": "debug",
+      "commandLineArgs": "debug first",
       "remoteDebugEnabled": false,
       "authenticationMode": "Windows"
     }

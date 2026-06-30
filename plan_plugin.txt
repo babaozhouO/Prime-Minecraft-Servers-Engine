@@ -1,0 +1,55 @@
+================================================================================
+漏洞：插件 DLL 无验证（支持社区插件的安全加载方案）
+================================================================================
+
+状态：❌ 未修复
+位置：PMCSsE_Backend/PluginsSystem/PluginsManager.cs
+
+描述：
+  plugins/*.dll 被直接 Assembly.Load + Activator.CreateInstance 执行，
+  无任何签名校验、哈希校验或用户确认。恶意 DLL 一旦放入插件目录，
+  即获得与 PMCSsE 后端完全相同的进程权限。
+
+目标：
+  支持社区插件生态——官方审核插件静默通过，用户自装插件需确认。
+
+核心原则：
+  先验证，后加载。绝不能先加载再验证（已加载的代码可通过反射修改信任列表）。
+
+方案：官方白名单 + 用户首装确认 + SHA256 哈希锁定
+
+  1. 后端新增两个哈希白名单：
+     - OfficialPluginHashes (编译时嵌入/内置资源，官方审核过的插件哈希)
+     - TrustedPluginHashes (存储于配置文件，用户手动信任的插件哈希)
+
+  2. 启动流程改为两阶段：
+     阶段一（扫描分类）：
+       遍历 plugins/*.dll → 计算 SHA256
+         ├── 在白名单中 → 加入 trusted[] 列表
+         └── 不在白名单中 → 加入 unknown[] 列表，不加载
+
+     阶段二（加载）：
+       只加载 trusted[] 中的 DLL
+
+     阶段三（通知）：
+       对 unknown[] 中的每个 DLL，向前端发送 Pack_UntrustedPluginFound
+       通知（含插件名、版本、SHA256、文件路径）。前端显示警告并
+       提供"信任并加载"按钮。
+
+  3. 新增 DataPack：
+     Pack_UntrustedPluginFound(pluginName, pluginVersion, sha256, filePath)
+     - 后端 → 前端：通知发现未验证插件
+
+     Pack_TrustPlugin(sha256)
+     - 前端 → 后端：用户确认信任
+
+  4. 用户点击"信任"后：
+     后端收到 Pack_TrustPlugin → 哈希写入 TrustedPluginHashes 并
+     持久化到配置文件 → 调用 PluginLoader.LoadPlugin(path) 加载。
+
+  5. 已信任插件的 DLL 文件被替换（哈希变化）：
+     视为新的"未知插件"，重新走确认流程。
+
+  6. TOCTOU 防御：
+     计算哈希和文件读取之间无时间窗可利用——因为 unknown[] 中的 DLL
+     从未被加载到进程，无法执行任何反射攻击。

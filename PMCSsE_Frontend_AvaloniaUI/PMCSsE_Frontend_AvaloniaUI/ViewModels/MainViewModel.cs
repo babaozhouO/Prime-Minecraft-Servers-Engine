@@ -120,6 +120,16 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         private object? _selectedMCServerManager_LBItem;
 
+
+        /// <summary>
+        /// 版本号
+        /// </summary>
+        public int ConfigVersion { get; set; }
+        /// <summary>
+        /// MC服务端配置列表,包含多个MC服务端管理实例的配置
+        /// </summary>
+        public List<MCServerManagerConfig> MCServerManagerConfigsList { get; set; } = [];
+
         #endregion
         #region 命令绑定
         private readonly BehaviorSubject<bool> _canCleanMessage = new(false);
@@ -717,7 +727,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 GetNewerLogsTimer.Start();
                 return;
             }
-            if (pack.Logs.Count == 0)
+            if (pack.Logs.Length == 0)
             {
                 GetNewerLogsTimer.Start();
                 return;
@@ -819,11 +829,11 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         private void HandleDisconnected(NativeClient.DisconnectedReasonEnum nativeClientDisconnectedReasons)
         {
             IsVerifyingRSAPublicKey = false;
-            nativeClient!.ReportLog -= HandleLog;
-            nativeClient!.NeedPassword -= HandleNeedPasswordEvent;
-            nativeClient!.NeedToVerifyRSAPublicKey -= HandleVerifyRSAPublicKey;
-            nativeClient!.Connected -= HandleConnected;
-            nativeClient.Disconnected -= HandleDisconnected;
+            nativeClient?.ReportLog -= HandleLog;
+            nativeClient?.NeedPassword -= HandleNeedPasswordEvent;
+            nativeClient?.NeedToVerifyRSAPublicKey -= HandleVerifyRSAPublicKey;
+            nativeClient?.Connected -= HandleConnected;
+            nativeClient?.Disconnected -= HandleDisconnected;
             string reason;
             switch (nativeClientDisconnectedReasons)
             {
@@ -875,43 +885,45 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 _canDisconnect.OnNext(false);
             }, null);
             ConnectingNativeServer = null;
+            if (nativeClient != null)
+            {
+                nativeClient.DataPackBus.Unsubscribe<Pack_MCServerManagerConfigs>(HandlePack_MCServerManagerConfigs);
+                nativeClient.DataPackBus.Unsubscribe<Pack_MCServerManagers>(HandlePack_MCServerManagers);
+                nativeClient.DataPackBus.Unsubscribe<Pack_SupportedMCServerTypes>(HandlePack_SupportedMCServerTypes);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_MCServerManagerConfigs>(HandlePack_MCServerManagerConfigs);
-            nativeClient.DataPackBus.Unsubscribe<Pack_MCServerManagers>(HandlePack_MCServerManagers);
-            nativeClient.DataPackBus.Unsubscribe<Pack_SupportedMCServerTypes>(HandlePack_SupportedMCServerTypes);
+                nativeClient.DataPackBus.Unsubscribe<Pack_CreatedNewMCServerManager>(HandlePack_CreatedNewMCServerManager);
+                nativeClient.DataPackBus.Unsubscribe<Pack_CreatNewMCServerManagerFailed>(HandlePack_CreatNewMCServerManagerFailed);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_CreatedNewMCServerManager>(HandlePack_CreatedNewMCServerManager);
-            nativeClient.DataPackBus.Unsubscribe<Pack_CreatNewMCServerManagerFailed>(HandlePack_CreatNewMCServerManagerFailed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_LoadedMCServerManager>(HandlePack_LoadedMCServerManager);
+                nativeClient.DataPackBus.Unsubscribe<Pack_LoadMCServerManagerFailed>(HandlePack_LoadMCServerManagerFailed);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_LoadedMCServerManager>(HandlePack_LoadedMCServerManager);
-            nativeClient.DataPackBus.Unsubscribe<Pack_LoadMCServerManagerFailed>(HandlePack_LoadMCServerManagerFailed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_StoppedMCServerManager>(HandlePack_StoppedMCServerManager);
+                nativeClient.DataPackBus.Unsubscribe<Pack_StopMCServerManagerFailed>(HandlePack_StopMCServerManagerFailed);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_StoppedMCServerManager>(HandlePack_StoppedMCServerManager);
-            nativeClient.DataPackBus.Unsubscribe<Pack_StopMCServerManagerFailed>(HandlePack_StopMCServerManagerFailed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_DeletedMCServerManager>(HandlePack_DeletedMCServerManager);
+                nativeClient.DataPackBus.Unsubscribe<Pack_DeleteMCServerManagerFailed>(HandlePack_DeleteMCServerManagerFailed);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_DeletedMCServerManager>(HandlePack_DeletedMCServerManager);
-            nativeClient.DataPackBus.Unsubscribe<Pack_DeleteMCServerManagerFailed>(HandlePack_DeleteMCServerManagerFailed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_ModifiedMCServerManagerConfig>(HandlePack_ModifiedMCServerManagerConfig);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_ModifiedMCServerManagerConfig>(HandlePack_ModifiedMCServerManagerConfig);
+                nativeClient.DataPackBus.Unsubscribe<Pack_RunMCServerSucceed>(HandlePack_RunMCServerSucceed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_RunMCServerFailed>(HandlePack_RunMCServerFailed);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_RunMCServerSucceed>(HandlePack_RunMCServerSucceed);
-            nativeClient.DataPackBus.Unsubscribe<Pack_RunMCServerFailed>(HandlePack_RunMCServerFailed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_SendCommandSucceed>(HandlePack_SendCommandSucceed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_SendCommandFailed>(HandlePack_SendCommandFailed);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_SendCommandSucceed>(HandlePack_SendCommandSucceed);
-            nativeClient.DataPackBus.Unsubscribe<Pack_SendCommandFailed>(HandlePack_SendCommandFailed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_ShutdownMCServerSucceed>(HandlePack_ShutdownMCServerSucceed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_ShutdownMCServerFailed>(HandlePack_ShutdownMCServerFailed);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_ShutdownMCServerSucceed>(HandlePack_ShutdownMCServerSucceed);
-            nativeClient.DataPackBus.Unsubscribe<Pack_ShutdownMCServerFailed>(HandlePack_ShutdownMCServerFailed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_KillMCServerSucceed>(HandlePack_KillMCServerSucceed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_KillMCServerFailed>(HandlePack_KillMCServerFailed);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_KillMCServerSucceed>(HandlePack_KillMCServerSucceed);
-            nativeClient.DataPackBus.Unsubscribe<Pack_KillMCServerFailed>(HandlePack_KillMCServerFailed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_MCServerExited>(HandlePack_MCServerExited);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_MCServerExited>(HandlePack_MCServerExited);
+                nativeClient.DataPackBus.Unsubscribe<Pack_MCServerLogs>(HandlePack_MCServerLogs);
 
-            nativeClient.DataPackBus.Unsubscribe<Pack_MCServerLogs>(HandlePack_MCServerLogs);
-
-            nativeClient.DataPackBus.Unsubscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
-            nativeClient.Dispose();
+                nativeClient.DataPackBus.Unsubscribe<Pack_ErrorInfo>(HandlePack_ErrorInfo);
+            }
+            nativeClient?.Dispose();
             nativeClient = null;
             AllMCServerManagers_IS.Clear();
             LoadedMCServerManagers_IS.Clear();

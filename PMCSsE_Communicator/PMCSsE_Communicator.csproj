@@ -35,6 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="SharedCodes\ConfigCrypto.cs" />
     <Compile Remove="WebServer.cs" />
   </ItemGroup>
 

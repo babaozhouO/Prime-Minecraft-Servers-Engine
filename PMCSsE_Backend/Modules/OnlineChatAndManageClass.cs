@@ -36,6 +36,7 @@ namespace PMCSsE_Backend.Modules
         internal OnlineChattingSystemClass(MCServerManager mCServerManager)
         {
             MCServerManager = mCServerManager;
+            throw new NotSupportedException("包含多个高危漏洞，请勿使用");//阻止初始化
         }
 
         internal void Start()
@@ -180,7 +181,7 @@ namespace PMCSsE_Backend.Modules
                                 ReportLog("错误", "实时服内外通信和远程服务器管理器", $"用户角色只能是 玩家/管理员/服主 中的一个");
                                 return;
                         }
-                        StaticConfigManagerClass.SaveMCServerManagersConfig();
+                        StaticConfigManagerClass.SaveConfig_Ciphertext();
                         break;
                     case "delaccount" or "删除账户":
                         if (commaand.Length < 2 || commaand.Length > 2)
@@ -204,7 +205,7 @@ namespace PMCSsE_Backend.Modules
                             return;
                         }
                         MCServerManager.MCServerManagerConfig.OnlineChattingSystemConfig.PlayerAccountList.Remove(playerAccount1);
-                        StaticConfigManagerClass.SaveMCServerManagersConfig();
+                        StaticConfigManagerClass.SaveConfig_Ciphertext();
                         ReportLog("成功", "实时服内外通信和远程服务器管理器", $"成功删除账户：[{playerAccount1.PlayerName}]");
                         break;
                     case "help" or "命令提示":
@@ -424,7 +425,7 @@ namespace PMCSsE_Backend.Modules
                         else
                         {
                             MCServerManager.MCServerManagerConfig.OnlineChattingSystemConfig.PlayerAccountList.Add(new() { Approved = false, PlayerName = playername, PasswordHash = passwordhash, ThirdPartySocialPlatformAccount = ThirdPartySocialPlatformAccount });
-                            StaticConfigManagerClass.SaveMCServerManagersConfig();
+                            StaticConfigManagerClass.SaveConfig_Ciphertext();
                             var RegisterRespone = new
                             {
                                 Type = "RegisterRespone",

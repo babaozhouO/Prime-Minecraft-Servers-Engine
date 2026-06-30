@@ -16,6 +16,10 @@ namespace PMCSsE_Communicator
     public class NativeServer
     {
         /// <summary>
+        /// 最大数据包长度(当前：16MB)
+        /// </summary>
+        private const int MAXDATAPACKLENGHT = 1024 * 1024 * 16;
+        /// <summary>
         /// 调试模式,此模式下要尽可能详细地输出日志
         /// </summary>
         public bool DebugMode;
@@ -25,6 +29,11 @@ namespace PMCSsE_Communicator
         private readonly ThreadStart ServerThreadStart;
         private Thread ServerThread;
         private CancellationTokenSource StopServerTokenSource;
+        /// <summary>
+        /// 密码错误记录
+        /// </summary>
+        private readonly Dictionary<string, (int, DateTime)> TempBannedIP = [];
+        private string CurrentClientIP = "";
         //Server
         /// <summary>
         /// 上报日志
@@ -258,7 +267,24 @@ namespace PMCSsE_Communicator
                     tcpClient.Dispose();
                     continue;
                 }
+                CurrentClientIP = iPEndPoint.Address.ToString();
                 ReportLog($"有客户端请求连接,IP: {iPEndPoint.Address},端口:{iPEndPoint.Port}");
+
+                if (TempBannedIP.TryGetValue(iPEndPoint.Address.ToString(), out (int, DateTime) info))
+                {
+                    TimeSpan banTimeLenght = TimeSpan.FromSeconds(30d * Math.Pow(2,info.Item1));
+                    DateTime unbannedTime = info.Item2 + banTimeLenght;
+                    DateTime now = DateTime.Now;
+                    if (now < unbannedTime)
+                    {
+                        ReportLog($"有原生客户端请求连接，但其因（多次）密码错误而被暂时封禁");
+                        ReportLog($"剩余时长：{unbannedTime-now}");
+                        tcpClient.Close();
+                        tcpClient.Dispose();
+                        continue;
+                    }
+                }
+
 
                 NetworkStream networkStream;
                 try
@@ -641,6 +667,16 @@ namespace PMCSsE_Communicator
             readLength = 0;
             int dataPackContentLenght = BinaryPrimitives.ReadInt32BigEndian(dataPackHeader);
             if (dataPackContentLenght <= 0) { return []; }
+            if (dataPackContentLenght > MAXDATAPACKLENGHT)
+            {
+                try
+                {
+                    ClientInfo.CloseConnectionTokenSource.Cancel();
+                }
+                catch { }
+                ReportLog($"前端发送过大的数据包，可能为攻击者恶意发送，长度：{dataPackContentLenght}");
+                return [];
+            }//修复大数据包攻击
             byte[] dataPackContent = new byte[dataPackContentLenght];
             while (ClientInfo.TcpClient.Connected && readLength < dataPackContentLenght && !ClientInfo.CloseConnectionTokenSource.IsCancellationRequested && !StopServerTokenSource.IsCancellationRequested)
             {
@@ -986,6 +1022,16 @@ namespace PMCSsE_Communicator
                         if (!saltedPasswordHash.SequenceEqual(SaltedPasswordBytes))
                         {
                             ReportLog("客户端的访问密钥错误");
+                            if (TempBannedIP.TryGetValue(CurrentClientIP, out (int,DateTime) banInfo))
+                            {
+                                banInfo.Item1++;
+                                banInfo.Item2 = DateTime.Now;
+                                TempBannedIP[CurrentClientIP] = banInfo;  //写回字典
+                            }
+                            else
+                            {
+                                TempBannedIP.Add(CurrentClientIP, (1, DateTime.Now));
+                            }
                             try { ClientInfo.CloseConnectionTokenSource.Cancel(); } catch { }
                             return (RequestTypeEnum_Private.Login, passwordBytes);
                         }

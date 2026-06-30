@@ -12,6 +12,7 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 using LightProto;
+using PMCSsE_Communicator;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -31,38 +32,54 @@ namespace PMCSsE_Backend.Modules
 
         internal static readonly string? APPExeFile = Environment.ProcessPath;
 
+        internal static readonly string ConfigsDir = Path.Combine(APPDir, "Configs");
+
         internal static readonly string LogDir = Path.Combine(APPDir, "Logs");
 
-        internal static readonly string APPConfigPath = Path.Combine(APPDir, "APPConfig.dat");
-
-        internal static readonly string MCServersConfigPath = Path.Combine(APPDir, "MCServersConfig.dat");
-
-        internal static readonly string MessageRecordingsDir = Path.Combine(APPDir, "MessageRecordings");
-
         internal static readonly string PluginsDir = Path.Combine(APPDir, "plugins");
-    }
 
-    [ProtoContract(SkipConstructor =true)]
-    internal partial class APPConfigClass
+        internal static readonly string Config_PlaintextPath = Path.Combine(ConfigsDir, "Config_Plaintext.dat");
+
+        internal static readonly string Config_CiphertextPath = Path.Combine(ConfigsDir, "Config_Ciphertext.dat");
+
+        internal static readonly string MessageRecordsDir = Path.Combine(APPDir, "MessageRecords");
+    }
+    [ProtoContract(SkipConstructor = true)]
+    internal partial class Config_Plaintext
     {
         [ProtoMember(1)]
-        internal int ListenPort { get; set; } = 20000;
+        internal string ListenAddress { get; set; } = "0.0.0.0";
         [ProtoMember(2)]
-        internal int ConfigVersion { get; set; } = 1;
+        internal int ListenPort { get; set; } = 20000;
         [ProtoMember(3)]
-        internal bool Registered { get; set; } = false;
-        [ProtoMember(4)]
-        internal byte[] SaltedPasswordHash { get; set; } = [];//加了盐的
-        [ProtoMember(5)]
-        internal byte[] Salt { get; set; } = [];
+        internal byte[] SaltOfCipherConfigKey { get; set; } = [];
     }
-    internal static class StaticAPPConfigClass
+
+    internal static class StaticConfig_Plaintext
     {
-        internal static int ListenPort { get; set; }
-        internal static int ConfigVersion { get; set; }
-        internal static bool Registered { get; set; }
-        internal static byte[] SaltedPasswordHash { get; set; } = [];
-        internal static byte[] Salt { get; set; } = [];
+        internal static string ListenAddress { get; set; } = "0.0.0.0";
+        internal static int ListenPort { get; set; } = 20000;
+        internal static byte[] SaltOfCipherConfigKey { get; set; } = [];
+    }
+
+    [ProtoContract(SkipConstructor = true)]
+    internal partial class Config_Ciphertext
+    {
+        [ProtoMember(1)]
+        internal int ConfigVersion { get; set; } = 1;
+        [ProtoMember(2)]
+        internal byte[] SaltedLoginKeyHash { get; set; } = [];
+        [ProtoMember(3)]
+        internal byte[] SaltOfLoginKey { get; set; } = [];
+        [ProtoMember(4)]
+        internal List<MCServerManagerConfig> MCServerManagerConfigsList { get; set; } = [];
+    }
+    internal static class StaticConfig_Ciphertext
+    {
+        internal static int ConfigVersion { get; set; } = 1;
+        internal static byte[] SaltedLoginKeyHash { get; set; } = [];
+        internal static byte[] SaltOfLoginKey { get; set; } = [];
+        internal static List<MCServerManagerConfig> MCServerManagerConfigsList { get; set; } = [];
     }
     internal static class JsonComputeOptions
     {
@@ -72,7 +89,7 @@ namespace PMCSsE_Backend.Modules
             PropertyNamingPolicy = null,
             IncludeFields = true,
             WriteIndented = false,
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            Encoder = JavaScriptEncoder.Default,
             DefaultIgnoreCondition = JsonIgnoreCondition.Never
         };
     }

@@ -742,7 +742,7 @@ internal class SFTPClientClass
         ReportLog = delegate { };
 
     }
-
+#if DEBUG
     internal static void Example()
     {
         Thread thread = new(() =>
@@ -779,4 +779,5 @@ internal class SFTPClientClass
         });
         thread.Start();
     }
+#endif
 }

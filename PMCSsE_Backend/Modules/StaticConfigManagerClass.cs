@@ -11,28 +11,67 @@ you may not use this file except in compliance with the License.
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.*/
-using PMCSsE_Communicator;
 using LightProto;
-using System.Text.Json;
+using System.Security;
 
 namespace PMCSsE_Backend.Modules
 {
     internal static class StaticConfigManagerClass
     {
-        internal static bool LoadConfig()
+        internal static ConfigFilesStateEnum ConfigFilesState
         {
-            StaticTools.HandleLog("正在读取配置文件");
-            APPConfigClass? APPConfig = null;
-            if (File.Exists(Paths.APPConfigPath))//存在
+            get
+            {
+                if (Directory.Exists(Paths.ConfigsDir))
+                {
+                    switch (File.Exists(Paths.Config_PlaintextPath), File.Exists(Paths.Config_CiphertextPath))//无异常
+                    {
+                        case (true, true):
+                            return ConfigFilesStateEnum.Good;
+                        case (false, true):
+                            return ConfigFilesStateEnum.WhereIsThePlaintextConfig;
+                        case (true, false):
+                            return ConfigFilesStateEnum.WhereIsTheCiphertextConfig;
+                        case (false, false):
+                            return ConfigFilesStateEnum.Welcome;
+                    }
+                }
+                else
+                {
+                    return ConfigFilesStateEnum.Welcome;
+                }
+            }
+        }
+        internal static bool LoadConfig_Plaintext()
+        {
+            StaticTools.HandleLog("正在读取配置文件（明文部分）");
+            Config_Plaintext config;
+            if (!Directory.Exists(Paths.ConfigsDir))
             {
                 try
                 {
-                    using FileStream appConfigFile = File.OpenRead(Paths.APPConfigPath);
-                    APPConfig = Serializer.Deserialize<APPConfigClass>(appConfigFile);
+                    Directory.CreateDirectory(Paths.ConfigsDir);
                 }
                 catch (Exception ex)
                 {
-                    StaticTools.HandleLog($"配置文件[{Paths.APPConfigPath}]读取或反序列化失败");
+                    StaticTools.HandleLog($"创建配置目录[{Paths.ConfigsDir}]失败");
+                    StaticTools.HandleLog($"异常:{ex.Message}");
+                    StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
+                    StaticTools.HandleLog("可能的解决办法：调整目录权限、以管理员身份运行、删除配置文件");
+                    StaticTools.HandleLog("程序无法继续运行，请关闭程序");
+                    return false;
+                }
+            }
+            if (File.Exists(Paths.Config_PlaintextPath))//存在
+            {
+                try
+                {
+                    using FileStream configFile = File.OpenRead(Paths.Config_PlaintextPath);
+                    config = Serializer.Deserialize<Config_Plaintext>(configFile);
+                }
+                catch (Exception ex)
+                {
+                    StaticTools.HandleLog($"配置文件[{Paths.Config_PlaintextPath}]读取或反序列化失败");
                     StaticTools.HandleLog($"异常:{ex.Message}");
                     StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
                     StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行、删除配置文件");
@@ -44,13 +83,13 @@ namespace PMCSsE_Backend.Modules
             {
                 try
                 {
-                    using FileStream appConfigFile = File.Create(Paths.APPConfigPath);
-                    APPConfig = new APPConfigClass();
-                    Serializer.Serialize<APPConfigClass>(appConfigFile, APPConfig);
+                    config = new();
+                    using FileStream configFile = File.Create(Paths.Config_PlaintextPath);
+                    Serializer.Serialize(configFile, config);
                 }
                 catch (Exception ex)
                 {
-                    StaticTools.HandleLog($"配置文件[{Paths.APPConfigPath}]写入或反序列化失败");
+                    StaticTools.HandleLog($"配置文件[{Paths.Config_PlaintextPath}]序列化或写入失败");
                     StaticTools.HandleLog($"异常:{ex.Message}");
                     StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
                     StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行");
@@ -58,34 +97,47 @@ namespace PMCSsE_Backend.Modules
                     return false;
                 }
             }
-            if (APPConfig == null)
-            {
-                StaticTools.HandleLog($"无法获得有效的主程序配置(null)，程序无法继续运行");
-                return false;
-            }
-            StaticAPPConfigClass.ListenPort = APPConfig.ListenPort;
-            StaticAPPConfigClass.ConfigVersion = APPConfig.ConfigVersion;
-            StaticAPPConfigClass.Registered = APPConfig.Registered;
-            StaticAPPConfigClass.SaltedPasswordHash = APPConfig.SaltedPasswordHash;
-            StaticAPPConfigClass.Salt = APPConfig.Salt;
-            StaticTools.HandleLog($"主程序配置读取成功");
-
-            MCServerManagerConfigs? mCServerManagerConfigs = null;
-            if (File.Exists(Paths.MCServersConfigPath))//存在
+            StaticConfig_Plaintext.ListenAddress = config.ListenAddress;
+            StaticConfig_Plaintext.ListenPort = config.ListenPort;
+            StaticConfig_Plaintext.SaltOfCipherConfigKey = config.SaltOfCipherConfigKey;
+            StaticTools.HandleLog($"配置文件（明文部分）读取成功");
+            return true;
+        }
+        internal static bool LoadConfig_Ciphertext()
+        {
+            StaticTools.HandleLog("正在读取配置文件（密文部分）");
+            Config_Ciphertext config;
+            if (!Directory.Exists(Paths.ConfigsDir))
             {
                 try
                 {
-                    using FileStream mCServersConfigFile = File.OpenRead(Paths.MCServersConfigPath);
-                    mCServerManagerConfigs = Serializer.Deserialize<MCServerManagerConfigs>(mCServersConfigFile);
+                    Directory.CreateDirectory(Paths.ConfigsDir);
                 }
                 catch (Exception ex)
                 {
-
-                    StaticTools.HandleLog($"配置文件[{Paths.MCServersConfigPath}]读取或反序列化失败");
+                    StaticTools.HandleLog($"创建配置目录[{Paths.ConfigsDir}]失败");
+                    StaticTools.HandleLog($"异常:{ex.Message}");
+                    StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
+                    StaticTools.HandleLog("可能的解决办法：调整目录权限、以管理员身份运行、删除配置文件");
+                    StaticTools.HandleLog("程序无法继续运行，请关闭程序");
+                    return false;
+                }
+            }
+            if (File.Exists(Paths.Config_CiphertextPath))//存在
+            {
+                try
+                {
+                    using FileStream configFile = File.OpenRead(Paths.Config_CiphertextPath);
+                    //解密
+                    config = Serializer.Deserialize<Config_Ciphertext>(configFile);
+                }
+                catch (Exception ex)
+                {
+                    StaticTools.HandleLog($"配置文件[{Paths.Config_CiphertextPath}]读取或反序列化失败");
                     StaticTools.HandleLog($"异常:{ex.Message}");
                     StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
                     StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行、删除配置文件");
-                    StaticTools.HandleLog("程序无法继续运行");
+                    StaticTools.HandleLog("程序无法继续运行，请关闭程序");
                     return false;
                 }
             }
@@ -93,50 +145,60 @@ namespace PMCSsE_Backend.Modules
             {
                 try
                 {
-                    using FileStream mCServersConfigFile = File.Create(Paths.MCServersConfigPath);
-                    mCServerManagerConfigs = new MCServerManagerConfigs();
-                    Serializer.Serialize<MCServerManagerConfigs>(mCServersConfigFile, mCServerManagerConfigs);
+                    config = new();
+                    using FileStream configFile = File.Create(Paths.Config_CiphertextPath);
+                    //加密
+                    Serializer.Serialize(configFile, config);
                 }
                 catch (Exception ex)
                 {
-
-                    StaticTools.HandleLog($"配置文件[{Paths.MCServersConfigPath}]写入或反序列化失败");
+                    StaticTools.HandleLog($"配置文件[{Paths.Config_CiphertextPath}]序列化或写入失败");
                     StaticTools.HandleLog($"异常:{ex.Message}");
                     StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
-                    StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行、删除配置文件");
+                    StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行");
                     StaticTools.HandleLog("程序无法继续运行");
                     return false;
                 }
             }
-            if (mCServerManagerConfigs == null)
-            {
-                StaticTools.HandleLog($"无法获得有效的服务端管理器配置，程序无法继续运行");
-                return false;
-            }
-            StaticMCServerManagerConfigs.ConfigVersion = mCServerManagerConfigs.ConfigVersion;
-            StaticMCServerManagerConfigs.MCServerManagerConfigsList = mCServerManagerConfigs.MCServerManagerConfigsList;
-            StaticTools.HandleLog($"MC服务端管理器配置读取成功");
-            StaticTools.HandleLog($"全部配置读取成功，太棒了！");
+            StaticConfig_Ciphertext.ConfigVersion = config.ConfigVersion;
+            StaticConfig_Ciphertext.SaltedLoginKeyHash = config.SaltedLoginKeyHash;
+            StaticConfig_Ciphertext.SaltOfLoginKey = config.SaltOfLoginKey;
+            StaticConfig_Ciphertext.MCServerManagerConfigsList = config.MCServerManagerConfigsList;
+            StaticTools.HandleLog($"配置文件（密文部分）读取成功");
             return true;
         }
-        internal static bool SaveAPPConfig()
+        internal static bool SaveConfig_Plaintext()
         {
-            APPConfigClass APPConfig = new()
+            if (!Directory.Exists(Paths.ConfigsDir))
             {
-                ListenPort = StaticAPPConfigClass.ListenPort,
-                ConfigVersion = StaticAPPConfigClass.ConfigVersion,
-                Registered = StaticAPPConfigClass.Registered,
-                SaltedPasswordHash = StaticAPPConfigClass.SaltedPasswordHash,
-                Salt = StaticAPPConfigClass.Salt
+                try
+                {
+                    Directory.CreateDirectory(Paths.ConfigsDir);
+                }
+                catch (Exception ex)
+                {
+                    StaticTools.HandleLog($"创建配置目录[{Paths.ConfigsDir}]失败");
+                    StaticTools.HandleLog($"异常:{ex.Message}");
+                    StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
+                    StaticTools.HandleLog("可能的解决办法：调整目录权限、以管理员身份运行、删除配置文件");
+                    StaticTools.HandleLog("程序无法继续运行，请关闭程序");
+                    return false;
+                }
+            }
+            Config_Plaintext config = new()
+            {
+                ListenAddress = StaticConfig_Plaintext.ListenAddress,
+                ListenPort = StaticConfig_Plaintext.ListenPort,
+                SaltOfCipherConfigKey = StaticConfig_Plaintext.SaltOfCipherConfigKey
             };
             try
             {
-                using FileStream appConfigFile = File.Create(Paths.APPConfigPath);
-                Serializer.Serialize(appConfigFile, APPConfig);
+                using FileStream appConfigFile = File.Create(Paths.Config_PlaintextPath);
+                Serializer.Serialize(appConfigFile, config);
             }
             catch (Exception ex)
             {
-                StaticTools.HandleLog($"配置文件[{Paths.APPConfigPath}]写入或序列化失败");
+                StaticTools.HandleLog($"配置文件[{Paths.Config_PlaintextPath}]写入或序列化失败");
                 StaticTools.HandleLog($"异常:{ex.Message}");
                 StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
                 StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行");
@@ -145,27 +207,44 @@ namespace PMCSsE_Backend.Modules
             }
             return true;
         }
-        internal static bool SaveMCServerManagersConfig()
+        internal static bool SaveConfig_Ciphertext()
         {
-            MCServerManagerConfigs mCServerManagerConfigs = new()
+            Config_Ciphertext config = new()
             {
-                ConfigVersion = StaticMCServerManagerConfigs.ConfigVersion,
-                MCServerManagerConfigsList = StaticMCServerManagerConfigs.MCServerManagerConfigsList
+                ConfigVersion = StaticConfig_Ciphertext.ConfigVersion,
+                SaltedLoginKeyHash = StaticConfig_Ciphertext.SaltedLoginKeyHash,
+                SaltOfLoginKey = StaticConfig_Ciphertext.SaltOfLoginKey,
+                MCServerManagerConfigsList = StaticConfig_Ciphertext.MCServerManagerConfigsList
             };
             try
             {
-                using FileStream mCServerManagerConfigsFile = File.Create(Paths.MCServersConfigPath);
-                Serializer.Serialize(mCServerManagerConfigsFile, mCServerManagerConfigs);
-                return true;
+                using FileStream configFile = File.Create(Paths.Config_CiphertextPath);
+                //加密
+                Serializer.Serialize(configFile, config);
             }
             catch (Exception ex)
             {
-                StaticTools.HandleLog($"配置文件[{Paths.MCServersConfigPath}]写入或序列化失败");
+                StaticTools.HandleLog($"配置文件[{Paths.Config_CiphertextPath}]写入或序列化失败");
                 StaticTools.HandleLog($"异常:{ex.Message}");
                 StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
                 StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行");
+                StaticTools.HandleLog("程序无法继续运行，请关闭程序");
                 return false;
             }
+            finally
+            {
+                //configKey.Clear();
+                //configKey.Dispose();
+            }
+            return true;
+        }
+
+        internal enum ConfigFilesStateEnum
+        {
+            Good,
+            WhereIsThePlaintextConfig,
+            WhereIsTheCiphertextConfig,
+            Welcome
         }
     }
 }

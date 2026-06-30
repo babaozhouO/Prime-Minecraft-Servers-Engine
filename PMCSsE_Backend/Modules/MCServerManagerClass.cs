@@ -55,10 +55,10 @@ namespace PMCSsE_Backend.Modules
         /// 当前管理器的备份工具
         /// </summary>
         internal readonly BackupManager BackupManager;
-        /// <summary>
-        /// 当前管理器的在线聊天与管理工具
-        /// </summary>
-        internal readonly OnlineChattingSystemClass OnlineChattingSystem;
+        ///// <summary>
+        ///// 当前管理器的在线聊天与管理工具
+        ///// </summary>
+        //internal readonly OnlineChattingSystemClass? OnlineChattingSystem;
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -91,7 +91,7 @@ namespace PMCSsE_Backend.Modules
             MCServerProcess.Exited += HandleServerExited;
 
             BackupManager = new(this);
-            OnlineChattingSystem = new(this);
+            //OnlineChattingSystem = new(this);
 
 
             ReportManagerLog(MCServerManagerConfig.ManagerID, "已初始化管理器");
@@ -165,7 +165,7 @@ namespace PMCSsE_Backend.Modules
             {
                 return 1;
             }
-            if (!MCServerManagerConfig.MCServerDirectory.Contains('\\'))
+            if (!MCServerManagerConfig.MCServerDirectory.Contains(OperatingSystem.IsWindows() ? '\\' : '/'))
             {
                 return 2;
             }
@@ -330,12 +330,11 @@ namespace PMCSsE_Backend.Modules
         /// <param name="after">起始编号，为 null 表示从最早可用日志开始</param>
         /// <param name="count">最大返回条数</param>
         /// <param name="resetHint">若因游标失效而强制返回最新日志，则设为 true</param>
-        internal List<LogEntry> GetAfter(ulong? after, int count, out bool resetHint)
+        internal LogEntry[] GetAfter(ulong? after, int count, out bool resetHint)
         {
             using (_lock.EnterScope())
             {
                 resetHint = false;
-                var result = new List<LogEntry>(count);
 
                 // 确定起始节点
                 LinkedListNode<ulong>? node;
@@ -361,31 +360,30 @@ namespace PMCSsE_Backend.Modules
                     }
                 }
 
-                while (node != null && result.Count < count)
+                LogEntry[] result = new LogEntry[count];
+                int written = 0;
+                while (node != null && written < count)
                 {
-                    ulong id = node.Value;
-                    result.Add(new LogEntry(id, _logs[id]));
+                    result[written++] = new LogEntry(node.Value, _logs[node.Value]);
                     node = node.Next;
                 }
-                return result;
+                return written == count ? result : result[..written];
             }
         }
 
         /// <summary>获取最新 count 条日志。</summary>
-        internal List<LogEntry> GetLatest(int count)
+        internal LogEntry[] GetLatest(int count)
         {
             using (_lock.EnterScope())
             {
                 count = Math.Min(count, _order.Count);
-                var result = new List<LogEntry>(count);
+                LogEntry[] result = new LogEntry[count];
                 var node = _order.Last;
-                var stack = new Stack<LogEntry>(count); // 用于反转顺序，保证时间升序
-                for (int i = 0; i < count && node != null; i++)
+                for (int i = count - 1; i >= 0 && node != null; i--)
                 {
-                    stack.Push(new LogEntry(node.Value, _logs[node.Value]));
-                    node = node.Previous;//向前遍历
+                    result[i] = new LogEntry(node.Value, _logs[node.Value]);
+                    node = node.Previous;
                 }
-                while (stack.Count > 0) result.Add(stack.Pop());//最旧的先出栈
                 return result;
             }
         }
@@ -409,7 +407,7 @@ namespace PMCSsE_Backend.Modules
         /// <para>当传入的 before 超出当前日志范围（例如大于等于当前最大编号或小于最小可用编号）时，
         /// 会将 resetHint 置为 true 并返回最新的 count 条日志，以提示调用方游标已失效需要重置。</para>
         /// </summary>
-        internal List<LogEntry> GetBefore(ulong? before, int count, out bool resetHint)
+        internal LogEntry[] GetBefore(ulong? before, int count, out bool resetHint)
         {
             using (_lock.EnterScope())
             {
@@ -441,18 +439,18 @@ namespace PMCSsE_Backend.Modules
                     return [];
                 }
 
-                // 从该节点向前收集最多 count 条（向前即时间更早），用栈反转以保持时间升序
-                var stack = new Stack<LogEntry>(count);
+                // 从该节点向前收集最多 count 条（向前即时间更早），从数组末尾往前填以保持时间升序
+                LogEntry[] result = new LogEntry[count];
+                int written = 0;
                 var cur = node;
-                for (int i = 0; i < count && cur != null; i++)
+                for (int i = count - 1; i >= 0 && cur != null; i--)
                 {
-                    stack.Push(new LogEntry(cur.Value, _logs[cur.Value]));
+                    result[i] = new LogEntry(cur.Value, _logs[cur.Value]);
+                    written++;
                     cur = cur.Previous;
                 }
 
-                var result = new List<LogEntry>(stack.Count);
-                while (stack.Count > 0) result.Add(stack.Pop());
-                return result;
+                return written == count ? result : result[(count - written)..];
             }
         }
 

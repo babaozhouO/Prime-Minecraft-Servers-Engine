@@ -35,7 +35,7 @@ namespace PMCSsE_Backend.Modules
         public static DataPackBus? DataPackBus => NativeServer?.DataPackBus;
         internal static void Initialize()
         {
-            NativeServer = new(IPAddress.IPv6Any, StaticAPPConfigClass.ListenPort, StaticAPPConfigClass.SaltedPasswordHash, StaticAPPConfigClass.Salt, true, RunningStateRecorder.Debug);
+            NativeServer = new(IPAddress.IPv6Any, StaticConfig_Plaintext.ListenPort, StaticConfig_Ciphertext.SaltedLoginKeyHash, StaticConfig_Ciphertext.SaltOfLoginKey, true, RunningStateRecorder.Debug);
 
             NativeServer.ReportLog += (log) =>
             {
@@ -229,7 +229,7 @@ namespace PMCSsE_Backend.Modules
             m.MCServerManagerConfig.StartUpArguments = pack.MCServerManagerConfig.StartUpArguments;
             m.MCServerManagerConfig.BackupManagerConfig = pack.MCServerManagerConfig.BackupManagerConfig;
             m.MCServerManagerConfig.OnlineChattingSystemConfig = pack.MCServerManagerConfig.OnlineChattingSystemConfig;
-            if (!StaticConfigManagerClass.SaveMCServerManagersConfig())
+            if (!StaticConfigManagerClass.SaveConfig_Ciphertext())
             {
                 StaticTools.HandleLog("MC服务端管理器配置文件保存失败");
                 NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("MC服务端管理器配置文件保存失败"));
@@ -456,7 +456,7 @@ namespace PMCSsE_Backend.Modules
             StaticMCServerManagerConfigs.MCServerManagerConfigsList.Add(mCServerManagerConfig);
             StaticMCServerManagerConfigs.MCServerManagerConfigsList.Sort((a, b) =>
                 int.Parse(a.ManagerID).CompareTo(int.Parse(b.ManagerID)));
-            if (!StaticConfigManagerClass.SaveMCServerManagersConfig())//保存失败
+            if (!StaticConfigManagerClass.SaveConfig_Ciphertext())//保存失败
             {
                 StaticMCServerManagerConfigs.MCServerManagerConfigsList.Remove(mCServerManagerConfig);
                 StaticTools.HandleLog("保存新创建的MC服务端管理器失败");
@@ -600,7 +600,7 @@ namespace PMCSsE_Backend.Modules
 
             // 6. 删除配置并保存
             StaticMCServerManagerConfigs.MCServerManagerConfigsList.Remove(config);
-            if (!StaticConfigManagerClass.SaveMCServerManagersConfig())
+            if (!StaticConfigManagerClass.SaveConfig_Plaintext())
             {
                 // 保存失败，复原配置
                 StaticMCServerManagerConfigs.MCServerManagerConfigsList.Add(config);
