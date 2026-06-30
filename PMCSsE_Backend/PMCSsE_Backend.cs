@@ -464,6 +464,14 @@ namespace PMCSsE_Backend
                     if (!StaticConfigManager.SaveConfig_Plaintext() || !StaticConfigManager.SaveConfig_Ciphertext(saltedConfigKeyHash))
                     {//保存失败
                         StaticConfigManager.DeleteAllConfigFile();
+                        StaticTools.HandleLog("配置文件生成失败，请重试");
+                        StaticTools.HandleLog("按Enter键退出");
+                        try
+                        {
+                            Console.ReadLine();
+                        }
+                        catch { }
+                        return 1;
                     }
                     StaticTools.HandleLog("已生成配置文件（一明文，一密文）");
                     StaticTools.HandleLog("请妥善保管密钥，丢失后无法找回");
@@ -471,17 +479,6 @@ namespace PMCSsE_Backend
                     try { Console.ReadLine(); } catch { }
                     try { Console.Clear(); } catch { }
                 }
-                //if (!StaticConfigManagerClass.SaveAPPConfig())
-                //{
-                //    StaticTools.HandleLog("按Enter键退出");
-                //    try
-                //    {
-                //        Console.ReadLine();
-                //    }
-                //    catch { }
-                //    return 1;
-                //}
-                //配置完成
                 StaticTools.HandleLog("已完成配置流程，此后不再要求使用可交互终端也不接受任何命令");
                 StaticTools.HandleLog($"所有操作均在前端的图形化界面上完成");
                 StaticTools.HandleLog($"请删除“first”启动参数后再次启动");
