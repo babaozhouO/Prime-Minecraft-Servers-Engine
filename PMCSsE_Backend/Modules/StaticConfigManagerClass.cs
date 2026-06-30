@@ -12,11 +12,12 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 using LightProto;
+using PMCSsE_Communicator.SharedCodes;
 using System.Security;
 
 namespace PMCSsE_Backend.Modules
 {
-    internal static class StaticConfigManagerClass
+    internal static class StaticConfigManager
     {
         internal static ConfigFilesStateEnum ConfigFilesState
         {
@@ -81,21 +82,9 @@ namespace PMCSsE_Backend.Modules
             }
             else//不存在
             {
-                try
-                {
-                    config = new();
-                    using FileStream configFile = File.Create(Paths.Config_PlaintextPath);
-                    Serializer.Serialize(configFile, config);
-                }
-                catch (Exception ex)
-                {
-                    StaticTools.HandleLog($"配置文件[{Paths.Config_PlaintextPath}]序列化或写入失败");
-                    StaticTools.HandleLog($"异常:{ex.Message}");
-                    StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
-                    StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行");
-                    StaticTools.HandleLog("程序无法继续运行");
-                    return false;
-                }
+                StaticTools.HandleLog($"配置文件[{Paths.Config_PlaintextPath}]不存在");
+                StaticTools.HandleLog("程序无法继续运行");
+                return false;
             }
             StaticConfig_Plaintext.ListenAddress = config.ListenAddress;
             StaticConfig_Plaintext.ListenPort = config.ListenPort;
@@ -103,7 +92,7 @@ namespace PMCSsE_Backend.Modules
             StaticTools.HandleLog($"配置文件（明文部分）读取成功");
             return true;
         }
-        internal static bool LoadConfig_Ciphertext()
+        internal static bool LoadConfig_Ciphertext(byte[] configKey)
         {
             StaticTools.HandleLog("正在读取配置文件（密文部分）");
             Config_Ciphertext config;
@@ -127,13 +116,13 @@ namespace PMCSsE_Backend.Modules
             {
                 try
                 {
-                    using FileStream configFile = File.OpenRead(Paths.Config_CiphertextPath);
-                    //解密
-                    config = Serializer.Deserialize<Config_Ciphertext>(configFile);
+                    byte[] configData = File.ReadAllBytes(Paths.Config_CiphertextPath);
+                    configData = ConfigCrypto.Decrypt(configData, configKey);
+                    config = Serializer.Deserialize<Config_Ciphertext>(configData.AsSpan());
                 }
                 catch (Exception ex)
                 {
-                    StaticTools.HandleLog($"配置文件[{Paths.Config_CiphertextPath}]读取或反序列化失败");
+                    StaticTools.HandleLog($"配置文件[{Paths.Config_CiphertextPath}]读取或解密或反序列化失败");
                     StaticTools.HandleLog($"异常:{ex.Message}");
                     StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
                     StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行、删除配置文件");
@@ -143,22 +132,9 @@ namespace PMCSsE_Backend.Modules
             }
             else//不存在
             {
-                try
-                {
-                    config = new();
-                    using FileStream configFile = File.Create(Paths.Config_CiphertextPath);
-                    //加密
-                    Serializer.Serialize(configFile, config);
-                }
-                catch (Exception ex)
-                {
-                    StaticTools.HandleLog($"配置文件[{Paths.Config_CiphertextPath}]序列化或写入失败");
-                    StaticTools.HandleLog($"异常:{ex.Message}");
-                    StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
-                    StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行");
-                    StaticTools.HandleLog("程序无法继续运行");
-                    return false;
-                }
+                StaticTools.HandleLog($"配置文件[{Paths.Config_CiphertextPath}]不存在");
+                StaticTools.HandleLog("程序无法继续运行");
+                return false;
             }
             StaticConfig_Ciphertext.ConfigVersion = config.ConfigVersion;
             StaticConfig_Ciphertext.SaltedLoginKeyHash = config.SaltedLoginKeyHash;
@@ -207,7 +183,7 @@ namespace PMCSsE_Backend.Modules
             }
             return true;
         }
-        internal static bool SaveConfig_Ciphertext()
+        internal static bool SaveConfig_Ciphertext(byte[] configKey)
         {
             Config_Ciphertext config = new()
             {
@@ -218,27 +194,40 @@ namespace PMCSsE_Backend.Modules
             };
             try
             {
+                byte[] configData = config.ToByteArray();
+                configData = ConfigCrypto.Encrypt(configData, configKey);
                 using FileStream configFile = File.Create(Paths.Config_CiphertextPath);
-                //加密
-                Serializer.Serialize(configFile, config);
+                configFile.Write(configData.AsSpan());
             }
             catch (Exception ex)
             {
-                StaticTools.HandleLog($"配置文件[{Paths.Config_CiphertextPath}]写入或序列化失败");
+                StaticTools.HandleLog($"配置文件[{Paths.Config_CiphertextPath}]写入或序列化或加密失败");
                 StaticTools.HandleLog($"异常:{ex.Message}");
                 StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
                 StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行");
                 StaticTools.HandleLog("程序无法继续运行，请关闭程序");
                 return false;
             }
-            finally
-            {
-                //configKey.Clear();
-                //configKey.Dispose();
-            }
             return true;
         }
-
+        internal static bool DeleteAllConfigFile()
+        {
+            try
+            {
+                File.Delete(Paths.Config_PlaintextPath);
+                File.Delete(Paths.Config_CiphertextPath);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                StaticTools.HandleLog($"配置文件[{Paths.Config_PlaintextPath}]和[{Paths.Config_CiphertextPath}]删除失败");
+                StaticTools.HandleLog($"异常:{ex.Message}");
+                StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
+                StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行");
+                StaticTools.HandleLog("程序无法删除未完成的配置文件，请手动删除“Configs”文件夹");
+                return false;
+            }
+        }
         internal enum ConfigFilesStateEnum
         {
             Good,

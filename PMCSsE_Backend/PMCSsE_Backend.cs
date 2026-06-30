@@ -12,6 +12,8 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 using PMCSsE_Backend.Modules;
+using PMCSsE_Communicator.SharedCodes;
+using Renci.SshNet.Security;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -86,14 +88,14 @@ namespace PMCSsE_Backend
                 }
                 StaticTools.HandleLog($"PMCSsE正在启动（配置模式）{(RunningStateRecorder.Debug ? "（调试模式）" : "")}");
                 StaticTools.HandleLog("项目网址：https://github.com/babaozhouO/Prime-Minecraft-Servers-Engine");
-                switch (StaticConfigManagerClass.ConfigFilesState)
+                switch (StaticConfigManager.ConfigFilesState)
                 {
-                    case StaticConfigManagerClass.ConfigFilesStateEnum.Good:
+                    case StaticConfigManager.ConfigFilesStateEnum.Good:
                         StaticTools.HandleLog($"当前配置文件状态：正常");
                         StaticTools.HandleLog($"此模式下，你可以：");
                         StaticTools.HandleLog($"修改监听地址及端口号");
                         StaticTools.HandleLog($"修改访问密钥");
-                        if (!StaticConfigManagerClass.LoadConfig_Plaintext())
+                        if (!StaticConfigManager.LoadConfig_Plaintext())
                         {
                             StaticTools.HandleLog("按Enter键退出");
                             try
@@ -104,7 +106,7 @@ namespace PMCSsE_Backend
                             return 1;
                         }
                         break;
-                    case StaticConfigManagerClass.ConfigFilesStateEnum.WhereIsThePlaintextConfig:
+                    case StaticConfigManager.ConfigFilesStateEnum.WhereIsThePlaintextConfig:
                         StaticTools.HandleLog($"当前配置文件状态：明文部分缺失");
                         StaticTools.HandleLog("请检查配置文件是否被意外删除");
                         StaticTools.HandleLog($"若你想删除配置文件，请将两个文件一并删除");
@@ -117,7 +119,7 @@ namespace PMCSsE_Backend
                         }
                         catch { }
                         return 1;
-                    case StaticConfigManagerClass.ConfigFilesStateEnum.WhereIsTheCiphertextConfig:
+                    case StaticConfigManager.ConfigFilesStateEnum.WhereIsTheCiphertextConfig:
                         StaticTools.HandleLog($"当前配置文件状态：密文部分缺失");
                         StaticTools.HandleLog("请检查配置文件是否被意外删除");
                         StaticTools.HandleLog($"若你想删除配置文件，请将两个文件一并删除");
@@ -130,7 +132,7 @@ namespace PMCSsE_Backend
                         }
                         catch { }
                         return 1;
-                    case StaticConfigManagerClass.ConfigFilesStateEnum.Welcome:
+                    case StaticConfigManager.ConfigFilesStateEnum.Welcome:
                         StaticTools.HandleLog($"当前配置文件状态：未初始化");
                         StaticTools.HandleLog($"此模式下，你可以：");
                         StaticTools.HandleLog($"配置监听地址及端口号");
@@ -282,7 +284,7 @@ namespace PMCSsE_Backend
                     //检查通过
                     StaticTools.HandleLog($"端口号可用性验证通过");
                     StaticConfig_Plaintext.ListenPort = port;
-                    StaticConfigManagerClass.SaveConfig_Plaintext();
+                    StaticConfigManager.SaveConfig_Plaintext();
                     break;
                 }
                 while (!StaticConfig_Plaintext.SaltOfCipherConfigKey.Equals(Array.Empty<byte>()))
@@ -313,10 +315,10 @@ namespace PMCSsE_Backend
                             StaticTools.HandleLog("密钥长度过短，应大于或等于8个字符");
                             continue;
                         }
-                        byte[] passwordBytes;
+                        byte[] keyBytes;
                         try
                         {
-                            passwordBytes = Encoding.UTF8.GetBytes(input);
+                            keyBytes = Encoding.UTF8.GetBytes(input);
                         }
                         catch (Exception ex)
                         {
@@ -325,25 +327,22 @@ namespace PMCSsE_Backend
                             StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
                             continue;
                         }
-                        ////迭代次数合理，算法跨平台，sha256全平台支持，输出长度合理，不会发生异常
-                        //byte[] saltedPasswordHash = Rfc2898DeriveBytes.Pbkdf2(
-                        //    passwordBytes,
-                        //    StaticConfig_Ciphertext.SaltOfLoginKey,
-                        //    iterations: 100000,//迭代次数
-                        //    hashAlgorithm: HashAlgorithmName.SHA256,
-                        //    outputLength: 32
-                        //);
-                        //if (saltedPasswordHash.SequenceEqual(StaticConfig_Ciphertext.SaltedLoginKeyHash))
-                        //{
-                        //    StaticTools.HandleLog("密钥正确");
-                        //    StaticConfig_Ciphertext.Registered = false;
-                        //    break;
-                        //}
-                        //else
-                        //{
-                        //    StaticTools.HandleLog("密钥错误");
-                        //    continue;
-                        //}
+
+                        byte[] saltedCipherConfigKeyHash = ConfigCrypto.DeriveKey(keyBytes, StaticConfig_Plaintext.SaltOfCipherConfigKey);
+                        if (!StaticConfigManager.LoadConfig_Ciphertext(saltedCipherConfigKeyHash))
+                        {
+                            StaticTools.HandleLog("按Enter键退出");
+                            try
+                            {
+                                Console.ReadLine();
+                            }
+                            catch { }
+                            return 1;
+                        }
+                        //解密、加载成功
+                        CryptographicOperations.ZeroMemory(saltedCipherConfigKeyHash.AsSpan());
+                        StaticConfig_Plaintext.SaltOfCipherConfigKey = [];
+                        break;
                     }
                     else
                     {
@@ -372,44 +371,39 @@ namespace PMCSsE_Backend
                         catch { }
                         return 1;
                     }
-
-                    if (!string.IsNullOrEmpty(choice))
+                    if (string.IsNullOrEmpty(choice))
                     {
-                        if (choice == "Y" || choice == "y")
+                        StaticTools.HandleLog("请选择其中之一");
+                        continue;
+                    }
+                    choice = choice.ToUpper();
+                    if (choice != "Y" && choice != "N")
+                    {
+                        StaticTools.HandleLog("请选择其中之一");
+                        continue;
+                    }
+
+                    byte[] keyBytes = new byte[18];
+                    if (choice == "Y")
+                    {
+                        using var rng = RandomNumberGenerator.Create();
                         {
-                            byte[] passwordBytes = new byte[18];
-                            byte[] salt = new byte[16];
-                            using var rng = RandomNumberGenerator.Create();
-                            {
-                                rng.GetBytes(passwordBytes);
-                                rng.GetBytes(salt);
-                            }//统一进行UTF8编码
-                            string password = Convert.ToBase64String(passwordBytes);//用作展示
-                            passwordBytes = Encoding.UTF8.GetBytes(password);//base64绝对编码成功
-                            byte[] saltedPasswordHash = Rfc2898DeriveBytes.Pbkdf2(
-                                passwordBytes,
-                                salt,
-                                iterations: 100000,//迭代次数
-                                hashAlgorithm: HashAlgorithmName.SHA256,
-                                outputLength: 32
-                            );
-                            StaticConfig_Ciphertext.SaltedLoginKeyHash = saltedPasswordHash;
-                            StaticConfig_Ciphertext.SaltOfLoginKey = salt;
-                            //StaticConfig_Ciphertext.Registered = true;
-                            StaticTools.HandleLog("以后请使用以下密钥登录");
-                            StaticTools.HandleLog(password, true);//已做保护，密钥不会记录在日志里
-                            StaticTools.HandleLog("请妥善保管密钥，丢失后无法找回");
-                            StaticTools.HandleLog("将清空控制台文本，请记下密钥后再按下Enter");
-                            try { Console.ReadLine(); } catch { }
-                            try { Console.Clear(); } catch { }
-                        }
-                        else if (choice == "N" || choice == "n")
+                            rng.GetBytes(keyBytes);
+                        }//统一进行UTF8编码
+                        string key = Convert.ToBase64String(keyBytes);//用作展示
+                        keyBytes = Encoding.UTF8.GetBytes(key);//base64绝对编码成功
+                        StaticTools.HandleLog("以后请使用以下密钥登录");
+                        StaticTools.HandleLog(key, true);//已做保护，密钥不会记录在日志里
+                    }
+                    else
+                    {
+                        while (true)
                         {
                             StaticTools.HandleLog("请输入你想设置的访问密钥");
-                            string? password;
+                            string? key;
                             try
                             {
-                                password = Console.ReadLine();
+                                key = Console.ReadLine();
                             }
                             catch (Exception ex)
                             {
@@ -425,18 +419,20 @@ namespace PMCSsE_Backend
                                 return 1;
                             }
 
-                            if (!string.IsNullOrEmpty(password))
+                            if (!string.IsNullOrEmpty(key))
                             {
 
-                                if (password.Length < 8 && !RunningStateRecorder.Debug)//方便调试
+                                if (key.Length < 8 && !RunningStateRecorder.Debug)//方便调试
                                 {
                                     StaticTools.HandleLog("密钥长度过短，应大于或等于8个字符");
                                     continue;
                                 }
-                                byte[] passwordBytes;
                                 try
                                 {
-                                    passwordBytes = Encoding.UTF8.GetBytes(password);
+                                    keyBytes = Encoding.UTF8.GetBytes(key);
+                                    StaticTools.HandleLog("以后请使用以下密钥登录");
+                                    StaticTools.HandleLog(key, true);//已做保护，密钥不会记录在日志里
+                                    break;
                                 }
                                 catch (Exception ex)
                                 {
@@ -445,27 +441,6 @@ namespace PMCSsE_Backend
                                     StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
                                     continue;//重来
                                 }
-                                byte[] salt = new byte[16];
-                                using var rng = RandomNumberGenerator.Create();
-                                {
-                                    rng.GetBytes(salt);
-                                }
-                                byte[] saltedPasswordHash = Rfc2898DeriveBytes.Pbkdf2(
-                                    passwordBytes,
-                                    salt,
-                                    iterations: 100000,//迭代次数
-                                    hashAlgorithm: HashAlgorithmName.SHA256,
-                                    outputLength: 32
-                                );
-                                StaticConfig_Ciphertext.SaltedLoginKeyHash = saltedPasswordHash;
-                                StaticConfig_Ciphertext.SaltOfLoginKey = salt;
-                                //StaticConfig_Ciphertext.Registered = true;
-                                StaticTools.HandleLog("以后请使用以下密钥登录");
-                                StaticTools.HandleLog(password, true);//已做保护，密钥不会记录在日志里
-                                StaticTools.HandleLog("请妥善保管密钥，丢失后无法找回");
-                                StaticTools.HandleLog("将清空控制台文本，请记下密钥后再按下Enter");
-                                try { Console.ReadLine(); } catch { }
-                                try { Console.Clear(); } catch { }
                             }
                             else
                             {
@@ -473,10 +448,28 @@ namespace PMCSsE_Backend
                             }
                         }
                     }
-                    else
+
+                    byte[] saltOfCipherConfigKey = new byte[16];
+                    byte[] saltOfLoginKey = new byte[16];
+                    using (var rng = RandomNumberGenerator.Create())
                     {
-                        StaticTools.HandleLog("请选择其中之一");
+                        rng.GetBytes(saltOfCipherConfigKey);
+                        rng.GetBytes(saltOfLoginKey);
                     }
+                    byte[] saltedConfigKeyHash = ConfigCrypto.DeriveKey(keyBytes, saltOfCipherConfigKey);
+                    byte[] saltedLoginKeyHash = ConfigCrypto.DeriveKey(keyBytes, saltOfLoginKey);
+                    StaticConfig_Plaintext.SaltOfCipherConfigKey = saltOfCipherConfigKey;
+                    StaticConfig_Ciphertext.SaltedLoginKeyHash = saltedLoginKeyHash;
+                    StaticConfig_Ciphertext.SaltOfLoginKey = saltOfLoginKey;
+                    if (!StaticConfigManager.SaveConfig_Plaintext() || !StaticConfigManager.SaveConfig_Ciphertext(saltedConfigKeyHash))
+                    {//保存失败
+                        StaticConfigManager.DeleteAllConfigFile();
+                    }
+                    StaticTools.HandleLog("已生成配置文件（一明文，一密文）");
+                    StaticTools.HandleLog("请妥善保管密钥，丢失后无法找回");
+                    StaticTools.HandleLog("将清空控制台文本，请记下密钥后再按下Enter");
+                    try { Console.ReadLine(); } catch { }
+                    try { Console.Clear(); } catch { }
                 }
                 //if (!StaticConfigManagerClass.SaveAPPConfig())
                 //{
@@ -499,7 +492,7 @@ namespace PMCSsE_Backend
             StaticTools.HandleLog($"PMCSsE正在启动{(RunningStateRecorder.Debug ? "（调试模式）" : "")}");
             StaticTools.HandleLog("项目网址：https://github.com/babaozhouO/Prime-Minecraft-Servers-Engine");
             StaticTools.HandleLog($"系统命令行使用的编码：{RunningStateRecorder.SystemCommandLineEncoding.EncodingName}");
-            if (!StaticConfigManagerClass.LoadConfig_Plaintext())
+            if (!StaticConfigManager.LoadConfig_Plaintext())
             {
                 StaticTools.HandleLog("按Enter键退出");//保留原因：后台运行时，console.readline会直接报错跳过，前台运行时，显示报错信息
                 try
