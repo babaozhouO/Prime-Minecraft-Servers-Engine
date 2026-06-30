@@ -331,13 +331,9 @@ namespace PMCSsE_Backend
                         byte[] saltedCipherConfigKeyHash = ConfigCrypto.DeriveKey(keyBytes, StaticConfig_Plaintext.SaltOfCipherConfigKey);
                         if (!StaticConfigManager.LoadConfig_Ciphertext(saltedCipherConfigKeyHash))
                         {
-                            StaticTools.HandleLog("按Enter键退出");
-                            try
-                            {
-                                Console.ReadLine();
-                            }
-                            catch { }
-                            return 1;
+                            StaticTools.HandleLog("请30s后再试");
+                            Thread.Sleep(30 * 1000);
+                            continue;
                         }
                         //解密、加载成功
                         CryptographicOperations.ZeroMemory(saltedCipherConfigKeyHash.AsSpan());

@@ -1,6 +1,4 @@
-﻿
-
-namespace PMCSsE_Communicator.PluginLoader
+﻿namespace PMCSsE_Communicator.SharedCodes
 {
     /// <summary>
     /// 插件接口,插件需实现此接口（项目类型需为类库）

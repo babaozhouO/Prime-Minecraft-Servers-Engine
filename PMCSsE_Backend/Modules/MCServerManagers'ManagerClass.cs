@@ -229,12 +229,12 @@ namespace PMCSsE_Backend.Modules
             m.MCServerManagerConfig.StartUpArguments = pack.MCServerManagerConfig.StartUpArguments;
             m.MCServerManagerConfig.BackupManagerConfig = pack.MCServerManagerConfig.BackupManagerConfig;
             m.MCServerManagerConfig.OnlineChattingSystemConfig = pack.MCServerManagerConfig.OnlineChattingSystemConfig;
-            if (!StaticConfigManager.SaveConfig_Ciphertext())
-            {
-                StaticTools.HandleLog("MC服务端管理器配置文件保存失败");
-                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("MC服务端管理器配置文件保存失败"));
-                return;
-            }
+            //if (!StaticConfigManager.SaveConfig_Ciphertext())
+            //{
+            //    StaticTools.HandleLog("MC服务端管理器配置文件保存失败");
+            //    NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("MC服务端管理器配置文件保存失败"));
+            //    return;
+            //}
             StaticTools.HandleLog($"修改ID为[{pack.MCServerManagerConfig.ManagerID}]配置文件成功");
             NativeServer?.RespondClient(RespondTypeEnum.ModifiedMCServerManagerConfig, new Pack_ModifiedMCServerManagerConfig(pack.MCServerManagerConfig));
         }
@@ -456,12 +456,12 @@ namespace PMCSsE_Backend.Modules
             StaticMCServerManagerConfigs.MCServerManagerConfigsList.Add(mCServerManagerConfig);
             StaticMCServerManagerConfigs.MCServerManagerConfigsList.Sort((a, b) =>
                 int.Parse(a.ManagerID).CompareTo(int.Parse(b.ManagerID)));
-            if (!StaticConfigManager.SaveConfig_Ciphertext())//保存失败
-            {
-                StaticMCServerManagerConfigs.MCServerManagerConfigsList.Remove(mCServerManagerConfig);
-                StaticTools.HandleLog("保存新创建的MC服务端管理器失败");
-                return null;
-            }
+            //if (!StaticConfigManager.SaveConfig_Ciphertext())//保存失败
+            //{
+            //    StaticMCServerManagerConfigs.MCServerManagerConfigsList.Remove(mCServerManagerConfig);
+            //    StaticTools.HandleLog("保存新创建的MC服务端管理器失败");
+            //    return null;
+            //}
 
             return mCServerManagerConfig;
         }

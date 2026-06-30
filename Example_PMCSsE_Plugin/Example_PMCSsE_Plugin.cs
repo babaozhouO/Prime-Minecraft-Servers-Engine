@@ -1,6 +1,6 @@
 ﻿using PMCSsE_Backend.Modules;
 using PMCSsE_Backend.PluginsSystem;
-using PMCSsE_Communicator.PluginLoader;
+using PMCSsE_Communicator.SharedCodes;
 using System.Security.Cryptography;
 
 namespace Example_PMCSsE_Plugin

@@ -125,8 +125,7 @@ namespace PMCSsE_Backend.Modules
                     StaticTools.HandleLog($"配置文件[{Paths.Config_CiphertextPath}]读取或解密或反序列化失败");
                     StaticTools.HandleLog($"异常:{ex.Message}");
                     StaticTools.HandleLog($"堆栈跟踪:{ex.StackTrace}");
-                    StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行、删除配置文件");
-                    StaticTools.HandleLog("程序无法继续运行，请关闭程序");
+                    StaticTools.HandleLog("可能的解决办法：调整文件权限、以管理员身份运行、输入正确的访问密钥");
                     return false;
                 }
             }
