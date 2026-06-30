@@ -287,7 +287,7 @@ namespace PMCSsE_Backend
                     StaticConfigManager.SaveConfig_Plaintext();
                     break;
                 }
-                while (!StaticConfig_Plaintext.SaltOfCipherConfigKey.Equals(Array.Empty<byte>()))
+                while (StaticConfig_Plaintext.SaltOfCipherConfigKey.Length!=0)
                 {
                     StaticTools.HandleLog($"已设置访问密钥，修改需输入旧访问密钥，不输入任何文字并按Enter可取消修改");
                     string? input;
@@ -349,7 +349,7 @@ namespace PMCSsE_Backend
                         break;
                     }
                 }
-                while (StaticConfig_Plaintext.SaltOfCipherConfigKey.Equals(Array.Empty<byte>()))
+                while (StaticConfig_Plaintext.SaltOfCipherConfigKey.Length==0)
                 {
                     StaticTools.HandleLog("为保证安全，必须设置访问密钥");
                     StaticTools.HandleLog("是否让程序自动生成一个（Y/N）");
@@ -458,6 +458,9 @@ namespace PMCSsE_Backend
                     }
                     byte[] saltedConfigKeyHash = ConfigCrypto.DeriveKey(keyBytes, saltOfCipherConfigKey);
                     byte[] saltedLoginKeyHash = ConfigCrypto.DeriveKey(keyBytes, saltOfLoginKey);
+
+                    CryptographicOperations.ZeroMemory(keyBytes.AsSpan());
+
                     StaticConfig_Plaintext.SaltOfCipherConfigKey = saltOfCipherConfigKey;
                     StaticConfig_Ciphertext.SaltedLoginKeyHash = saltedLoginKeyHash;
                     StaticConfig_Ciphertext.SaltOfLoginKey = saltOfLoginKey;
@@ -473,6 +476,9 @@ namespace PMCSsE_Backend
                         catch { }
                         return 1;
                     }
+                    CryptographicOperations.ZeroMemory(saltedConfigKeyHash.AsSpan());
+                    CryptographicOperations.ZeroMemory(saltedLoginKeyHash.AsSpan());
+                    CryptographicOperations.ZeroMemory(saltOfLoginKey.AsSpan());
                     StaticTools.HandleLog("已生成配置文件（一明文，一密文）");
                     StaticTools.HandleLog("请妥善保管密钥，丢失后无法找回");
                     StaticTools.HandleLog("将清空控制台文本，请记下密钥后再按下Enter");
