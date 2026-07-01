@@ -541,6 +541,7 @@ namespace PMCSsE_Backend
             {
                 await Task.Delay(Timeout.Infinite, ExitTokenSource.Token);
             }
+            catch (OperationCanceledException) { }
             catch (Exception ex)
             {
                 StaticTools.HandleLog("在Main函数中等待组件发出退出信号时发生异常");
