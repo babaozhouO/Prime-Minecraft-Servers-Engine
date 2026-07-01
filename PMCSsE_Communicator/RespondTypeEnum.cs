@@ -6,6 +6,14 @@
     public enum RespondTypeEnum
     {
         /// <summary>
+        /// 保存密文配置成功
+        /// </summary>
+        SaveCiptherConfigSucceed,
+        /// <summary>
+        /// 保存密文配置失败
+        /// </summary>
+        SaveCiptherConfigFailed,
+        /// <summary>
         /// 所有MC服务端管理器的配置信息
         /// </summary>
         MCServerManagerConfigs,
@@ -101,6 +109,8 @@
     }
     internal enum RespondTypeEnum_Private
     {
+        SaveCipthertextConfigSucceed,
+        SaveCipthertextConfigFailed,
         MCServerManagerConfigs,
         LoadedMCServerManagers,
         SupportedMCServerTypes,

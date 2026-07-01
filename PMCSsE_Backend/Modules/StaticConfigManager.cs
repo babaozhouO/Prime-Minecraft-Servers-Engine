@@ -13,7 +13,6 @@ you may not use this file except in compliance with the License.
    limitations under the License.*/
 using LightProto;
 using PMCSsE_Communicator.SharedCodes;
-using System.Security;
 
 namespace PMCSsE_Backend.Modules
 {
@@ -43,6 +42,7 @@ namespace PMCSsE_Backend.Modules
                 }
             }
         }
+        internal static bool ReadCiphertextConfig { get; set; } = false;
         internal static bool LoadConfig_Plaintext()
         {
             StaticTools.HandleLog("正在读取配置文件（明文部分）");
@@ -138,7 +138,7 @@ namespace PMCSsE_Backend.Modules
             StaticConfig_Ciphertext.ConfigVersion = config.ConfigVersion;
             StaticConfig_Ciphertext.SaltedLoginKeyHash = config.SaltedLoginKeyHash;
             StaticConfig_Ciphertext.SaltOfLoginKey = config.SaltOfLoginKey;
-            StaticConfig_Ciphertext.MCServerManagerConfigsList = config.MCServerManagerConfigsList;
+            StaticConfig_Ciphertext.MCServerManagerConfigsList = config.MCServerManagerConfigsList ?? [];
             StaticTools.HandleLog($"配置文件（密文部分）读取成功");
             return true;
         }

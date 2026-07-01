@@ -3,10 +3,7 @@ using PMCSsE_Communicator.DataPacks.Pack_nothing;
 using PMCSsE_Communicator.DataPacks.Pack_StringOnly;
 using LightProto;
 using System.Buffers.Binary;
-using System.Diagnostics;
-using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
 
 namespace PMCSsE_Communicator
@@ -866,6 +863,12 @@ namespace PMCSsE_Communicator
                         {
                             switch (respondType)
                             {
+                                case RespondTypeEnum_Private.SaveCipthertextConfigSucceed:
+                                    DataPackBus.Publish(new Pack_SaveCipthertextConfigSucceed());
+                                    return;
+                                case RespondTypeEnum_Private.SaveCipthertextConfigFailed:
+                                    DataPackBus.Publish(new Pack_SaveCipthertextConfigFailed());
+                                    return;
                                 case RespondTypeEnum_Private.MCServerManagerConfigs:
                                     DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerManagerConfigs>(payload));
                                     return;

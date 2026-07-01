@@ -12,17 +12,18 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 
-using Org.BouncyCastle.Bcpg;
 using PMCSsE_Backend.PluginsSystem;
 using PMCSsE_Communicator;
 using PMCSsE_Communicator.DataPacks;
 using PMCSsE_Communicator.DataPacks.Pack_nothing;
 using PMCSsE_Communicator.DataPacks.Pack_StringOnly;
-using System.Net;
+using PMCSsE_Communicator.SharedCodes;
+using Renci.SshNet.Security;
+using System.Security.Cryptography;
 
 namespace PMCSsE_Backend.Modules
 {
-    internal static class MCServerManagers_ManagerClass
+    internal static class MCServerManagers_Manager
     {
         internal static NativeServer? NativeServer;
         private static readonly List<MCServerManager> LoadedMCServerManagersList = [];
@@ -35,7 +36,7 @@ namespace PMCSsE_Backend.Modules
         public static DataPackBus? DataPackBus => NativeServer?.DataPackBus;
         internal static void Initialize()
         {
-            NativeServer = new(IPAddress.IPv6Any, StaticConfig_Plaintext.ListenPort, StaticConfig_Ciphertext.SaltedLoginKeyHash, StaticConfig_Ciphertext.SaltOfLoginKey, true, RunningStateRecorder.Debug);
+            NativeServer = new(StaticConfig_Plaintext.ListenAddress, StaticConfig_Plaintext.ListenPort, RunningStateRecorder.Debug);
 
             NativeServer.ReportLog += (log) =>
             {
@@ -47,6 +48,48 @@ namespace PMCSsE_Backend.Modules
                 StaticTools.HandleLog("正在停止程序");
                 ExitCalled();
             };
+            NativeServer.ReceivedKey += (key) =>
+            {
+                if (StaticConfigManager.ReadCiphertextConfig)//已解密并读取
+                {
+                    byte[] saltedLoginKeyHash = ConfigCrypto.DeriveKey(key, StaticConfig_Ciphertext.SaltOfLoginKey);
+                    if (saltedLoginKeyHash.SequenceEqual(StaticConfig_Ciphertext.SaltedLoginKeyHash))
+                    {
+                        NativeServer.VerifyKey(true);
+                    }
+                    else
+                    {
+                        NativeServer.VerifyKey(false);
+                    }
+                    CryptographicOperations.ZeroMemory(saltedLoginKeyHash.AsSpan());
+                }
+                else//未解密
+                {
+                    byte[] saltedCipherConfigKeyHash = ConfigCrypto.DeriveKey(key, StaticConfig_Plaintext.SaltOfCipherConfigKey);
+                    if (!StaticConfigManager.LoadConfig_Ciphertext(saltedCipherConfigKeyHash))
+                    {
+                        NativeServer.VerifyKey(false);
+                        CryptographicOperations.ZeroMemory(saltedCipherConfigKeyHash.AsSpan());
+                        return;
+                    }
+                    //解密、加载成功
+                    CryptographicOperations.ZeroMemory(saltedCipherConfigKeyHash.AsSpan());
+                    StaticConfigManager.ReadCiphertextConfig = true;
+
+                    byte[] saltedLoginKeyHash = ConfigCrypto.DeriveKey(key, StaticConfig_Ciphertext.SaltOfLoginKey);
+                    if (saltedLoginKeyHash.SequenceEqual(StaticConfig_Ciphertext.SaltedLoginKeyHash))
+                    {
+                        NativeServer.VerifyKey(true);
+                    }
+                    else
+                    {
+                        NativeServer.VerifyKey(false);
+                    }
+                    CryptographicOperations.ZeroMemory(saltedLoginKeyHash.AsSpan());
+                }
+            };
+
+            NativeServer.DataPackBus.Subscribe<Pack_SaveCipherConfig>(HandlePack_SaveCipherConfig);
             NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManagerConfigsList>(HandlePack_GetMCServerManagersList);
             NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManager>(HandlePack_GetMCServerManager);
             NativeServer.DataPackBus.Subscribe<Pack_GetSupportedMCServerTypes>(HandlePack_GetSupportedMCServerTypes);
@@ -78,14 +121,31 @@ namespace PMCSsE_Backend.Modules
 
             NativeServer.StartService();
         }
+        private static void HandlePack_SaveCipherConfig(Pack_SaveCipherConfig pack)
+        {
+            StaticTools.HandleLog($"客户端请求保存密文配置文件");
+            byte[] saltedCipherConfigKeyHash = ConfigCrypto.DeriveKey(pack.KeyBytes, StaticConfig_Plaintext.SaltOfCipherConfigKey);
+            bool isSucceed= StaticConfigManager.SaveConfig_Ciphertext(saltedCipherConfigKeyHash);
+            CryptographicOperations.ZeroMemory(saltedCipherConfigKeyHash.AsSpan());
+            if (isSucceed)
+            {
+                StaticTools.HandleLog($"保存密文配置文件成功");
+                NativeServer?.RespondClient(RespondTypeEnum.MCServerManagerConfigs, new Pack_SaveCipthertextConfigSucceed());
+            }
+            else
+            {
+                StaticTools.HandleLog($"保存密文配置文件失败");
+                NativeServer?.RespondClient(RespondTypeEnum.MCServerManagerConfigs, new Pack_SaveCipthertextConfigSucceed());
+            }
+        }
         private static void HandlePack_GetMCServerManagersList(Pack_GetMCServerManagerConfigsList _)
         {
             if (NativeServer == null) { return; }
             StaticTools.HandleLog($"客户端请求获取所有管理器");
             MCServerManagerConfigs mCServerManagerConfigs = new();
             {
-                mCServerManagerConfigs.ConfigVersion = StaticMCServerManagerConfigs.ConfigVersion;
-                mCServerManagerConfigs.MCServerManagerConfigsList = StaticMCServerManagerConfigs.MCServerManagerConfigsList;
+                mCServerManagerConfigs.ConfigVersion = StaticConfig_Ciphertext.ConfigVersion;
+                mCServerManagerConfigs.MCServerManagerConfigsList = StaticConfig_Ciphertext.MCServerManagerConfigsList;
             }
             NativeServer.RespondClient(RespondTypeEnum.MCServerManagerConfigs, new Pack_MCServerManagerConfigs(mCServerManagerConfigs));
         }
@@ -100,7 +160,6 @@ namespace PMCSsE_Backend.Modules
             if (NativeServer == null) { return; }
             StaticTools.HandleLog($"客户端请求获取支持的服务端类型");
             NativeServer.RespondClient(RespondTypeEnum.SupportedMCServerTypes, new Pack_SupportedMCServerTypes(SupportedMCServerTypes));
-
         }
         private static void HandlePack_CreatNewMCServerManager(Pack_CreatNewMCServerManager _)
         {
@@ -229,12 +288,6 @@ namespace PMCSsE_Backend.Modules
             m.MCServerManagerConfig.StartUpArguments = pack.MCServerManagerConfig.StartUpArguments;
             m.MCServerManagerConfig.BackupManagerConfig = pack.MCServerManagerConfig.BackupManagerConfig;
             m.MCServerManagerConfig.OnlineChattingSystemConfig = pack.MCServerManagerConfig.OnlineChattingSystemConfig;
-            //if (!StaticConfigManager.SaveConfig_Ciphertext())
-            //{
-            //    StaticTools.HandleLog("MC服务端管理器配置文件保存失败");
-            //    NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("MC服务端管理器配置文件保存失败"));
-            //    return;
-            //}
             StaticTools.HandleLog($"修改ID为[{pack.MCServerManagerConfig.ManagerID}]配置文件成功");
             NativeServer?.RespondClient(RespondTypeEnum.ModifiedMCServerManagerConfig, new Pack_ModifiedMCServerManagerConfig(pack.MCServerManagerConfig));
         }
@@ -453,22 +506,17 @@ namespace PMCSsE_Backend.Modules
                 return null;
             }
             MCServerManagerConfig mCServerManagerConfig = new() { ManagerID = NewID };
-            StaticMCServerManagerConfigs.MCServerManagerConfigsList.Add(mCServerManagerConfig);
-            StaticMCServerManagerConfigs.MCServerManagerConfigsList.Sort((a, b) =>
+
+            StaticConfig_Ciphertext.MCServerManagerConfigsList.Add(mCServerManagerConfig);
+            StaticConfig_Ciphertext.MCServerManagerConfigsList.Sort((a, b) =>
                 int.Parse(a.ManagerID).CompareTo(int.Parse(b.ManagerID)));
-            //if (!StaticConfigManager.SaveConfig_Ciphertext())//保存失败
-            //{
-            //    StaticMCServerManagerConfigs.MCServerManagerConfigsList.Remove(mCServerManagerConfig);
-            //    StaticTools.HandleLog("保存新创建的MC服务端管理器失败");
-            //    return null;
-            //}
 
             return mCServerManagerConfig;
         }
         private static string GenerateNewID()
         {
             List<int> IDs = [];
-            foreach (MCServerManagerConfig singleMCServerManagerConfigInfo1 in StaticMCServerManagerConfigs.MCServerManagerConfigsList)
+            foreach (MCServerManagerConfig singleMCServerManagerConfigInfo1 in StaticConfig_Ciphertext.MCServerManagerConfigsList)
             {
                 try
                 {
@@ -526,7 +574,7 @@ namespace PMCSsE_Backend.Modules
                 }
             }
             MCServerManagerConfig? mCServerManagerConfig = null;
-            foreach (var item in StaticMCServerManagerConfigs.MCServerManagerConfigsList)
+            foreach (var item in StaticConfig_Ciphertext.MCServerManagerConfigsList)
             {
                 if (item.ManagerID == ID)
                 {
@@ -578,7 +626,7 @@ namespace PMCSsE_Backend.Modules
         private static int DeleteMCServerManager(string ID)
         {
             // 1. 找到目标配置
-            var config = StaticMCServerManagerConfigs.MCServerManagerConfigsList
+            var config = StaticConfig_Ciphertext.MCServerManagerConfigsList
                 .FirstOrDefault(c => c.ManagerID == ID);
             if (config == null) return 1;
 
@@ -598,14 +646,8 @@ namespace PMCSsE_Backend.Modules
             foreach (var item in loadedItems)
                 item.Dispose();
 
-            // 6. 删除配置并保存
-            StaticMCServerManagerConfigs.MCServerManagerConfigsList.Remove(config);
-            if (!StaticConfigManager.SaveConfig_Plaintext())
-            {
-                // 保存失败，复原配置
-                StaticMCServerManagerConfigs.MCServerManagerConfigsList.Add(config);
-                return 2;
-            }
+            // 6. 删除配置
+            StaticConfig_Ciphertext.MCServerManagerConfigsList.Remove(config);
 
             return 0;
         }

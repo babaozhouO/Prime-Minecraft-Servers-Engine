@@ -141,6 +141,7 @@
                         <controls:MyButton Text="启动" Command="{Binding LoadNewMCServerManagerCommand}"/>
                         <controls:MyButton Text="停止" Command="{Binding StopNewMCServerManagerCommand}"/>
                         <controls:MyButton Text="删除" Command="{Binding DeleteMCServerManagerCommand}"/>
+                        <controls:MyButton Text="保存" Command="{Binding SaveCiphertextConfigCommand}"/>
                         <StackPanel.Styles>
                             <Style Selector="controls|MyButton">
                                 <Setter Property="Width" Value="100"/>
@@ -177,6 +178,7 @@
                         <TextBlock Text="操作" HorizontalAlignment="Center"/>
                         <controls:MyButton Text="刷新" Command="{Binding RefreshLoadedMCServerManagerCommand}"/>
                         <controls:MyButton Text="打开" Command="{Binding OpenSelectedMCServerManagerCommand}"/>
+                        <controls:MyButton Text="保存" Command="{Binding SaveCiphertextConfigCommand}"/>
                         <StackPanel.Styles>
                             <Style Selector="controls|MyButton">
                                 <Setter Property="Width" Value="100"/>

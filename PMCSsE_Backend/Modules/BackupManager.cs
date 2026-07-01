@@ -164,7 +164,7 @@ namespace PMCSsE_Backend.Modules
             switch (MCServerManager.MCServerManagerConfig.BackupManagerConfig.BackupMode)
             {
                 case BackupMode.Full:
-                    FullBackupHelperClass fullBackupHelperClass = new(MCServerManager, CancellationTokenSource);
+                    FullBackupHelper fullBackupHelperClass = new(MCServerManager, CancellationTokenSource);
                     fullBackupHelperClass.ReportLog += ReportLog;
                     fullBackupHelperClass.Run();
                     break;

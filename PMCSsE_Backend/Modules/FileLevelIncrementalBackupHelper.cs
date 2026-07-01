@@ -15,10 +15,10 @@ using PMCSsE_Communicator;
 
 namespace PMCSsE_Backend.Modules
 {
-    internal class BlockLevelIncremntalBackupHelperClass
+    internal class FileLevelIncrementalBackupHelper
     {
         private readonly MCServerManagerConfig MCServerManagerConfig;
-        internal BlockLevelIncremntalBackupHelperClass(MCServerManagerConfig mCServerManagerConfig)
+        internal FileLevelIncrementalBackupHelper(MCServerManagerConfig mCServerManagerConfig)
         {
             MCServerManagerConfig = mCServerManagerConfig;
         }

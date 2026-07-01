@@ -13,7 +13,6 @@ you may not use this file except in compliance with the License.
    limitations under the License.*/
 using PMCSsE_Backend.Modules;
 using PMCSsE_Communicator.SharedCodes;
-using Renci.SshNet.Security;
 using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
@@ -65,7 +64,7 @@ namespace PMCSsE_Backend
             {
                 var ex = (Exception)e.ExceptionObject;
                 StaticTools.HandleLog($"发生未处理的异常，请复制此消息并反馈: {ex.Message}{Environment.NewLine}{ex.StackTrace}{Environment.NewLine}内部异常：{ex.InnerException?.Message}");
-                MCServerManagers_ManagerClass.ShutDown();
+                MCServerManagers_Manager.ShutDown();
                 StaticTools.HandleLog("正在停止日志记录");
                 StaticTools.LogsWriter.Dispose();
                 StaticTools.HandleLog("已停止日志记录");
@@ -503,7 +502,7 @@ namespace PMCSsE_Backend
             }
 
             CancellationTokenSource ExitTokenSource = new();
-            MCServerManagers_ManagerClass.ExitCalled += () =>
+            MCServerManagers_Manager.ExitCalled += () =>
             {
                 ExitTokenSource.Cancel();
             };
@@ -537,7 +536,7 @@ namespace PMCSsE_Backend
             // ---- 退出信号拦截结束 ----
 
             StaticTools.HandleLog($"将在{StaticConfig_Plaintext.ListenAddress}:{StaticConfig_Plaintext.ListenPort}上监听前端连接请求");
-            MCServerManagers_ManagerClass.Initialize();
+            MCServerManagers_Manager.Initialize();
             try
             {
                 await Task.Delay(Timeout.Infinite, ExitTokenSource.Token);
@@ -548,7 +547,7 @@ namespace PMCSsE_Backend
                 StaticTools.HandleLog($"异常：{ex.Message}");
                 StaticTools.HandleLog($"堆栈跟踪：{ex.StackTrace}");
             }
-            MCServerManagers_ManagerClass.ShutDown();
+            MCServerManagers_Manager.ShutDown();
             StaticTools.HandleLog("正在停止日志记录");
             StaticTools.LogsWriter.Dispose();
             StaticTools.HandleLog("已停止日志记录");

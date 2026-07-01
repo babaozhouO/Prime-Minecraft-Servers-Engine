@@ -14,7 +14,7 @@ you may not use this file except in compliance with the License.
 
 namespace PMCSsE_Backend.Modules
 {
-    internal class SevenZipInvokerClass : IDisposable
+    internal class SevenZipInvoker : IDisposable
     {
 
         private readonly System.Diagnostics.Process _7ZipProcess = new() { EnableRaisingEvents = true };
@@ -33,7 +33,7 @@ namespace PMCSsE_Backend.Modules
         public event Action<string, string, string> ReportLog = delegate { };
 
         internal event Action ProcessExited = delegate { };
-        internal SevenZipInvokerClass(CancellationTokenSource cancellationTokenSource)
+        internal SevenZipInvoker(CancellationTokenSource cancellationTokenSource)
         {
             CheckCancellationTokenTimer.Elapsed += (sender, e) =>//每秒检查一次cancellationtoken
             {
@@ -218,7 +218,7 @@ namespace PMCSsE_Backend.Modules
         static void Example()
         {
             CancellationTokenSource cancellationTokenSource = new();
-            SevenZipInvokerClass invoke7Zip = new(cancellationTokenSource);
+            SevenZipInvoker invoke7Zip = new(cancellationTokenSource);
             invoke7Zip.ReportLog += (Type, Sender, Log) =>
             {
                 Console.WriteLine(Log);

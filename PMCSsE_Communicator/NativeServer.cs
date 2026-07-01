@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
+using PMCSsE_Communicator.SharedCodes;
 
 namespace PMCSsE_Communicator
 {
@@ -23,8 +24,8 @@ namespace PMCSsE_Communicator
         /// 调试模式,此模式下要尽可能详细地输出日志
         /// </summary>
         public bool DebugMode;
+        private string ListenAddress;
         private int ListenPort;
-        private bool EnableIPv4WhenListeningIPv6;
         private TcpListener? TcpListener;
         private readonly ThreadStart ServerThreadStart;
         private Thread ServerThread;
@@ -44,18 +45,18 @@ namespace PMCSsE_Communicator
         /// </summary>
         public event Action<string> StartServerFailed = delegate { };
         private event Action TcpListenerThreadStoped = delegate { };
-        private readonly Lock PasswordLock = new();
-        private byte[] SaltedPasswordBytes;
-        private byte[] SaltBytes;
         private string RSAPublicKey;
         private string RSAPrivateKey;
-        private IPAddress ListenAddress;
         //Client
         private ClientInfo? ClientInfo;
         /// <summary>
         /// 包传递
         /// </summary>
         public DataPackBus DataPackBus = new();
+        /// <summary>
+        /// 客户端登录，传出Key
+        /// </summary>
+        public event Action<byte[]> ReceivedKey = delegate { };
         /// <summary>
         /// 客户端连接并握手成功后发生
         /// </summary>
@@ -65,7 +66,7 @@ namespace PMCSsE_Communicator
         /// </summary>
         public event Action<byte, byte[]> ReceivedDataFromClient_Plugin = delegate { };
         /// <summary>
-        /// 有客户端连接断开连接后发生
+        /// 客户端断开连接后发生
         /// </summary>
         public event Action ClientDisconnected = delegate { };
 
@@ -74,17 +75,11 @@ namespace PMCSsE_Communicator
         /// </summary>
         /// <param name="port">监听的端口</param>
         /// <param name="listenAddress">监听的地址</param>
-        /// <param name="saltedPasswordBytes">加了盐并哈希过的访问密钥</param>
-        /// <param name="saltBytes">盐</param>
-        /// <param name="enableIPv4WhenListeningIPv6">当listenerAddress为AnyIPv6时是否同时监听IPv4</param>
         /// <param name="debugMode">调试模式开关</param>
-        public NativeServer(IPAddress listenAddress, int port, byte[] saltedPasswordBytes, byte[] saltBytes, bool enableIPv4WhenListeningIPv6 = true, bool debugMode = false)
+        public NativeServer(string listenAddress, int port, bool debugMode = false)
         {
             DebugMode = debugMode;
             ListenPort = port;
-            EnableIPv4WhenListeningIPv6 = enableIPv4WhenListeningIPv6;
-            SaltedPasswordBytes = saltedPasswordBytes;
-            SaltBytes = saltBytes;
             ListenAddress = listenAddress;
             StopServerTokenSource = new();
             ServerThreadStart = new(TcpListenerThreadWork);
@@ -128,15 +123,13 @@ namespace PMCSsE_Communicator
         /// </summary>
         /// <param name="listenAddress">监听的地址</param>
         /// <param name="port">监听的端口</param>
-        /// <param name="enableIPv4WhenListeningIPv6">当listenerAddress为AnyIPv6时是否同时监听IPv4</param>
-        public void ChangePortAndRestart(IPAddress listenAddress, int port, bool enableIPv4WhenListeningIPv6)
+        public void ChangePortAndRestart(string listenAddress, int port)
         {
             if (listenAddress != ListenAddress || port != ListenPort)
             {
                 var (puk, prk) = SimpleHybridEncryption.GenerateRSAKey();
                 RSAPublicKey = puk; RSAPrivateKey = prk;
                 ListenAddress = listenAddress;//仅在启动时访问，无需锁
-                EnableIPv4WhenListeningIPv6 = enableIPv4WhenListeningIPv6;
                 ListenPort = port;
 
                 TcpListenerThreadStoped += StartService;
@@ -145,19 +138,6 @@ namespace PMCSsE_Communicator
                     StopServerTokenSource.Cancel();
                 }
                 catch { }
-            }
-        }
-        /// <summary>
-        /// 更改访问密钥
-        /// </summary>
-        /// <param name="saltedPasswordBytes"></param>
-        /// <param name="saltBytes"></param>
-        public void ChangePassword(byte[] saltedPasswordBytes, byte[] saltBytes)
-        {
-            using (PasswordLock.EnterScope())
-            {
-                SaltedPasswordBytes = saltedPasswordBytes;
-                SaltBytes = saltBytes;
             }
         }
         /// <summary>
@@ -179,10 +159,20 @@ namespace PMCSsE_Communicator
         {
             try
             {
-                TcpListener = new(ListenAddress, ListenPort);
-                if (ListenAddress.Equals(IPAddress.IPv6Any) && EnableIPv4WhenListeningIPv6)
+                if (ListenAddress == "All")
                 {
+                    TcpListener = new(IPAddress.IPv6Any, ListenPort);
                     TcpListener.Server.DualMode = true;
+                }
+                else if (IPAddress.TryParse(ListenAddress, out IPAddress? address))
+                {
+                    TcpListener = new(address, ListenPort);
+                }
+                else
+                {
+                    ReportLog($"创建TCP服务端对象失败,原因：监听地址配置异常");
+                    ReportLog($"可能的解决办法：重新指定监听地址");
+                    return;
                 }
             }
             catch (Exception ex)
@@ -272,13 +262,13 @@ namespace PMCSsE_Communicator
 
                 if (TempBannedIP.TryGetValue(iPEndPoint.Address.ToString(), out (int, DateTime) info))
                 {
-                    TimeSpan banTimeLenght = TimeSpan.FromSeconds(30d * Math.Pow(2,info.Item1));
+                    TimeSpan banTimeLenght = TimeSpan.FromSeconds(30d * Math.Pow(2, info.Item1));
                     DateTime unbannedTime = info.Item2 + banTimeLenght;
                     DateTime now = DateTime.Now;
                     if (now < unbannedTime)
                     {
                         ReportLog($"有原生客户端请求连接，但其因（多次）密码错误而被暂时封禁");
-                        ReportLog($"剩余时长：{unbannedTime-now}");
+                        ReportLog($"剩余时长：{unbannedTime - now}");
                         tcpClient.Close();
                         tcpClient.Dispose();
                         continue;
@@ -823,6 +813,9 @@ namespace PMCSsE_Communicator
                     {
                         switch (requestTypeEnum_Private)
                         {
+                            case RequestTypeEnum_Private.SaveCipthertextConfig:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_SaveCipherConfig>(dataPack.AsSpan(2)));
+                                break;
                             case RequestTypeEnum_Private.GetMCServerManagersList:
                                 DataPackBus.Publish(new Pack_GetMCServerManagerConfigsList());
                                 break;
@@ -889,16 +882,16 @@ namespace PMCSsE_Communicator
             }
         }
 
-        private (RequestTypeEnum_Private Type, object? Content) ProcessDataPack_HandShake(byte[] dataPack)
+        private void ProcessDataPack_HandShake(byte[] dataPack)
         {
-            if (ClientInfo == null) { return (RequestTypeEnum_Private.Unknown, null); }
+            if (ClientInfo == null) { return; }
             if (dataPack.Length == 2)
             {
                 ReadOnlySpan<byte> shortDataPack = dataPack.AsSpan();
                 switch (shortDataPack)
                 {
                     case [0, (byte)RequestTypeEnum_Private.ConnectionAlive]:
-                        return (RequestTypeEnum_Private.ConnectionAlive, null);
+                        return;
                     case [0, (byte)RequestTypeEnum_Private.NeedRSAPublicKey]:
                         ReportLog("收到客户端请求RSA公钥的数据包");
                         if (ClientInfo!.HandShakeProcess != HandShakeProcess_Server.WaitingNeedRSAPublicKey)
@@ -909,14 +902,14 @@ namespace PMCSsE_Communicator
                                 ClientInfo.CloseConnectionTokenSource.Cancel();
                             }
                             catch { }
-                            break;
+                            return;
                         }
                         ClientInfo.HandShakeProcess = HandShakeProcess_Server.ReceivedNeedRSAPublicKey;
                         using (ClientInfo.TasksQueueLock.EnterScope())
                         {
                             ClientInfo.TasksQueue.Enqueue(SendRSAPublicKeyAsync);
                         }
-                        return (RequestTypeEnum_Private.NeedRSAPublicKey, null);
+                        return;
                     case [0, (byte)RequestTypeEnum_Private.GotRSAPublicKey]:
                         ReportLog("收到客户端确认RSA公钥的数据包");
                         if (ClientInfo!.HandShakeProcess != HandShakeProcess_Server.WaitingGotRSAPublicKey)
@@ -927,14 +920,14 @@ namespace PMCSsE_Communicator
                                 ClientInfo.CloseConnectionTokenSource.Cancel();
                             }
                             catch { }
-                            break;
+                            return;
                         }
                         ClientInfo.HandShakeProcess = HandShakeProcess_Server.ReceivedGotRSAPublicKey;
                         using (ClientInfo.TasksQueueLock.EnterScope())
                         {
                             ClientInfo.TasksQueue.Enqueue(SendNeedAESAsync);
                         }
-                        return (RequestTypeEnum_Private.GotRSAPublicKey, null);
+                        return;
                     case [0, (byte)RequestTypeEnum_Private.RSAPublicKeyMismatch]:
                         ReportLog("收到客户端反馈RSA公钥不一致的数据包,断开连接");
                         if (ClientInfo!.HandShakeProcess != HandShakeProcess_Server.WaitingGotRSAPublicKey)
@@ -945,16 +938,16 @@ namespace PMCSsE_Communicator
                                 ClientInfo.CloseConnectionTokenSource.Cancel();
                             }
                             catch { }
-                            break;
+                            return;
                         }
                         try
                         {
                             ClientInfo.CloseConnectionTokenSource.Cancel();
                         }
                         catch { }
-                        return (RequestTypeEnum_Private.RSAPublicKeyMismatch, null);
+                        return;
                 }
-                return (RequestTypeEnum_Private.Unknown, null);
+                return;
             }
             else
             {
@@ -971,12 +964,12 @@ namespace PMCSsE_Communicator
                             ReportLog("在握手流程的“客户端发送AES密钥”阶段用RSA密钥解密数据包失败");
                             ReportLog($"异常信息：{ex.Message}{Environment.NewLine}{ex.StackTrace}");
                             try { ClientInfo.CloseConnectionTokenSource.Cancel(); } catch { }
-                            return (RequestTypeEnum_Private.AESKey, null);
+                            return;
                         }
                         if (dataPack.Length != 50)//2+32+16
                         {
                             ReportLog("处理AES数据包时发现数据长度不正确");
-                            return (RequestTypeEnum_Private.Unknown, null);
+                            return;
                         }
                         byte[] aesKey = new byte[32];
                         byte[] aesIv = new byte[16];
@@ -989,14 +982,14 @@ namespace PMCSsE_Communicator
                         {
                             ClientInfo.TasksQueue.Enqueue(SendGotAESAsync);
                         }
-                        return (RequestTypeEnum_Private.AESKey, null);
+                        return;
                     case HandShakeProcess_Server.WaitingLogin:
                         ReportLog("收到客户端请求登录的数据包");
                         if (ClientInfo!.Aes == null)
                         {
                             ReportLog("在握手流程的“客户端登录”阶段发现AES为null");
                             try { ClientInfo.CloseConnectionTokenSource.Cancel(); } catch { }
-                            return (RequestTypeEnum_Private.Login, null);
+                            return;
                         }
                         try
                         {
@@ -1007,40 +1000,15 @@ namespace PMCSsE_Communicator
                             ReportLog("在握手流程的“客户端登录”阶段解密数据包失败");
                             ReportLog($"异常信息：{ex.Message}{Environment.NewLine}{ex.StackTrace}");
                             try { ClientInfo.CloseConnectionTokenSource.Cancel(); } catch { }
-                            return (RequestTypeEnum_Private.Login, null);
+                            return;
                         }
-                        byte[] passwordBytes = new byte[dataPack.Length - 2];
-                        Buffer.BlockCopy(dataPack, 2, passwordBytes, 0, dataPack.Length - 2);
+                        byte[] keyBytes = new byte[dataPack.Length - 2];
+                        Buffer.BlockCopy(dataPack, 2, keyBytes, 0, dataPack.Length - 2);
                         ClientInfo.HandShakeProcess = HandShakeProcess_Server.ReceivedLogin;
-                        byte[] saltedPasswordHash = Rfc2898DeriveBytes.Pbkdf2(
-                            passwordBytes,
-                            SaltBytes,
-                            iterations: 100000,//迭代次数
-                            hashAlgorithm: HashAlgorithmName.SHA256,
-                            outputLength: 32
-                        );
-                        if (!saltedPasswordHash.SequenceEqual(SaltedPasswordBytes))
-                        {
-                            ReportLog("客户端的访问密钥错误");
-                            if (TempBannedIP.TryGetValue(CurrentClientIP, out (int,DateTime) banInfo))
-                            {
-                                banInfo.Item1++;
-                                banInfo.Item2 = DateTime.Now;
-                                TempBannedIP[CurrentClientIP] = banInfo;  //写回字典
-                            }
-                            else
-                            {
-                                TempBannedIP.Add(CurrentClientIP, (1, DateTime.Now));
-                            }
-                            try { ClientInfo.CloseConnectionTokenSource.Cancel(); } catch { }
-                            return (RequestTypeEnum_Private.Login, passwordBytes);
-                        }
-                        ReportLog("客户端的访问密钥正确");
-                        using (ClientInfo.TasksQueueLock.EnterScope())
-                        {
-                            ClientInfo.TasksQueue.Enqueue(SendSucceedAsync);
-                        }
-                        return (RequestTypeEnum_Private.Login, passwordBytes);
+
+                        ReceivedKey(keyBytes);
+
+                        return;
                     default:
                         ReportLog("客户端不遵循PMCSsE的握手协议，断开连接");
                         try
@@ -1048,10 +1016,38 @@ namespace PMCSsE_Communicator
                             ClientInfo.CloseConnectionTokenSource.Cancel();
                         }
                         catch { }
-                        break;
+                        return;
                 }
-                return (RequestTypeEnum_Private.Unknown, null);
             }
+        }
+        /// <summary>
+        /// 验证密钥是否正确后调用以继续握手流程
+        /// </summary>
+        /// <param name="isKeyRight"></param>
+        public void VerifyKey(bool isKeyRight)
+        {
+            if (!isKeyRight)
+            {
+                ReportLog("客户端的访问密钥错误");
+                if (TempBannedIP.TryGetValue(CurrentClientIP, out (int, DateTime) banInfo))
+                {
+                    banInfo.Item1++;
+                    banInfo.Item2 = DateTime.Now;
+                    TempBannedIP[CurrentClientIP] = banInfo;  //写回字典
+                }
+                else
+                {
+                    TempBannedIP.Add(CurrentClientIP, (1, DateTime.Now));
+                }
+                try { ClientInfo?.CloseConnectionTokenSource.Cancel(); } catch { }
+                return;
+            }
+            ReportLog("客户端的访问密钥正确");
+            if (ClientInfo != null)
+                using (ClientInfo.TasksQueueLock.EnterScope())
+                {
+                    ClientInfo.TasksQueue.Enqueue(SendSucceedAsync);
+                }
         }
     }
 }

@@ -155,6 +155,10 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         public ReactiveCommand<Unit, Unit> DisconnectCommand { get; }
 
 
+        private readonly BehaviorSubject<bool> _canSaveCiphertextConfig = new(true);
+        public ReactiveCommand<Unit, Unit> SaveCiphertextConfigCommand { get; }
+
+
         private readonly BehaviorSubject<bool> _canRefreshAllMCServerManagerList = new(true);
         public ReactiveCommand<Unit, Unit> RefreshAllMCServerManagerListCommand { get; }
 
@@ -202,6 +206,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             VerifyCommand = ReactiveCommand.Create(VerifyAction, _canVerify, uiScheduler);
             SendPasswordCommand = ReactiveCommand.Create(SendPasswordAction, _canSendPassword, uiScheduler);
             DisconnectCommand = ReactiveCommand.Create(DisconnectAction, _canDisconnect, uiScheduler);
+            SaveCiphertextConfigCommand = ReactiveCommand.Create(SaveCipthertextConfigAction, _canSaveCiphertextConfig, uiScheduler);
             RefreshAllMCServerManagerListCommand = ReactiveCommand.Create(RefreshAllMCServerManagerListAction, _canRefreshAllMCServerManagerList, uiScheduler);
             CreateNewMCServerManagerCommand = ReactiveCommand.Create(CreateNewMCServerManagerAction, _canCreateNewMCServerManager, uiScheduler);
             LoadNewMCServerManagerCommand = ReactiveCommand.Create(LoadMCServerManagerAction, _canLoadNewMCServerManager, uiScheduler);
@@ -309,6 +314,9 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             _canSendPassword.OnNext(false);
             _canDisconnect.OnNext(true);
 
+            nativeClient.DataPackBus.Subscribe<Pack_SaveCipthertextConfigSucceed>(HandlePack_SaveCiphertextConfigSucceed);
+            nativeClient.DataPackBus.Subscribe<Pack_SaveCipthertextConfigFailed>(HandlePack_SaveCiphertextConfigFailed);
+
             nativeClient.DataPackBus.Subscribe<Pack_MCServerManagerConfigs>(HandlePack_MCServerManagerConfigs);
             nativeClient.DataPackBus.Subscribe<Pack_MCServerManagers>(HandlePack_MCServerManagers);
             nativeClient.DataPackBus.Subscribe<Pack_SupportedMCServerTypes>(HandlePack_SupportedMCServerTypes);
@@ -406,6 +414,29 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 SendMessage("已发送获取服务端管理器列表请求", 0);
             }, null);
         }
+        public void SaveCipthertextConfigAction()
+        {
+            if (ConnectingNativeServer == null) return;
+            byte[] keyBytes;
+            try
+            {
+                keyBytes = Encoding.UTF8.GetBytes(ConnectingNativeServer.Password);
+            }
+            catch (Exception ex)
+            {
+                Dispatcher.UIThread.Post((state) =>
+                {
+                    SendMessage($"编码访问密钥时发生错误：{ex.Message}，堆栈：{ex.StackTrace}", 2);
+                }, null);
+                return;
+            }
+
+            nativeClient?.RequestBackend(RequestTypeEnum.SaveCiptherConfig, new Pack_SaveCipherConfig(keyBytes));
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage("已发送保存密文配置文件请求", 0);
+            }, null);
+        }
         public void CreateNewMCServerManagerAction()
         {
             if (nativeClient == null)
@@ -492,10 +523,18 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         #endregion
         #region nativeclient事件处理
+        private void HandlePack_SaveCiphertextConfigSucceed(Pack_SaveCipthertextConfigSucceed _)
+        {
+            SendMessage("保存密文配置成功", 3);
+        }
+        private void HandlePack_SaveCiphertextConfigFailed(Pack_SaveCipthertextConfigFailed _)
+        {
+            SendMessage("保存密文配置失败", 2);
+        }
         private void HandlePack_MCServerManagerConfigs(Pack_MCServerManagerConfigs pack)
         {
             StaticMCServerManagerConfigs.ConfigVersion = pack.MCServerManagerConfigs.ConfigVersion;
-            StaticMCServerManagerConfigs.MCServerManagerConfigsList = pack.MCServerManagerConfigs.MCServerManagerConfigsList;
+            StaticMCServerManagerConfigs.MCServerManagerConfigsList = pack.MCServerManagerConfigs.MCServerManagerConfigsList ?? [];
 
             Dispatcher.UIThread.Post((state) =>
             {
@@ -887,6 +926,9 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             ConnectingNativeServer = null;
             if (nativeClient != null)
             {
+                nativeClient.DataPackBus.Unsubscribe<Pack_SaveCipthertextConfigSucceed>(HandlePack_SaveCiphertextConfigSucceed);
+                nativeClient.DataPackBus.Unsubscribe<Pack_SaveCipthertextConfigFailed>(HandlePack_SaveCiphertextConfigFailed);
+
                 nativeClient.DataPackBus.Unsubscribe<Pack_MCServerManagerConfigs>(HandlePack_MCServerManagerConfigs);
                 nativeClient.DataPackBus.Unsubscribe<Pack_MCServerManagers>(HandlePack_MCServerManagers);
                 nativeClient.DataPackBus.Unsubscribe<Pack_SupportedMCServerTypes>(HandlePack_SupportedMCServerTypes);

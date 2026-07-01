@@ -21,7 +21,7 @@ using System.Text.RegularExpressions;
 
 namespace PMCSsE_Backend.Modules
 {
-    internal partial class OnlineChattingSystemClass
+    internal partial class OnlineChattingSystem
     {
         private HttpListener? HttpListener;
         private CancellationTokenSource? CancellationTokenSource;
@@ -29,11 +29,11 @@ namespace PMCSsE_Backend.Modules
         internal event Action<string, string, string> ReportLog = delegate { };
         private readonly MCServerManager MCServerManager;
         private Thread? HttpListenerThread;
-        private MessageRecordingsManagerClass? MessageRecordingsManager;
+        private MessageRecordingsManager? MessageRecordingsManager;
         internal event Action<bool> ReportServiceState = delegate { };
         internal bool ServiceState = false;
 
-        internal OnlineChattingSystemClass(MCServerManager mCServerManager)
+        internal OnlineChattingSystem(MCServerManager mCServerManager)
         {
             MCServerManager = mCServerManager;
             throw new NotSupportedException("包含多个高危漏洞，请勿使用");//阻止初始化

@@ -17,7 +17,7 @@ using System.Text;
 namespace PMCSsE_Backend.Modules
 {
     //维护一个文件流用来读写日志文件
-    internal class LogsWriterClass
+    internal class LogsWriter
     {
         private readonly MCServerManagerConfig? MCServerManagerConfig;
         private bool Running = false;
@@ -30,14 +30,14 @@ namespace PMCSsE_Backend.Modules
         internal event Action<string> ReportLog = delegate { };
         internal bool Disposed = false;
         internal List<string> Logs = [];
-        internal LogsWriterClass(MCServerManagerConfig mCServerManagerConfig)
+        internal LogsWriter(MCServerManagerConfig mCServerManagerConfig)
         {
             MCServerManagerConfig = mCServerManagerConfig;
 
             LogFileDir = Path.Combine(Paths.LogDir, $"MCServerManager - {MCServerManagerConfig.ManagerID}");
             Initialize();
         }
-        internal LogsWriterClass()
+        internal LogsWriter()
         {
             LogFileDir = Path.Combine(Paths.LogDir, $"主程序日志");
             Initialize();

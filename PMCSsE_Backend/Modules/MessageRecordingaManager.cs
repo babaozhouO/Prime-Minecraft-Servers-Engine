@@ -19,7 +19,7 @@ namespace PMCSsE_Backend.Modules
     /// <summary>
     /// 聊天消息记录管理器类，用于管理特定MC服务器的聊天消息记录及其索引文件。
     /// </summary>
-    internal class MessageRecordingsManagerClass
+    internal class MessageRecordingsManager
     {
         /// <summary>
         /// 当前MC服务器的配置信息。
@@ -49,7 +49,7 @@ namespace PMCSsE_Backend.Modules
         /// 根据提供的服务器配置信息构建消息记录和索引文件路径，并尝试加载已有的索引数据。
         /// 若目录不存在则创建目录，若索引文件存在则读取索引内容。
         /// </summary>
-        internal MessageRecordingsManagerClass(MCServerManagerConfig singleMCServerManagerConfigInfo)
+        internal MessageRecordingsManager(MCServerManagerConfig singleMCServerManagerConfigInfo)
         {
             SingleMCServerManagerConfigInfo = singleMCServerManagerConfigInfo;
             ThisMCServerChatMessageRecordingsFilePath = Path.Combine(Paths.MessageRecordsDir, $"MCServer - {SingleMCServerManagerConfigInfo.ManagerID}", "MeaasageRecordings.json");

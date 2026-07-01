@@ -15,10 +15,10 @@ using System.IO;
 
 namespace PMCSsE_Backend.Modules
 {
-    internal class FullBackupHelperClass : IDisposable
+    internal class FullBackupHelper : IDisposable
     {
         private readonly MCServerManager MCServerManager;
-        private SevenZipInvokerClass? SevenZipInvokerClass;
+        private SevenZipInvoker? SevenZipInvokerClass;
         private readonly CancellationTokenSource CancellationTokenSource;
         private string BackupFileName = "";
         /// <summary>
@@ -29,7 +29,7 @@ namespace PMCSsE_Backend.Modules
         /// 备份任务完成时触发。
         /// </summary>
         public event Action TaskDone = delegate { };
-        internal FullBackupHelperClass(MCServerManager mCServerManagerClass, CancellationTokenSource CancellationTokenSource)
+        internal FullBackupHelper(MCServerManager mCServerManagerClass, CancellationTokenSource CancellationTokenSource)
         {
             MCServerManager = mCServerManagerClass;
             this.CancellationTokenSource = CancellationTokenSource;
@@ -50,7 +50,7 @@ namespace PMCSsE_Backend.Modules
                     SevenZipInvokerClass.Dispose();
                     Thread thread = new(() =>
                     {
-                        SFTPClientClass sFTPClient = new(
+                        SFTPClient sFTPClient = new(
                             MCServerManager.MCServerManagerConfig.BackupManagerConfig.SFTPClientConfig);
 
                         sFTPClient.ConnectTaskDone += (Bool) =>
@@ -109,7 +109,7 @@ namespace PMCSsE_Backend.Modules
                             MCServerManager.StartMCServer();
                             Thread thread = new(() =>
                             {
-                                SFTPClientClass sFTPClient = new(
+                                SFTPClient sFTPClient = new(
                                     MCServerManager.MCServerManagerConfig.BackupManagerConfig.SFTPClientConfig);
 
                                 sFTPClient.ConnectTaskDone += (Bool) =>
@@ -170,7 +170,7 @@ namespace PMCSsE_Backend.Modules
 
                         Thread thread = new(() =>
                         {
-                            SFTPClientClass sFTPClient = new(
+                            SFTPClient sFTPClient = new(
                                 MCServerManager.MCServerManagerConfig.BackupManagerConfig.SFTPClientConfig);
 
                             sFTPClient.ConnectTaskDone += (Bool) =>

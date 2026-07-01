@@ -255,7 +255,7 @@ namespace PMCSsE_Backend.Modules
         #region 互联工具相关
         #endregion
         #region 日志处理
-        private readonly LogsWriterClass LogsWriter;
+        private readonly LogsWriter LogsWriter;
         private void WriteManagerLog(string managerID, string log)
         {
             string logLine = $"[{DateTime.Now:G}] | {log}";

@@ -12,11 +12,13 @@ you may not use this file except in compliance with the License.
    See the License for the specific language governing permissions and
    limitations under the License.*/
 
+using System.Security.Principal;
+
 namespace PMCSsE_Backend.Modules
 {
     internal static class StaticTools
     {
-        internal readonly static LogsWriterClass LogsWriter = new();
+        internal readonly static LogsWriter LogsWriter = new();
         internal static void HandleLog(string log, bool isPassword = false, bool isFromLogsWriter = false)
         {
             log = $"[{DateTime.Now:G}]:{log}";
@@ -35,6 +37,48 @@ namespace PMCSsE_Backend.Modules
         private static void HandleLogsWriterLog(string log)
         {
             HandleLog(log, false, true);
+        }
+        internal static bool AskUserForYesOrNo(string question)
+        {
+            while (true)
+            {
+                StaticTools.HandleLog($"{question}（Y/N）");
+                string? choice = Console.ReadLine();
+                if (!string.IsNullOrEmpty(choice))
+                {
+                    choice = choice.ToUpper();
+                    if (choice == "Y")
+                    {
+                        return true;
+                    }
+                    else if (choice == "N")
+                    {
+                        return false;
+                    }
+                }
+            }
+        }
+        internal static bool CheckProgramPermission()
+        {
+            if (OperatingSystem.IsWindows())
+            {
+                try
+                {
+                    using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+                    var principal = new WindowsPrincipal(identity);
+                    return principal.IsInRole(WindowsBuiltInRole.Administrator);
+                }
+                catch (Exception ex)
+                {
+                    HandleLog($"检查进程权限时发生异常：{ex.Message}，堆栈：{ex.StackTrace}");
+                    return false;
+                }
+            }
+            else if (OperatingSystem.IsLinux() || OperatingSystem.IsMacOS())
+            {
+                return Environment.UserName == "root";
+            }
+            return false;
         }
     }
 }

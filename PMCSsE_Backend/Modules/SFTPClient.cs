@@ -18,7 +18,7 @@ using System.Text;
 
 namespace PMCSsE_Backend.Modules;
 
-internal class SFTPClientClass
+internal class SFTPClient
 {
     private readonly SftpClient SftpClient;
     private string? TransferringRemoteFilePath;
@@ -42,7 +42,7 @@ internal class SFTPClientClass
     internal event Action<bool> TestTaskDone = delegate { };
 
     internal event Action<string, string, string> ReportTransmissionSpeedAndProcess = delegate { };
-    internal SFTPClientClass(string host, int port, string username, string password, int bufferSize = 10)
+    internal SFTPClient(string host, int port, string username, string password, int bufferSize = 10)
     {
         BufferSize = bufferSize * 1024 * 1024 - 1;
         PasswordConnectionInfo passwordConnectionInfo = new(host, port, username, password) { Encoding = Encoding.UTF8 };
@@ -56,7 +56,7 @@ internal class SFTPClientClass
 
     }
 
-    internal SFTPClientClass(SFTPClientConfig SFTPHelperConfig)
+    internal SFTPClient(SFTPClientConfig SFTPHelperConfig)
     {
         BufferSize = SFTPHelperConfig.BufferSize * 1024 * 1024 - 1;
         PasswordConnectionInfo passwordConnectionInfo = new(SFTPHelperConfig.Host,
@@ -390,7 +390,7 @@ internal class SFTPClientClass
                 ReportLog("信息", "SFTP客户端", "远程文件已存在");
                 ReportLog("等待用户操作", "SFTP客户端", "等待用户确认是否覆盖");
 
-                bool Result = AskUserForYesOrNoClass.Ask($"[SFTP客户端]远程文件\n[{RemoteFilePath}]\n已存在，是否覆盖？");
+                bool Result = true; //AskUserForYesOrNo.Ask($"[SFTP客户端]远程文件\n[{RemoteFilePath}]\n已存在，是否覆盖？");
                 if (Result)
                 {
 
@@ -431,7 +431,7 @@ internal class SFTPClientClass
                 ReportLog("信息", "SFTP客户端", "存在未传输完成的文件");
                 ReportLog("等待用户操作", "SFTP客户端", "等待用户确认是否续传");
 
-                bool result = AskUserForYesOrNoClass.Ask($"[SFTP客户端]存在未传输完成的文件\n[{TransferringRemoteFilePath}]\n是否续传？");
+                bool result = true;// AskUserForYesOrNo.Ask($"[SFTP客户端]存在未传输完成的文件\n[{TransferringRemoteFilePath}]\n是否续传？");
                 if (result)
                 {
 
@@ -462,9 +462,9 @@ internal class SFTPClientClass
                     ReportLog("用户操作", "SFTP客户端", "用户选择不续传");
                     ReportLog("等待用户操作", "SFTP客户端", "等待用户确认是否删除并重新上传");
 
-                    bool result1 = AskUserForYesOrNoClass.Ask($"[SFTP客户端]存在未传输完成的文件\n[{TransferringRemoteFilePath}]\n是否删除并重新上传？");
+                    bool result1 = true; //AskUserForYesOrNo.Ask($"[SFTP客户端]存在未传输完成的文件\n[{TransferringRemoteFilePath}]\n是否删除并重新上传？");
 
-                    if (result)
+                    if (result1)
                     {
 
                         ReportLog("用户操作", "SFTP客户端", "用户选择删除并重新上传");
@@ -747,7 +747,7 @@ internal class SFTPClientClass
     {
         Thread thread = new(() =>
         {
-            SFTPClientClass sFTPClient = new("192.168.101.2", 22, "admin", "admin");
+            SFTPClient sFTPClient = new("192.168.101.2", 22, "admin", "admin");
 
             sFTPClient.ConnectTaskDone += (Bool) =>
             {

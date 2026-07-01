@@ -6,6 +6,10 @@
     public enum RequestTypeEnum
     {
         /// <summary>
+        /// 保存密文配置
+        /// </summary>
+        SaveCiptherConfig,
+        /// <summary>
         /// 获取MC服务端管理器列表
         /// </summary>
         GetMCServerManagersList,
@@ -68,6 +72,7 @@
     }
     internal enum RequestTypeEnum_Private
     {
+        SaveCipthertextConfig,
         GetMCServerManagersList,
         GetLoadedMCServerManagers,
         GetSupportedMCServerTypes,

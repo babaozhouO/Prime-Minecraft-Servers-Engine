@@ -23,7 +23,7 @@ namespace PMCSsE_Backend.Modules
     internal static class RunningStateRecorder
     {
         internal static bool Debug = false;
-        internal static readonly bool IsRunningAsAdmin = AdminCheckerClass.IsRunningAsAdmin();
+        internal static readonly bool IsRunningAsAdmin = StaticTools.CheckProgramPermission();
         internal static readonly Encoding SystemCommandLineEncoding = Console.OutputEncoding;
     }
     internal static class Paths
