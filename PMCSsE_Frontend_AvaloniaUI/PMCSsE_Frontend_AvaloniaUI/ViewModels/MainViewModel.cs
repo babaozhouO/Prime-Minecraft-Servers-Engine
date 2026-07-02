@@ -367,7 +367,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         {
             if (Password == null)
             {
-                ConnectLogs += $"null!!!{Environment.NewLine}";
+                ConnectLogs += $"访问密钥为null!{Environment.NewLine}";
                 return;
             }
             _canSendPassword.OnNext(false);

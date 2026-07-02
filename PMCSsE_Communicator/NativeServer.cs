@@ -21,6 +21,10 @@ namespace PMCSsE_Communicator
         /// </summary>
         private const int MAXDATAPACKLENGHT = 1024 * 1024 * 16;
         /// <summary>
+        /// 握手超时时长(当前：120s)
+        /// </summary>
+        private const long HANDSHAKETIMEOUT = 120 * 1000;
+        /// <summary>
         /// 调试模式,此模式下要尽可能详细地输出日志
         /// </summary>
         public bool DebugMode;
@@ -31,9 +35,9 @@ namespace PMCSsE_Communicator
         private Thread ServerThread;
         private CancellationTokenSource StopServerTokenSource;
         /// <summary>
-        /// 密码错误记录
+        /// 密码错误记录,long:系统启动时间（ms），不受系统时间影响
         /// </summary>
-        private readonly Dictionary<string, (int, DateTime)> TempBannedIP = [];
+        private readonly Dictionary<string, (int, long)> TempBannedIP = [];
         private string CurrentClientIP = "";
         //Server
         /// <summary>
@@ -260,15 +264,15 @@ namespace PMCSsE_Communicator
                 CurrentClientIP = iPEndPoint.Address.ToString();
                 ReportLog($"有客户端请求连接,IP: {iPEndPoint.Address},端口:{iPEndPoint.Port}");
 
-                if (TempBannedIP.TryGetValue(iPEndPoint.Address.ToString(), out (int, DateTime) info))
+                if (TempBannedIP.TryGetValue(iPEndPoint.Address.ToString(), out (int, long) info))
                 {
-                    TimeSpan banTimeLenght = TimeSpan.FromSeconds(30d * Math.Pow(2, info.Item1));
-                    DateTime unbannedTime = info.Item2 + banTimeLenght;
-                    DateTime now = DateTime.Now;
+                    long banTimeLenght = (long)(30 * 1000 * Math.Pow(2, info.Item1));
+                    long unbannedTime = info.Item2 + banTimeLenght;
+                    long now = Environment.TickCount64;
                     if (now < unbannedTime)
                     {
-                        ReportLog($"有原生客户端请求连接，但其因（多次）密码错误而被暂时封禁");
-                        ReportLog($"剩余时长：{unbannedTime - now}");
+                        ReportLog($"有原生客户端请求连接，但其因（多次）不及时完成握手或密码错误而被暂时封禁");
+                        ReportLog($"剩余时长：{(unbannedTime - now) / 1000}s");
                         tcpClient.Close();
                         tcpClient.Dispose();
                         continue;
@@ -298,6 +302,7 @@ namespace PMCSsE_Communicator
                 bool didwork1 = false;
                 bool didwork2 = false;
                 byte didntworkTimes = 0;
+                long handshakeEndTime = Environment.TickCount64+HANDSHAKETIMEOUT;
                 //握手循环
                 while (ClientInfo.TcpClient.Connected && !StopServerTokenSource.IsCancellationRequested && !ClientInfo.CloseConnectionTokenSource.IsCancellationRequested && ClientInfo.HandShakeProcess != HandShakeProcess_Server.Finished)
                 {
@@ -365,6 +370,11 @@ namespace PMCSsE_Communicator
                         ReportLog($"原生客户端5内未回应心跳包，判定为已断开连接/网络极差");
                         break;
                     }
+                    if (Environment.TickCount64 >= handshakeEndTime)
+                    {
+                        ReportLog($"客户端在 {HANDSHAKETIMEOUT / 1000}s 内未完成握手，断开连接");
+                        break;
+                    }
                 }
 
                 if (ClientInfo.HandShakeProcess != HandShakeProcess_Server.Finished)
@@ -375,6 +385,11 @@ namespace PMCSsE_Communicator
                     ClientInfo.TcpClient.Close();
                     ClientInfo.TcpClient.Dispose();
                     ClientInfo.TasksQueue.Clear();
+                    if (ClientInfo.Aes != null)
+                    {
+                        CryptographicOperations.ZeroMemory(ClientInfo.Aes.Key.AsSpan());
+                        CryptographicOperations.ZeroMemory(ClientInfo.Aes.IV.AsSpan());
+                    }
                     ClientInfo.Aes?.Dispose();
                     ClientInfo.CloseConnectionTokenSource.Dispose();
                     ReportLog($"握手流程在进行到{ClientInfo.HandShakeProcess}时终止");
@@ -458,6 +473,11 @@ namespace PMCSsE_Communicator
                 ClientInfo.TcpClient.Close();
                 ClientInfo.TcpClient.Dispose();
                 ClientInfo.TasksQueue.Clear();
+                if (ClientInfo.Aes != null)
+                {
+                    CryptographicOperations.ZeroMemory(ClientInfo.Aes.Key.AsSpan());
+                    CryptographicOperations.ZeroMemory(ClientInfo.Aes.IV.AsSpan());
+                }
                 ClientInfo.Aes?.Dispose();
                 ClientInfo.CloseConnectionTokenSource.Dispose();
                 ReportLog($"与原生客户端断开了连接");
@@ -794,6 +814,7 @@ namespace PMCSsE_Communicator
                 {
                     ReportLog($"使用AES解密来自原生客户端的数据包时发生异常");
                     ReportLog($"异常信息：{ex.Message}{Environment.NewLine}{ex.StackTrace}");
+                    return;
                 }
 
                 byte type1 = dataPack[0];
@@ -1029,15 +1050,16 @@ namespace PMCSsE_Communicator
             if (!isKeyRight)
             {
                 ReportLog("客户端的访问密钥错误");
-                if (TempBannedIP.TryGetValue(CurrentClientIP, out (int, DateTime) banInfo))
+                if (TempBannedIP.TryGetValue(CurrentClientIP, out (int, long) banInfo))
                 {
+
                     banInfo.Item1++;
-                    banInfo.Item2 = DateTime.Now;
+                    banInfo.Item2 = Environment.TickCount64;
                     TempBannedIP[CurrentClientIP] = banInfo;  //写回字典
                 }
                 else
                 {
-                    TempBannedIP.Add(CurrentClientIP, (1, DateTime.Now));
+                    TempBannedIP.Add(CurrentClientIP, (1, Environment.TickCount64));
                 }
                 try { ClientInfo?.CloseConnectionTokenSource.Cancel(); } catch { }
                 return;

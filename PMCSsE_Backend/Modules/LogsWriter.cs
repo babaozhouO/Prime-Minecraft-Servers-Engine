@@ -21,6 +21,7 @@ namespace PMCSsE_Backend.Modules
     {
         private readonly MCServerManagerConfig? MCServerManagerConfig;
         private bool Running = false;
+        private bool ExecutingCallback = false;
         private FileStream? LogFileStream;
         private readonly string LogFileDir;
         private string? LogFileName;
@@ -91,6 +92,7 @@ namespace PMCSsE_Backend.Modules
             }
             OneSecondTimer.Elapsed += async (sender, equals) =>
             {
+                ExecutingCallback = true;
                 OneSecondTimer.Stop();
                 if (Logs.Count == 0)
                 {
@@ -161,7 +163,16 @@ namespace PMCSsE_Backend.Modules
                     return;
                 }
                 Date = DateTime.Now.Date;
-                OneSecondTimer.Start();
+                try
+                {
+                    OneSecondTimer.Start();//防止边缘条件导致崩溃：dispose
+                }
+                catch (Exception)
+                {
+
+                }
+
+                ExecutingCallback = false;
             };
             OneSecondTimer.Start();
             Running = true;
@@ -182,10 +193,14 @@ namespace PMCSsE_Backend.Modules
 
         internal void Dispose()
         {
-            Running = false;
+            Running = false;//阻断追加
+            while (ExecutingCallback)
+            {
+                Thread.Sleep(50);
+            }
             OneSecondTimer.Stop();
             OneSecondTimer.Dispose();
-            if (Logs.Count != 0)
+            if (Logs.Count != 0)//已阻断追加，已等待回调完成
             {
                 if (Date != DateTime.Now.Date)
                 {

@@ -60,6 +60,10 @@ namespace PMCSsE_Backend.Modules
         ///// </summary>
         //internal readonly OnlineChattingSystemClass? OnlineChattingSystem;
         /// <summary>
+        /// 高危参数黑名单
+        /// </summary>
+        public static readonly string[] DangerousArgs = ["-agentpath:", "-agentlib:", "-Djava.library.path="];
+        /// <summary>
         /// 构造函数
         /// </summary>
         internal MCServerManager(MCServerManagerConfig mCServerManagerConfig)

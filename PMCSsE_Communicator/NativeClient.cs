@@ -5,6 +5,7 @@ using LightProto;
 using System.Buffers.Binary;
 using System.Net.Sockets;
 using System.Text;
+using System.Security.Cryptography;
 
 namespace PMCSsE_Communicator
 {
@@ -468,6 +469,7 @@ namespace PMCSsE_Communicator
                 return;
             }
             var (dataPack, succeed) = GenerateDataPack(RequestTypeEnum_Private.Login, passwordBytes);
+            CryptographicOperations.ZeroMemory(passwordBytes.AsSpan());
             if (!succeed)
             {
                 ReportLog("生成 Login 数据包失败，断开连接");
@@ -480,6 +482,7 @@ namespace PMCSsE_Communicator
                 Disconnect();
                 return;
             }
+            CryptographicOperations.ZeroMemory(dataPack.AsSpan());
             HandShakeStep = HandShakeProcess_Client.SentLogin;
             ReportLog("已发送登录凭据，等待服务器确认登录成功");
             HandShakeStep = HandShakeProcess_Client.WaitingSucceed;
@@ -971,11 +974,9 @@ namespace PMCSsE_Communicator
         }
 
         /// <summary>
-        /// 把用户输入的访问密钥给予NativeClient发给后端验证,注意：异常交由前端处理，提示用户检查密码
+        /// 把用户输入的访问密钥给予NativeClient发给后端验证
         /// </summary>
         /// <param name="password">访问密钥</param>
-        /// <exception cref="System.Text.EncoderFallbackException"/>
-        /// <exception cref="ArgumentOutOfRangeException"/>
         public void TypePassword(string password)
         {
             using (ClientInfo!.TasksQueueLock.EnterScope())

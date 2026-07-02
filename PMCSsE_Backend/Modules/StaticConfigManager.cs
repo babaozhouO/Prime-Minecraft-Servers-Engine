@@ -83,6 +83,7 @@ namespace PMCSsE_Backend.Modules
             else//不存在
             {
                 StaticTools.HandleLog($"配置文件[{Paths.Config_PlaintextPath}]不存在");
+                StaticTools.HandleLog("请先使用“first”参数启动并执行配置流程");
                 StaticTools.HandleLog("程序无法继续运行");
                 return false;
             }

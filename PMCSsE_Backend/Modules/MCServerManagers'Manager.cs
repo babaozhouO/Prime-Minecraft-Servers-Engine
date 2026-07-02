@@ -18,7 +18,6 @@ using PMCSsE_Communicator.DataPacks;
 using PMCSsE_Communicator.DataPacks.Pack_nothing;
 using PMCSsE_Communicator.DataPacks.Pack_StringOnly;
 using PMCSsE_Communicator.SharedCodes;
-using Renci.SshNet.Security;
 using System.Security.Cryptography;
 
 namespace PMCSsE_Backend.Modules
@@ -125,7 +124,8 @@ namespace PMCSsE_Backend.Modules
         {
             StaticTools.HandleLog($"客户端请求保存密文配置文件");
             byte[] saltedCipherConfigKeyHash = ConfigCrypto.DeriveKey(pack.KeyBytes, StaticConfig_Plaintext.SaltOfCipherConfigKey);
-            bool isSucceed= StaticConfigManager.SaveConfig_Ciphertext(saltedCipherConfigKeyHash);
+            CryptographicOperations.ZeroMemory(pack.KeyBytes.AsSpan());
+            bool isSucceed = StaticConfigManager.SaveConfig_Ciphertext(saltedCipherConfigKeyHash);
             CryptographicOperations.ZeroMemory(saltedCipherConfigKeyHash.AsSpan());
             if (isSucceed)
             {
@@ -135,7 +135,7 @@ namespace PMCSsE_Backend.Modules
             else
             {
                 StaticTools.HandleLog($"保存密文配置文件失败");
-                NativeServer?.RespondClient(RespondTypeEnum.MCServerManagerConfigs, new Pack_SaveCipthertextConfigSucceed());
+                NativeServer?.RespondClient(RespondTypeEnum.MCServerManagerConfigs, new Pack_SaveCipthertextConfigFailed());
             }
         }
         private static void HandlePack_GetMCServerManagersList(Pack_GetMCServerManagerConfigsList _)
@@ -284,8 +284,34 @@ namespace PMCSsE_Backend.Modules
             m.MCServerManagerConfig.MCServerName = pack.MCServerManagerConfig.MCServerName;//引用，可直接修改到静态配置
             m.MCServerManagerConfig.MCServerType = pack.MCServerManagerConfig.MCServerType;
             m.MCServerManagerConfig.MCServerDirectory = pack.MCServerManagerConfig.MCServerDirectory;
-            m.MCServerManagerConfig.JavaPath = pack.MCServerManagerConfig.JavaPath;
-            m.MCServerManagerConfig.StartUpArguments = pack.MCServerManagerConfig.StartUpArguments;
+            string javaFileName = Path.GetFileName(pack.MCServerManagerConfig.JavaPath);
+            if (javaFileName == "javaw.exe"
+                || javaFileName == "java.exe"
+                || javaFileName == "java"
+                || javaFileName == "javaw")
+            {
+                m.MCServerManagerConfig.JavaPath = pack.MCServerManagerConfig.JavaPath;
+            }
+            else
+            {
+                StaticTools.HandleLog("前端指定的Java路径不包含有效的java可执行文件，跳过此设置项");
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("指定的Java路径不包含有效的java可执行文件，跳过此设置项"));
+            }
+            bool isSafeArg = true;
+            foreach (var dangerous in MCServerManager.DangerousArgs)
+            {
+                if (pack.MCServerManagerConfig.StartUpArguments.Contains(dangerous, StringComparison.OrdinalIgnoreCase))
+                {
+                    isSafeArg = false;
+                    StaticTools.HandleLog($"启动参数包含高危项: {dangerous}，跳过此设置项");
+                    NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo($"启动参数包含高危项: {dangerous}，跳过此设置项"));
+                    break;
+                }
+            }
+            if (isSafeArg)
+            {
+                m.MCServerManagerConfig.StartUpArguments = pack.MCServerManagerConfig.StartUpArguments;
+            }
             m.MCServerManagerConfig.BackupManagerConfig = pack.MCServerManagerConfig.BackupManagerConfig;
             m.MCServerManagerConfig.OnlineChattingSystemConfig = pack.MCServerManagerConfig.OnlineChattingSystemConfig;
             StaticTools.HandleLog($"修改ID为[{pack.MCServerManagerConfig.ManagerID}]配置文件成功");
@@ -384,7 +410,7 @@ namespace PMCSsE_Backend.Modules
                 NativeServer?.RespondClient(RespondTypeEnum.SendCommandFailed, new Pack_SendCommandFailed(pack.ManagerID));
             }
         }
-        private static void HandlePack_ShutdownMCServer(Pack_ShutdownMCServer pack)//与强制终止同时使用会有重复响应bug，但无伤大雅
+        private static void HandlePack_ShutdownMCServer(Pack_ShutdownMCServer pack)
         {
             StaticTools.HandleLog($"前端请求停止ID为[{pack.ManagerID}]的服务端");
             var m = LoadedMCServerManagersList.FirstOrDefault(mc => mc.MCServerManagerConfig.ManagerID == pack.ManagerID);
