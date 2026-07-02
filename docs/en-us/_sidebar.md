@@ -1,0 +1,7 @@
+* [🏠 Home](en-us/README.md)
+* [📖 Introduction](en-us/userdocs/introduction.md)
+* [🏗️ Architecture Overview](en-us/userdocs/architecture-overview.md)
+* [⚙️ Backend Setup](en-us/userdocs/backend-setup.md)
+* [🌐 Public Access](en-us/userdocs/public-access.md)
+* [🖥️ Frontend Installation](en-us/userdocs/frontend-installation.md)
+* [🎮 Server Manager Usage](en-us/userdocs/server-manager-usage.md)
