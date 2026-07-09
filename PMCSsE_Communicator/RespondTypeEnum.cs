@@ -6,6 +6,10 @@
     public enum RespondTypeEnum
     {
         /// <summary>
+        /// 返回服务器状态
+        /// </summary>
+        ServerState,
+        /// <summary>
         /// 保存密文配置成功
         /// </summary>
         SaveCiptherConfigSucceed,
@@ -109,6 +113,7 @@
     }
     internal enum RespondTypeEnum_Private
     {
+        ServerState,
         SaveCipthertextConfigSucceed,
         SaveCipthertextConfigFailed,
         MCServerManagerConfigs,

@@ -4,6 +4,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:lvc="using:LiveChartsCore.SkiaSharpView.Avalonia"
              xmlns:vm="using:PMCSsE_Frontend_AvaloniaUI.ViewModels"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="PMCSsE_Frontend_AvaloniaUI.Views.MainView"
@@ -110,6 +111,74 @@
                             </Grid>
                         </TabItem>
                     </TabControl>
+                </Panel>
+            </TabItem>
+            <TabItem Classes="fir">
+                <TabItem.Header>
+                    <Panel Width="80">
+                        <TextBlock Classes="fir" Text="仪表盘"/>
+                        <Image Classes="fir" Source="avares://PMCSsE_Frontend_AvaloniaUI/Icons/About.png"/>
+                    </Panel>
+                </TabItem.Header>
+
+                <Panel>
+                    <Line Classes="fir"/>
+                    <TabControl Classes="sec" Padding="12,0,0,0">
+                        <TabItem Header="系统状态" Classes="sec">
+                            <ScrollViewer>
+                                <Panel>
+                                    <Line Classes="sec"/>
+                                    <Grid Height="35" VerticalAlignment="Top"
+                                        ColumnDefinitions="*,100,5,auto,5,auto,100,20">
+                                        <controls:MyButton Text="立即刷新" Grid.Column="1"/>
+                                        <TextBlock Text="刷新间隔" VerticalAlignment="Center" Grid.Column="3"/>
+                                        <ComboBox SelectedIndex="0" Grid.Column="5" VerticalAlignment="Center">
+                                            <ComboBoxItem Content="1s"/>
+                                            <ComboBoxItem Content="3s"/>
+                                            <ComboBoxItem Content="5s"/>
+                                        </ComboBox>
+                                        <controls:MyButton Text="重置视图" Click="ResetChartZoom_Click" Grid.Column="6"/>
+                                    </Grid>
+                                    <Grid RowDefinitions="5,160,160,*,5"
+                                        ColumnDefinitions="5,80,*,20"
+                                        ShowGridLines="True" Margin="0,35,0,0">
+                                        <TextBlock Text="CPU占用率" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1"/>
+                                        <lvc:CartesianChart LegendPosition="Right" ZoomMode="ZoomX" Name="CPUChart" Grid.Row="1" Grid.Column="2">  
+                                            <lvc:CartesianChart.XAxes>
+                                            <!-- DateTime 专用轴 -->
+                                            <lvc:XamlDateTimeAxis Interval="00:00:01" DateFormatter="{Binding DateFormatter}" />
+                                            </lvc:CartesianChart.XAxes>
+
+                                            <lvc:CartesianChart.YAxes>
+                                                <!-- 百分比 Y 轴 -->
+                                                <lvc:XamlAxis Labeler="{Binding PercentLabeler}" MinLimit="0" MaxLimit="100" />
+                                            </lvc:CartesianChart.YAxes>
+                                        </lvc:CartesianChart>
+                                        <TextBlock Text="内存" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
+                                        <lvc:CartesianChart LegendPosition="Right" ZoomMode="ZoomX" Name="MemoryChart" Grid.Row="2" Grid.Column="2">  
+                                            <lvc:CartesianChart.XAxes>
+                                            <!-- DateTime 专用轴 -->
+                                            <lvc:XamlDateTimeAxis Interval="00:00:01" DateFormatter="{Binding DateFormatter}" />
+                                            </lvc:CartesianChart.XAxes>
+
+                                            <lvc:CartesianChart.YAxes>
+                                                <!-- 内存占用量 Y 轴（GB） -->
+                                                <lvc:XamlAxis Labeler="{Binding MemoryLabeler}" MinLimit="0" MaxLimit="{Binding TotalMemory}" />
+                                            </lvc:CartesianChart.YAxes>
+                                        </lvc:CartesianChart>
+                                    </Grid>
+                                </Panel>
+                            </ScrollViewer>
+                        </TabItem>
+                        
+                        <TabItem Header="后端" Classes="sec">
+                            <Panel>
+                                <Line Classes="sec"/><!--进程占用、退出按钮-->
+
+                            </Panel>
+                        </TabItem>
+                    </TabControl>
+
                 </Panel>
             </TabItem>
             <TabItem Classes="fir">

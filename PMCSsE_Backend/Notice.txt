@@ -10,7 +10,12 @@ License: MIT
 Location: /Licenses/SSH.NET-2025.0.0-LICENSE.txt
 ----------------------------------------------------------------------
 Component: LightProto
-Version: 1.3.2
+Version: 1.3.4
 License: MIT
 Location: /Licenses/LightProto-1.3.2-LICENSE.txt
+----------------------------------------------------------------------
+Component: Hardware.Info
+Version: 110.0.0.1
+License: MIT
+Location: /Licenses/Hardware.Info-110.0.0.1-LICENSE.txt
 ----------------------------------------------------------------------

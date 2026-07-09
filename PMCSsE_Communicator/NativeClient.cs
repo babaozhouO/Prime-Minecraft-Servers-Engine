@@ -29,6 +29,10 @@ namespace PMCSsE_Communicator
         private CancellationTokenSource StopToken;
         private bool HandShakeFinished = false;
         private HandShakeProcess_Client HandShakeStep = HandShakeProcess_Client.Beginning;
+        /// <summary>
+        /// 报告握手进度
+        /// </summary>
+        public event Action<HandShakeProcess_Client> HandskakeProcessChanged = delegate { };
         private string RSAPublicKey = string.Empty;
 
         /// <summary>
@@ -130,6 +134,7 @@ namespace PMCSsE_Communicator
             CommunicatorDataReceivedForPlugins = delegate { };
             NeedToVerifyRSAPublicKey = delegate { };
             NeedPassword = delegate { };
+            HandskakeProcessChanged = delegate { };
         }
 
         private async void TcpClientThreadWork()
@@ -383,6 +388,7 @@ namespace PMCSsE_Communicator
         private async Task SendNeedRSAPublicKeyAsync()
         {
             HandShakeStep = HandShakeProcess_Client.SendingNeedRSAPublicKey;
+            HandskakeProcessChanged(HandShakeStep);
             byte[] dataPack = [0, 0, 0, 2, 0, (byte)RequestTypeEnum_Private.NeedRSAPublicKey];
             if (!await SendDataPack(dataPack))
             {
@@ -391,13 +397,16 @@ namespace PMCSsE_Communicator
                 return;
             }
             HandShakeStep = HandShakeProcess_Client.SentNeedRSAPublicKey;
+            HandskakeProcessChanged(HandShakeStep);
             ReportLog("已发送 NeedRSAPublicKey，等待服务器RSA公钥");
             HandShakeStep = HandShakeProcess_Client.WaitingRSAPublicKey;
+            HandskakeProcessChanged(HandShakeStep);
         }
 
         private async Task SendGotRSAPublicKeyAsync()
         {
             HandShakeStep = HandShakeProcess_Client.SendingGotRSAPublicKey;
+            HandskakeProcessChanged(HandShakeStep);
             ReportLog("正在发送 GotRSAPublicKey");
             byte[] dataPack = [0, 0, 0, 2, 0, (byte)RequestTypeEnum_Private.GotRSAPublicKey];
             if (!await SendDataPack(dataPack))
@@ -407,8 +416,10 @@ namespace PMCSsE_Communicator
                 return;
             }
             HandShakeStep = HandShakeProcess_Client.SentGotRSAPublicKey;
+            HandskakeProcessChanged(HandShakeStep);
             ReportLog("已确认RSA公钥，等待服务器请求AES密钥");
             HandShakeStep = HandShakeProcess_Client.WaitingNeedAES;
+            HandskakeProcessChanged(HandShakeStep);
         }
         private async Task SendRSAPublicKeyMismatch()
         {
@@ -421,6 +432,7 @@ namespace PMCSsE_Communicator
         private async Task SendAESKeyAsync()
         {
             HandShakeStep = HandShakeProcess_Client.SendingAESKey;
+            HandskakeProcessChanged(HandShakeStep);
             ReportLog("正在发送 AESKey（RSA加密）");
             if (ClientInfo!.Aes == null)
                 return;
@@ -449,13 +461,16 @@ namespace PMCSsE_Communicator
                 return;
             }
             HandShakeStep = HandShakeProcess_Client.SentAESKey;
+            HandskakeProcessChanged(HandShakeStep);
             ReportLog("已发送AES密钥，等待服务器确认");
             HandShakeStep = HandShakeProcess_Client.WaitingGotAES;
+            HandskakeProcessChanged(HandShakeStep);
         }
 
         private async Task SendLoginAsync(string password)
         {
             HandShakeStep = HandShakeProcess_Client.SendingLogin;
+            HandskakeProcessChanged(HandShakeStep);
             ReportLog("正在发送登录凭据");
 
             byte[] passwordBytes;
@@ -484,8 +499,10 @@ namespace PMCSsE_Communicator
             }
             CryptographicOperations.ZeroMemory(dataPack.AsSpan());
             HandShakeStep = HandShakeProcess_Client.SentLogin;
+            HandskakeProcessChanged(HandShakeStep);
             ReportLog("已发送登录凭据，等待服务器确认登录成功");
             HandShakeStep = HandShakeProcess_Client.WaitingSucceed;
+            HandskakeProcessChanged(HandShakeStep);
         }
 
         #endregion
@@ -495,7 +512,7 @@ namespace PMCSsE_Communicator
         /// </summary>
         /// <param name="requestTypeEnum">请求的枚举类型</param>
         /// <param name="payloadObject"></param>
-        public void RequestBackend<T>(RequestTypeEnum requestTypeEnum, T payloadObject)where T:IProtoParser<T>
+        public void RequestBackend<T>(RequestTypeEnum requestTypeEnum, T payloadObject) where T : IProtoParser<T>
         {
             if (!HandShakeFinished || ClientInfo == null)
                 return;
@@ -741,6 +758,7 @@ namespace PMCSsE_Communicator
                         return;
                     }
                     HandShakeStep = HandShakeProcess_Client.ReceivedRSAPublicKey;
+                    HandskakeProcessChanged(HandShakeStep);
                     ReportLog("已收到服务器RSA公钥");
 
                     string rsaFingerprint;
@@ -766,6 +784,7 @@ namespace PMCSsE_Communicator
                         return;
                     }
                     HandShakeStep = HandShakeProcess_Client.ReceivedNeedAES;
+                    HandskakeProcessChanged(HandShakeStep);
                     ReportLog("收到 NeedAES 请求，准备生成AES密钥并发送");
                     try
                     {
@@ -790,6 +809,7 @@ namespace PMCSsE_Communicator
                         return;
                     }
                     HandShakeStep = HandShakeProcess_Client.ReceivedGotAES;
+                    HandskakeProcessChanged(HandShakeStep);
                     ReportLog("服务器已确认AES密钥，等待输入访问密钥");
                     NeedPassword();
                     return;
@@ -802,6 +822,7 @@ namespace PMCSsE_Communicator
                     }
                     HandShakeFinished = true;
                     HandShakeStep = HandShakeProcess_Client.Finished;
+                    HandskakeProcessChanged(HandShakeStep);
                     ReportLog("握手完成，连接已安全建立");
                     Connected();
                     return;
@@ -866,6 +887,9 @@ namespace PMCSsE_Communicator
                         {
                             switch (respondType)
                             {
+                                case RespondTypeEnum_Private.ServerState:
+                                    DataPackBus.Publish(Serializer.Deserialize<Pack_ServerState>(payload));
+                                    return;
                                 case RespondTypeEnum_Private.SaveCipthertextConfigSucceed:
                                     DataPackBus.Publish(new Pack_SaveCipthertextConfigSucceed());
                                     return;

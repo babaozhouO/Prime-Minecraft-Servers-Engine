@@ -832,55 +832,59 @@ namespace PMCSsE_Communicator
                     }
                     try
                     {
+                        ReadOnlySpan<byte> payload = dataPack.AsSpan(2);
                         switch (requestTypeEnum_Private)
                         {
+                            case RequestTypeEnum_Private.GetServerState:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetServerState>(payload));
+                                break;
                             case RequestTypeEnum_Private.SaveCipthertextConfig:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_SaveCipherConfig>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_SaveCipherConfig>(payload));
                                 break;
                             case RequestTypeEnum_Private.GetMCServerManagersList:
                                 DataPackBus.Publish(new Pack_GetMCServerManagerConfigsList());
                                 break;
                             case RequestTypeEnum_Private.GetLoadedMCServerManagers:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetMCServerManager>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetMCServerManager>(payload));
                                 break;
                             case RequestTypeEnum_Private.GetSupportedMCServerTypes:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetSupportedMCServerTypes>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetSupportedMCServerTypes>(payload));
                                 break;
                             case RequestTypeEnum_Private.CreatNewMCServerManager:
                                 DataPackBus.Publish(new Pack_CreatNewMCServerManager());
                                 break;
                             case RequestTypeEnum_Private.LoadMCServerManager:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_LoadMCServerManager>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_LoadMCServerManager>(payload));
                                 break;
                             case RequestTypeEnum_Private.StopMCServerManager:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_StopMCServerManager>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_StopMCServerManager>(payload));
                                 break;
                             case RequestTypeEnum_Private.DeleteMCServerManager:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_DeleteMCServerManager>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_DeleteMCServerManager>(payload));
                                 break;
                             case RequestTypeEnum_Private.ModifyMCServerManagerConfig:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_ModifyMCServerManagerConfig>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_ModifyMCServerManagerConfig>(payload));
                                 break;
                             case RequestTypeEnum_Private.RunMCServer:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_RunMCServer>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_RunMCServer>(payload));
                                 break;
                             case RequestTypeEnum_Private.SendCommand:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_SendCommand>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_SendCommand>(payload));
                                 break;
                             case RequestTypeEnum_Private.ShutdownMCServer:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_ShutdownMCServer>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_ShutdownMCServer>(payload));
                                 break;
                             case RequestTypeEnum_Private.KillMCServer:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_KillMCServer>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_KillMCServer>(payload));
                                 break;
                             case RequestTypeEnum_Private.GetLatestLogs:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetLatestMCServerLogs>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetLatestMCServerLogs>(payload));
                                 break;
                             case RequestTypeEnum_Private.GetNewerLogs:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetNewerMCServerLogs>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetNewerMCServerLogs>(payload));
                                 break;
                             case RequestTypeEnum_Private.GetOlderLogs:
-                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetOlderMCServerLogs>(dataPack.AsSpan(2)));
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_GetOlderMCServerLogs>(payload));
                                 break;
                             case RequestTypeEnum_Private.ConnectionAlive:
                                 break;

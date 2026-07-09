@@ -88,6 +88,7 @@ namespace PMCSsE_Backend.Modules
                 }
             };
 
+            NativeServer.DataPackBus.Subscribe<Pack_GetServerState>(HandlePack_GetServerState);
             NativeServer.DataPackBus.Subscribe<Pack_SaveCipherConfig>(HandlePack_SaveCipherConfig);
             NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManagerConfigsList>(HandlePack_GetMCServerManagersList);
             NativeServer.DataPackBus.Subscribe<Pack_GetMCServerManager>(HandlePack_GetMCServerManager);
@@ -117,8 +118,20 @@ namespace PMCSsE_Backend.Modules
                 if (!SupportedMCServerTypes.Contains(provider.TargetMCServerType))
                     SupportedMCServerTypes.Add(provider.TargetMCServerType);
             });
-
+            StaticTools.HandleLog("正在初始化服务器状态监视器");
+            ServerMonitor.Initialize();
             NativeServer.StartService();
+        }
+        private static void HandlePack_GetServerState(Pack_GetServerState _)
+        {
+            StaticTools.HandleLog("客户端请求获取服务器状态");
+            if (!ServerMonitor.GotInfo)
+            {
+                StaticTools.HandleLog("尚未获取到硬件信息");
+                NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("尚未获取到硬件信息"));
+                return;
+            }
+            NativeServer?.RespondClient(RespondTypeEnum.ServerState, new Pack_ServerState(ServerMonitor.CPUs, ServerMonitor.TotalMemory, ServerMonitor.UsingMemory));
         }
         private static void HandlePack_SaveCipherConfig(Pack_SaveCipherConfig pack)
         {

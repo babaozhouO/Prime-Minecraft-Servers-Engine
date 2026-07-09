@@ -56,4 +56,19 @@ public partial class MainView : ReactiveUserControl<MainViewModel>
             }
         }
     }
+
+    private void ResetChartZoom_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+    {
+        foreach (var axis in CPUChart.XAxes)
+        {
+            axis.MinLimit = null;
+            axis.MaxLimit = null;
+        }
+
+        foreach (var axis in MemoryChart.XAxes)
+        {
+            axis.MinLimit = null;
+            axis.MaxLimit = null;
+        }
+    }
 }

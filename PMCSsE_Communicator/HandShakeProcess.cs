@@ -20,7 +20,7 @@
         SendingSucceed,
         Finished
     }
-    internal enum HandShakeProcess_Client
+    public enum HandShakeProcess_Client
     {
         Beginning,
         SendingNeedRSAPublicKey,
