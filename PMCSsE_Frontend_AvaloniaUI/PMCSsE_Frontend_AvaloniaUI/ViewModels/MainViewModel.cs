@@ -597,6 +597,9 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 case NativeClient.DisconnectedReasonEnum.EncoderFallBack:
                     reason = "UTF8编/解码失败";
                     break;
+                case NativeClient.DisconnectedReasonEnum.UserDisconnect:
+                    reason = "用户手动取消了连接";
+                    break;
                 default:
                     reason = "未知原因，通常因为客户端版本不匹配导致";
                     break;

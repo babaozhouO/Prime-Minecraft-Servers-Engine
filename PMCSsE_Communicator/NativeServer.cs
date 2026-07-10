@@ -7,7 +7,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Text;
-using PMCSsE_Communicator.SharedCodes;
 
 namespace PMCSsE_Communicator
 {
@@ -806,6 +805,32 @@ namespace PMCSsE_Communicator
             {
                 if (dataPack.Length == 2)//心跳包不加密
                 {
+                    byte t1 = dataPack[0];
+                    int t2= dataPack[1];
+                    if (t1 == 0)
+                    {
+                        RequestTypeEnum_Private requestTypeEnum_Private;
+                        if (Enum.IsDefined(typeof(RequestTypeEnum_Private), t2))
+                        {
+                            requestTypeEnum_Private = (RequestTypeEnum_Private)t2;
+                        }
+                        else
+                        {
+                            return;
+                        }
+                        if (requestTypeEnum_Private == RequestTypeEnum_Private.ConnectionAlive)
+                        {
+                        }
+                        else if (requestTypeEnum_Private == RequestTypeEnum_Private.Disconnect)
+                        {
+                            try
+                            {
+                                ClientInfo.CloseConnectionTokenSource.Cancel();
+                                ReportLog($"原生客户端已关闭连接");
+                            }
+                            catch { }
+                        }
+                    }
                     return;
                 }
                 try
@@ -895,12 +920,6 @@ namespace PMCSsE_Communicator
                             case RequestTypeEnum_Private.Unknown:
                                 break;
                             case RequestTypeEnum_Private.Disconnect:
-                                try
-                                {
-                                    ClientInfo.CloseConnectionTokenSource.Cancel();
-                                    ReportLog($"原生客户端已关闭连接");
-                                }
-                                catch{ }
                                 break;
                         }
 
@@ -925,6 +944,14 @@ namespace PMCSsE_Communicator
                 ReadOnlySpan<byte> shortDataPack = dataPack.AsSpan();
                 switch (shortDataPack)
                 {
+                    case [0, (byte)RequestTypeEnum_Private.Disconnect]:
+                        try
+                        {
+                            ClientInfo.CloseConnectionTokenSource.Cancel();
+                            ReportLog($"原生客户端已关闭连接");
+                        }
+                        catch { }
+                        return;
                     case [0, (byte)RequestTypeEnum_Private.ConnectionAlive]:
                         return;
                     case [0, (byte)RequestTypeEnum_Private.NeedRSAPublicKey]:
