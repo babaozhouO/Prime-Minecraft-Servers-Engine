@@ -192,11 +192,11 @@ namespace PMCSsE_Backend
                                 break;
                         }
                     }
-
-                    StaticTools.HandleLog("请输入序号: ");
-                    string? input = Console.ReadLine();
+                    string? input;
                     while (true)
                     {
+                        StaticTools.HandleLog("请输入序号: ");
+                        input = Console.ReadLine();
                         if (!int.TryParse(input, out int selectedIndex) || selectedIndex < 0 || selectedIndex >= options.Count)
                         {
                             StaticTools.HandleLog("输入无效");
@@ -286,7 +286,7 @@ namespace PMCSsE_Backend
                     StaticConfigManager.SaveConfig_Plaintext();
                     break;
                 }
-                while (StaticConfig_Plaintext.SaltOfCipherConfigKey.Length!=0)
+                while (StaticConfig_Plaintext.SaltOfCipherConfigKey.Length != 0)
                 {
                     StaticTools.HandleLog($"已设置访问密钥，修改需输入旧访问密钥，不输入任何文字并按Enter可取消修改");
                     string? input;
@@ -344,7 +344,7 @@ namespace PMCSsE_Backend
                         break;
                     }
                 }
-                while (StaticConfig_Plaintext.SaltOfCipherConfigKey.Length==0)
+                while (StaticConfig_Plaintext.SaltOfCipherConfigKey.Length == 0)
                 {
                     StaticTools.HandleLog("为保证安全，必须设置访问密钥");
                     StaticTools.HandleLog("是否让程序自动生成一个（Y/N）");

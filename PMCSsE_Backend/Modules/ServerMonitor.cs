@@ -43,8 +43,11 @@ namespace PMCSsE_Backend.Modules
         {
             RefreshCaller.Stop();
             HardwareInfo.RefreshAll();
-            GotInfo = true;
-            StaticTools.HandleLog($"已完成首次硬件信息刷新");
+            if (!GotInfo)
+            {
+                GotInfo = true;
+                StaticTools.HandleLog($"已完成首次硬件信息刷新");
+            }
             RefreshCaller.Start();
         }
         internal static void Dispose()
