@@ -102,12 +102,19 @@ namespace PMCSsE_Communicator
                 Disconnected(DisconnectedReasonEnum.OutOfMemory);
             }
         }
-
         /// <summary>
-        /// 断开连接
+        /// 发送断联请求
         /// </summary>
-        public void Disconnect()
+        private async Task RequireDiconnect()
         {
+            byte[] dataPack = [0, 0, 0, 2, 0, (byte)RequestTypeEnum_Private.Disconnect];
+            if (await SendDataPack(dataPack))
+            {
+                ReportLog("已向服务端发送断联请求");
+            }
+            else { ReportLog("发送 DisconnectDataPack 失败"); }
+            Disconnected(DisconnectedReasonEnum.UserDisconnect);
+
             try { ClientInfo?.CloseConnectionTokenSource.Cancel(); }
             catch (ObjectDisposedException) { }
             catch (Exception ex) { ReportLog($"取消令牌时发生异常：{ex.Message}"); }
@@ -115,9 +122,21 @@ namespace PMCSsE_Communicator
             catch (ObjectDisposedException) { }
             catch (Exception ex) { ReportLog($"取消令牌时发生异常：{ex.Message}"); }
 
-            try { ClientInfo?.NetworkStream?.Close(); } catch { }
-            try { ClientInfo?.TcpClient?.Close(); } catch { }
-            try { ClientInfo?.Aes?.Dispose(); } catch { }
+        }
+        /// <summary>
+        /// 断开连接
+        /// </summary>
+        public void Disconnect()
+        {
+            if (ClientInfo == null)
+            {
+                ReportLog("断联失败，ClientInfo为null");
+                return;
+            }
+            using (ClientInfo.TasksQueueLock.EnterScope())
+            {
+                ClientInfo.TasksQueue.Enqueue(RequireDiconnect);
+            }
         }
 
         /// <summary>
@@ -716,7 +735,7 @@ namespace PMCSsE_Communicator
             if (data.Length == 6)
             {
                 ReadOnlySpan<byte> shortData = data.AsSpan();
-                if (shortData is [0, 0, 0, 2, 0, (byte)RespondTypeEnum_Private.ConnectionAlive])
+                if (shortData is [ 0, (byte)RespondTypeEnum_Private.ConnectionAlive])
                 {
                     using (ClientInfo.TasksQueueLock.EnterScope())
                     {
@@ -1079,7 +1098,11 @@ namespace PMCSsE_Communicator
             /// <summary>
             /// UTF8解码失败
             /// </summary>
-            EncoderFallBack
+            EncoderFallBack,
+            /// <summary>
+            /// 用户取消连接
+            /// </summary>
+            UserDisconnect
         }
     }
 }

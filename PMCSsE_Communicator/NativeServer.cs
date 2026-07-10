@@ -431,6 +431,7 @@ namespace PMCSsE_Communicator
                         break;
                     }
 
+
                     if (ClientInfo.TasksQueue.Count != 0)
                     {
                         didwork2 = true;
@@ -445,6 +446,7 @@ namespace PMCSsE_Communicator
                             await task();//统一顺序执行
                         }
                     }
+
 
                     if (didwork1 || didwork2)
                     {
@@ -891,6 +893,14 @@ namespace PMCSsE_Communicator
                             case RequestTypeEnum_Private.Close:
                                 break;
                             case RequestTypeEnum_Private.Unknown:
+                                break;
+                            case RequestTypeEnum_Private.Disconnect:
+                                try
+                                {
+                                    ClientInfo.CloseConnectionTokenSource.Cancel();
+                                    ReportLog($"原生客户端已关闭连接");
+                                }
+                                catch{ }
                                 break;
                         }
 

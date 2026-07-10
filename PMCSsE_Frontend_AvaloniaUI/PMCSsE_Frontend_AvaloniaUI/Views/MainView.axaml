@@ -128,25 +128,15 @@
                             <ScrollViewer>
                                 <Panel>
                                     <Line Classes="sec"/>
-                                    <Grid Height="35" VerticalAlignment="Top"
-                                        ColumnDefinitions="*,100,5,auto,5,auto,100,20">
-                                        <controls:MyButton Text="立即刷新" Grid.Column="1"/>
-                                        <TextBlock Text="刷新间隔" VerticalAlignment="Center" Grid.Column="3"/>
-                                        <ComboBox SelectedIndex="0" Grid.Column="5" VerticalAlignment="Center">
-                                            <ComboBoxItem Content="1s"/>
-                                            <ComboBoxItem Content="3s"/>
-                                            <ComboBoxItem Content="5s"/>
-                                        </ComboBox>
-                                        <controls:MyButton Text="重置视图" Click="ResetChartZoom_Click" Grid.Column="6"/>
-                                    </Grid>
-                                    <Grid RowDefinitions="5,160,160,*,5"
+                                    <Grid RowDefinitions="5,35,160,160,*,5"
                                         ColumnDefinitions="5,80,*,20"
-                                        ShowGridLines="True" Margin="0,35,0,0">
-                                        <TextBlock Text="CPU占用率" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="1" Grid.Column="1"/>
-                                        <lvc:CartesianChart LegendPosition="Right" ZoomMode="ZoomX" Name="CPUChart" Grid.Row="1" Grid.Column="2">  
+                                        ShowGridLines="True">
+                                        <controls:MyButton Text="重置视图" Click="ResetChartZoom_Click" Grid.Row="1" Grid.Column="2" Width="105" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="CPU占用率" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
+                                        <lvc:CartesianChart Series="{Binding CPUSeries}" SyncContext="{Binding SyncLock}" LegendPosition="Right" ZoomMode="ZoomX" Name="CPUChart" Grid.Row="2" Grid.Column="2">  
                                             <lvc:CartesianChart.XAxes>
-                                            <!-- DateTime 专用轴 -->
-                                            <lvc:XamlDateTimeAxis Interval="00:00:01" DateFormatter="{Binding DateFormatter}" />
+                                                <!-- DateTime 专用轴 -->
+                                                <lvc:XamlDateTimeAxis Interval="00:00:01" DateFormatter="{Binding DateFormatter}" />
                                             </lvc:CartesianChart.XAxes>
 
                                             <lvc:CartesianChart.YAxes>
@@ -154,8 +144,8 @@
                                                 <lvc:XamlAxis Labeler="{Binding PercentLabeler}" MinLimit="0" MaxLimit="100" />
                                             </lvc:CartesianChart.YAxes>
                                         </lvc:CartesianChart>
-                                        <TextBlock Text="内存" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
-                                        <lvc:CartesianChart LegendPosition="Right" ZoomMode="ZoomX" Name="MemoryChart" Grid.Row="2" Grid.Column="2">  
+                                        <TextBlock Text="内存" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="3" Grid.Column="1"/>
+                                        <lvc:CartesianChart LegendPosition="Right" ZoomMode="ZoomX" Name="MemoryChart" Grid.Row="3" Grid.Column="2">  
                                             <lvc:CartesianChart.XAxes>
                                             <!-- DateTime 专用轴 -->
                                             <lvc:XamlDateTimeAxis Interval="00:00:01" DateFormatter="{Binding DateFormatter}" />

@@ -102,6 +102,7 @@
         AESKey,
         Login,
         Close,
+        Disconnect,
         Unknown,
     }
 }

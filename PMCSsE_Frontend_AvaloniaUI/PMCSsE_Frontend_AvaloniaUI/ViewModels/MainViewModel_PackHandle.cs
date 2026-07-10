@@ -4,8 +4,6 @@ using PMCSsE_Communicator.DataPacks;
 using PMCSsE_Communicator.DataPacks.Pack_nothing;
 using PMCSsE_Communicator.DataPacks.Pack_StringOnly;
 using PMCSsE_Frontend_AvaloniaUI.Models;
-using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
@@ -15,7 +13,17 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
     {
         private void HandlePack_ServerState(Pack_ServerState pack)
         {
+            if (!ChartInitialized)
+            {
 
+            }
+            foreach (var cpu in pack.CPUs)
+            {
+                lock (SyncLock)//图表的线程锁
+                {
+
+                }
+            }
         }
         private void HandlePack_SaveCiphertextConfigSucceed(Pack_SaveCipthertextConfigSucceed _)
         {
