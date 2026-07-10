@@ -5,7 +5,7 @@ namespace PMCSsE_Backend.Modules
 {
     internal static class ServerMonitor
     {
-        internal static bool GotInfo;
+        internal static bool GotInfo=false;
         internal static CPUInfo[] CPUs
         {
             get

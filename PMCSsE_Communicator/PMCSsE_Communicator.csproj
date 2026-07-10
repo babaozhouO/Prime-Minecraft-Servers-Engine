@@ -10,12 +10,17 @@
     <Company>八宝粥</Company>
     <Copyright>八宝粥（原名:周仁杰）版权所有</Copyright>
     <PackageReadmeFile>Readme.md</PackageReadmeFile>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <NuGetAuditMode>all</NuGetAuditMode>
     <ProduceReferenceAssembly>True</ProduceReferenceAssembly>
     <SignAssembly>False</SignAssembly>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Title>PMCSsE_Communicator</Title>
+    <PackageIcon></PackageIcon>
+    <RepositoryUrl>https://github.com/babaozhouO/Prime-Minecraft-Servers-Engine/tree/Main/PMCSsE_Communicator</RepositoryUrl>
+    <PackageTags>PMCSsE;pmcsse;PMCSSE;communicator;Communicator</PackageTags>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -29,18 +34,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="新文件夹\**" />
-    <EmbeddedResource Remove="新文件夹\**" />
-    <None Remove="新文件夹\**" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Remove="WebServer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Remove=".gitattributes" />
     <None Remove=".gitignore" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Readme.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
   <ItemGroup>

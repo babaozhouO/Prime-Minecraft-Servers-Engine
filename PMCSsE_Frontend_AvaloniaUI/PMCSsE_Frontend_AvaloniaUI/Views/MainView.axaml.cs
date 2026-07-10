@@ -2,7 +2,6 @@
 using Avalonia.VisualTree;
 using AvaloniaEdit.TextMate;
 using PMCSsE_Frontend_AvaloniaUI.ViewModels;
-using ReactiveUI;
 using ReactiveUI.Avalonia;
 using TextMateSharp.Grammars;
 
