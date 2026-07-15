@@ -74,13 +74,13 @@ internal class SFTPClient
 
     }
 
-    internal async Task ConnectSFTPServer()
+    internal async Task ConnectSFTPServer(CancellationToken token)
     {
         if (!SftpClient.IsConnected)
         {
             try
             {
-                await SftpClient.ConnectAsync(CancellationToken.None);
+                await SftpClient.ConnectAsync(token);
             }
             catch (Exception ex)
             {
@@ -746,7 +746,7 @@ internal class SFTPClient
 #if DEBUG
     internal static void Example()
     {
-        Thread thread = new(() =>
+        Thread thread = new(async () =>
         {
             SFTPClient sFTPClient = new("192.168.101.2", 22, "admin", "admin");
 
@@ -775,7 +775,7 @@ internal class SFTPClient
                 Console.WriteLine(SpeedAndProcessText);
             };
 
-            sFTPClient.ConnectSFTPServer();
+            await sFTPClient.ConnectSFTPServer(CancellationToken.None);
 
         });
         thread.Start();

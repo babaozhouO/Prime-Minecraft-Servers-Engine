@@ -566,7 +566,7 @@ namespace PMCSsE_Communicator
         {
             try
             {
-#if DEBUG
+#if DEBUG//方便添加断点查看序列化数据
                 byte[] result = payloadObject.ToByteArray();
                 return (result, true);
 

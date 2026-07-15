@@ -48,7 +48,7 @@ namespace PMCSsE_Backend.Modules
                 SevenZipInvokerClass.ProcessExited += () =>
                 {
                     SevenZipInvokerClass.Dispose();
-                    Thread thread = new(() =>
+                    Thread thread = new(async() =>
                     {
                         SFTPClient sFTPClient = new(
                             MCServerManager.MCServerManagerConfig.BackupManagerConfig.SFTPClientConfig);
@@ -76,7 +76,7 @@ namespace PMCSsE_Backend.Modules
                             ReportLog(Type, Sender, Log);
                         };
 
-                        sFTPClient.ConnectSFTPServer();
+                        await sFTPClient.ConnectSFTPServer(CancellationToken.None);
 
                     });
                     thread.Start();
@@ -107,7 +107,7 @@ namespace PMCSsE_Backend.Modules
                         {
                             SevenZipInvokerClass.Dispose();
                             MCServerManager.StartMCServer();
-                            Thread thread = new(() =>
+                            Thread thread = new(async() =>
                             {
                                 SFTPClient sFTPClient = new(
                                     MCServerManager.MCServerManagerConfig.BackupManagerConfig.SFTPClientConfig);
@@ -135,7 +135,7 @@ namespace PMCSsE_Backend.Modules
                                     ReportLog(Type, Sender, Log);
                                 };
 
-                                sFTPClient.ConnectSFTPServer();
+                                await sFTPClient.ConnectSFTPServer(CancellationToken.None);
 
                             });
                             thread.Start();
@@ -168,7 +168,7 @@ namespace PMCSsE_Backend.Modules
                         SevenZipInvokerClass.Dispose();
                         MCServerManager.SendCommand("save-on");
 
-                        Thread thread = new(() =>
+                        Thread thread = new(async() =>
                         {
                             SFTPClient sFTPClient = new(
                                 MCServerManager.MCServerManagerConfig.BackupManagerConfig.SFTPClientConfig);
@@ -196,7 +196,7 @@ namespace PMCSsE_Backend.Modules
                                 ReportLog(Type, Sender, Log);
                             };
 
-                            sFTPClient.ConnectSFTPServer();
+                            await sFTPClient.ConnectSFTPServer(CancellationToken.None);
 
                         });
                         thread.Start();

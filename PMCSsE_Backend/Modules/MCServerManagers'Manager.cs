@@ -18,6 +18,7 @@ using PMCSsE_Communicator.DataPacks;
 using PMCSsE_Communicator.DataPacks.Pack_nothing;
 using PMCSsE_Communicator.DataPacks.Pack_StringOnly;
 using PMCSsE_Communicator.SharedCodes;
+using Renci.SshNet.Security;
 using System.Security.Cryptography;
 
 namespace PMCSsE_Backend.Modules
@@ -136,6 +137,20 @@ namespace PMCSsE_Backend.Modules
         private static void HandlePack_SaveCipherConfig(Pack_SaveCipherConfig pack)
         {
             StaticTools.HandleLog($"客户端请求保存密文配置文件");
+            byte[] saltedLoginKeyHash = ConfigCrypto.DeriveKey(pack.KeyBytes, StaticConfig_Ciphertext.SaltOfLoginKey);
+            if (saltedLoginKeyHash.SequenceEqual(StaticConfig_Ciphertext.SaltedLoginKeyHash))
+            {
+                StaticTools.HandleLog($"客户端发送的访问密钥正确");
+            }
+            else
+            {
+                StaticTools.HandleLog($"客户端发送的访问密钥错误");
+                StaticTools.HandleLog($"保存密文配置文件失败");
+                NativeServer?.RespondClient(RespondTypeEnum.SaveCiptherConfigFailed, new Pack_SaveCipthertextConfigFailed());
+                return;
+            }
+            CryptographicOperations.ZeroMemory(saltedLoginKeyHash.AsSpan());
+
             byte[] saltedCipherConfigKeyHash = ConfigCrypto.DeriveKey(pack.KeyBytes, StaticConfig_Plaintext.SaltOfCipherConfigKey);
             CryptographicOperations.ZeroMemory(pack.KeyBytes.AsSpan());
             bool isSucceed = StaticConfigManager.SaveConfig_Ciphertext(saltedCipherConfigKeyHash);
