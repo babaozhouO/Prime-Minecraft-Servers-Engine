@@ -27,11 +27,17 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         private void HandlePack_SaveCiphertextConfigSucceed(Pack_SaveCipthertextConfigSucceed _)
         {
-            SendMessage("保存密文配置成功", 3);
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage("保存密文配置成功", 3);
+            }, null);
         }
         private void HandlePack_SaveCiphertextConfigFailed(Pack_SaveCipthertextConfigFailed _)
         {
-            SendMessage("保存密文配置失败", 2);
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage("保存密文配置失败", 2);
+            }, null);
         }
         private void HandlePack_MCServerManagerConfigs(Pack_MCServerManagerConfigs pack)
         {

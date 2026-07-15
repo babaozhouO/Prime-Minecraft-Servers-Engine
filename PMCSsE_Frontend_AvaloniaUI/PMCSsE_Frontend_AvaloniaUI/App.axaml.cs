@@ -17,6 +17,9 @@ using Avalonia.Data.Core.Plugins;
 using Avalonia.Markup.Xaml;
 using PMCSsE_Frontend_AvaloniaUI.ViewModels;
 using PMCSsE_Frontend_AvaloniaUI.Views;
+using ReactiveUI;
+using ReactiveUI.Builder;
+using Splat;
 using System.Linq;
 
 namespace PMCSsE_Frontend_AvaloniaUI

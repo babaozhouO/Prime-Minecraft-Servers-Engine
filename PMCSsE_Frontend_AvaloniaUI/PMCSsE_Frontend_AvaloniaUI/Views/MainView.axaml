@@ -375,7 +375,20 @@
                 </Style>
             </TabControl.Styles>
         </TabControl>
-        <!--叠加层-->
+        <Border IsVisible="{Binding KeyEnterPanelVisibility}">
+            <Border.Background>
+                <SolidColorBrush Color="Black" Opacity="0.4"/>
+            </Border.Background>
+            <Grid VerticalAlignment="Center" HorizontalAlignment="Center"
+                  ColumnDefinitions="10,130,150,130,10"
+                  RowDefinitions="5,40,5,40,5,40,5" ShowGridLines="False" Background="White">
+                <TextBlock Text="请输入访问密钥" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <TextBox PlaceholderText="访问密钥" Text="{Binding Key}" RevealPassword="True" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="3" HorizontalAlignment="Stretch" VerticalAlignment="Center"/>
+                <controls:MyButton Text="取消" Command="{Binding CancelSubmitCommand}" Grid.Row="5" Grid.Column="1"/>
+                <controls:MyButton Text="提交" Command="{Binding SubmitKeyCommand}" Grid.Row="5" Grid.Column="3"/>
+            </Grid>
+        </Border>
+        <!--MC管理器叠加层-->
         <Panel Background="#FDFDFD" Classes="MCServerManager" IsVisible="{Binding MCServerManagerPanelVisibility}" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <TextBlock Text="{Binding MCServerName}" HorizontalAlignment="Left" FontSize="16"/>
             <TextBlock Text="日志轮询间隔" HorizontalAlignment="Right" Margin="0,0,230,0" FontSize="16"/>

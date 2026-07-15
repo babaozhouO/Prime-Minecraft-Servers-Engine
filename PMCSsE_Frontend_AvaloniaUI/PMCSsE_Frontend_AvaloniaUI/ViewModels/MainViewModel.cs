@@ -31,7 +31,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             get => _firstTabControlPage;
             set => this.RaiseAndSetIfChanged(ref _firstTabControlPage, value);
         }
-        private int _firstTabControlPage = 1;//
+        private int _firstTabControlPage = 0;//
 
         public ObservableCollection<MessageModel> Messages_IS
         {
@@ -120,7 +120,19 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         private object? _selectedMCServerManager_LBItem;
 
-
+        public bool KeyEnterPanelVisibility
+        {
+            get => _keyEnterPanelVisibility;
+            set => this.RaiseAndSetIfChanged(ref _keyEnterPanelVisibility, value);
+        }
+        private bool _keyEnterPanelVisibility = false;
+        
+        public string? Key
+        {
+            get => _key;
+            set => this.RaiseAndSetIfChanged(ref _key, value);
+        }
+        private string? _key="";
         /// <summary>
         /// 版本号
         /// </summary>
@@ -157,6 +169,14 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
 
         private readonly BehaviorSubject<bool> _canSaveCiphertextConfig = new(true);
         public ReactiveCommand<Unit, Unit> SaveCiphertextConfigCommand { get; }
+
+
+        private readonly BehaviorSubject<bool> _canCancelSubmit = new(true);
+        public ReactiveCommand<Unit, Unit> CancelSubmitCommand { get; }
+
+
+        private readonly BehaviorSubject<bool> _canSubmitKey = new(true);
+        public ReactiveCommand<Unit, Unit> SubmitKeyCommand { get; }
 
 
         private readonly BehaviorSubject<bool> _canRefreshAllMCServerManagerList = new(true);
@@ -207,6 +227,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             SendPasswordCommand = ReactiveCommand.Create(SendPasswordAction, _canSendPassword, uiScheduler);
             DisconnectCommand = ReactiveCommand.Create(DisconnectAction, _canDisconnect, uiScheduler);
             SaveCiphertextConfigCommand = ReactiveCommand.Create(SaveCipthertextConfigAction, _canSaveCiphertextConfig, uiScheduler);
+            SubmitKeyCommand = ReactiveCommand.Create(SubmitKeyAction, _canSubmitKey, uiScheduler);
+            CancelSubmitCommand = ReactiveCommand.Create(CancelSubmitAction, _canCancelSubmit, uiScheduler);
             RefreshAllMCServerManagerListCommand = ReactiveCommand.Create(RefreshAllMCServerManagerListAction, _canRefreshAllMCServerManagerList, uiScheduler);
             CreateNewMCServerManagerCommand = ReactiveCommand.Create(CreateNewMCServerManagerAction, _canCreateNewMCServerManager, uiScheduler);
             LoadNewMCServerManagerCommand = ReactiveCommand.Create(LoadMCServerManagerAction, _canLoadNewMCServerManager, uiScheduler);
@@ -418,7 +440,12 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         }
         public void SaveCipthertextConfigAction()
         {
-            if (ConnectingNativeServer == null) return;
+            if (ConnectingNativeServer == null) return;//未做Password输入请求
+            if (string.IsNullOrEmpty(ConnectingNativeServer.Password))
+            {
+                KeyEnterPanelVisibility = true;
+                return;
+            }
             byte[] keyBytes;
             try
             {
@@ -438,6 +465,40 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             {
                 SendMessage("已发送保存密文配置文件请求", 0);
             }, null);
+        }
+        public void SubmitKeyAction()
+        {
+            if (string.IsNullOrEmpty(Key))
+            {
+                SendMessage("密钥为空",2);
+                return;
+            }
+            byte[] keyBytes;
+            try
+            {
+                keyBytes = Encoding.UTF8.GetBytes(Key);
+            }
+            catch (Exception ex)
+            {
+                Dispatcher.UIThread.Post((state) =>
+                {
+                    SendMessage($"编码访问密钥时发生错误：{ex.Message}，堆栈：{ex.StackTrace}", 2);
+                }, null);
+                return;
+            }
+
+            nativeClient?.RequestBackend(RequestTypeEnum.SaveCiptherConfig, new Pack_SaveCipherConfig(keyBytes));
+            Dispatcher.UIThread.Post((state) =>
+            {
+                SendMessage("已发送保存密文配置文件请求", 0);
+            }, null);
+            KeyEnterPanelVisibility = false;
+            Key = "";
+        }
+        public void CancelSubmitAction()
+        {
+            KeyEnterPanelVisibility = false;
+            Key = "";
         }
         public void CreateNewMCServerManagerAction()
         {

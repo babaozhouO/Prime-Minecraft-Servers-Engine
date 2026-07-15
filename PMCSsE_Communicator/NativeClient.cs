@@ -566,7 +566,13 @@ namespace PMCSsE_Communicator
         {
             try
             {
+#if DEBUG
+                byte[] result = payloadObject.ToByteArray();
+                return (result, true);
+
+#else
                 return (payloadObject.ToByteArray(), true);
+#endif
             }
             catch (Exception ex)
             {
@@ -735,7 +741,7 @@ namespace PMCSsE_Communicator
             if (data.Length == 6)
             {
                 ReadOnlySpan<byte> shortData = data.AsSpan();
-                if (shortData is [ 0, (byte)RespondTypeEnum_Private.ConnectionAlive])
+                if (shortData is [0, (byte)RespondTypeEnum_Private.ConnectionAlive])
                 {
                     using (ClientInfo.TasksQueueLock.EnterScope())
                     {
@@ -897,113 +903,104 @@ namespace PMCSsE_Communicator
                 if (type1 == 0) // 系统消息
                 {
                     if (!Enum.IsDefined(typeof(RespondTypeEnum_Private), (int)type2))
+                    {
+                        ReportLog($"收到未知的响应类型:{type2}");
                         return;
+                    }
                     RespondTypeEnum_Private respondType = (RespondTypeEnum_Private)type2;
-                    if (dataPack.Length > 2)
+                    ReadOnlySpan<byte> payload = dataPack.AsSpan(2);
+                    try
                     {
-                        ReadOnlySpan<byte> payload = dataPack.AsSpan(2);
-                        try
+                        switch (respondType)
                         {
-                            switch (respondType)
-                            {
-                                case RespondTypeEnum_Private.ServerState:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_ServerState>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.SaveCipthertextConfigSucceed:
-                                    DataPackBus.Publish(new Pack_SaveCipthertextConfigSucceed());
-                                    return;
-                                case RespondTypeEnum_Private.SaveCipthertextConfigFailed:
-                                    DataPackBus.Publish(new Pack_SaveCipthertextConfigFailed());
-                                    return;
-                                case RespondTypeEnum_Private.MCServerManagerConfigs:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerManagerConfigs>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.LoadedMCServerManagers:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerManagers>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.SupportedMCServerTypes:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_SupportedMCServerTypes>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.CreatedNewMCServerManager:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_CreatedNewMCServerManager>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.CreatNewMCServerManagerFailed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_CreatNewMCServerManagerFailed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.LoadedMCServerManager:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_LoadedMCServerManager>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.LoadMCServerManagerFailed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_LoadMCServerManagerFailed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.StoppedMCServerManager:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_StoppedMCServerManager>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.StopMCServerManagerFailed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_StopMCServerManagerFailed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.DeletedMCServerManager:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_DeletedMCServerManager>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.DeleteMCServerManagerFailed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_DeleteMCServerManagerFailed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.ModifiedMCServerManagerConfig:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_ModifiedMCServerManagerConfig>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.RunMCServerSucceed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_RunMCServerSucceed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.RunMCServerFailed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_RunMCServerFailed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.SendCommandSucceed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_SendCommandSucceed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.SendCommandFailed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_SendCommandFailed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.ShutdownMCServerSucceed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_ShutdownMCServerSucceed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.ShutdownMCServerFailed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_ShutdownMCServerFailed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.KillMCServerSucceed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_KillMCServerSucceed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.KillMCServerFailed:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_KillMCServerFailed>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.MCServerExited:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerExited>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.MCServerLogs:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerLogs>(payload));
-                                    return;
-                                case RespondTypeEnum_Private.ErrorInfo:
-                                    DataPackBus.Publish(Serializer.Deserialize<Pack_ErrorInfo>(payload));
-                                    return;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            ReportLog($"LightProto 反序列化响应内容失败 (类型: {respondType})：{ex.Message}");
-                            return;
+                            case RespondTypeEnum_Private.ServerState:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_ServerState>(payload));
+                                return;
+                            case RespondTypeEnum_Private.SaveCipthertextConfigSucceed:
+                                DataPackBus.Publish(new Pack_SaveCipthertextConfigSucceed());
+                                return;
+                            case RespondTypeEnum_Private.SaveCipthertextConfigFailed:
+                                DataPackBus.Publish(new Pack_SaveCipthertextConfigFailed());
+                                return;
+                            case RespondTypeEnum_Private.MCServerManagerConfigs:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerManagerConfigs>(payload));
+                                return;
+                            case RespondTypeEnum_Private.LoadedMCServerManagers:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerManagers>(payload));
+                                return;
+                            case RespondTypeEnum_Private.SupportedMCServerTypes:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_SupportedMCServerTypes>(payload));
+                                return;
+                            case RespondTypeEnum_Private.CreatedNewMCServerManager:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_CreatedNewMCServerManager>(payload));
+                                return;
+                            case RespondTypeEnum_Private.CreatNewMCServerManagerFailed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_CreatNewMCServerManagerFailed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.LoadedMCServerManager:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_LoadedMCServerManager>(payload));
+                                return;
+                            case RespondTypeEnum_Private.LoadMCServerManagerFailed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_LoadMCServerManagerFailed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.StoppedMCServerManager:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_StoppedMCServerManager>(payload));
+                                return;
+                            case RespondTypeEnum_Private.StopMCServerManagerFailed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_StopMCServerManagerFailed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.DeletedMCServerManager:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_DeletedMCServerManager>(payload));
+                                return;
+                            case RespondTypeEnum_Private.DeleteMCServerManagerFailed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_DeleteMCServerManagerFailed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.ModifiedMCServerManagerConfig:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_ModifiedMCServerManagerConfig>(payload));
+                                return;
+                            case RespondTypeEnum_Private.RunMCServerSucceed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_RunMCServerSucceed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.RunMCServerFailed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_RunMCServerFailed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.SendCommandSucceed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_SendCommandSucceed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.SendCommandFailed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_SendCommandFailed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.ShutdownMCServerSucceed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_ShutdownMCServerSucceed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.ShutdownMCServerFailed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_ShutdownMCServerFailed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.KillMCServerSucceed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_KillMCServerSucceed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.KillMCServerFailed:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_KillMCServerFailed>(payload));
+                                return;
+                            case RespondTypeEnum_Private.MCServerExited:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerExited>(payload));
+                                return;
+                            case RespondTypeEnum_Private.MCServerLogs:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_MCServerLogs>(payload));
+                                return;
+                            case RespondTypeEnum_Private.ErrorInfo:
+                                DataPackBus.Publish(Serializer.Deserialize<Pack_ErrorInfo>(payload));
+                                return;
+                            default:
+                                ReportLog($"响应类型: {respondType}，未定义处理方法");
+                                return;
                         }
                     }
-
-                    if (respondType == RespondTypeEnum_Private.ConnectionAlive)
+                    catch (Exception ex)
                     {
-                        // 如果服务器发来了加密的心跳包（极少见），也回复
-                        using (ClientInfo.TasksQueueLock.EnterScope())
-                        {
-                            ClientInfo.TasksQueue.Enqueue(ReplyHeartbeatAsync);
-                        }
+                        ReportLog($"LightProto 反序列化响应内容失败 (类型: {respondType})：{ex.Message}");
                         return;
                     }
-                    else
-                        ReportLog($"收到未知的响应类型: {respondType}");
                 }
                 else // 插件数据
                 {

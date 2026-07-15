@@ -7,6 +7,9 @@ using Android.Views;
 using Avalonia;
 using Avalonia.Android;
 using Avalonia.Controls;
+using PMCSsE_Frontend_AvaloniaUI.ViewModels;
+using PMCSsE_Frontend_AvaloniaUI.Views;
+using ReactiveUI.Avalonia;
 using System;
 using System.Diagnostics;
 
@@ -23,14 +26,6 @@ namespace PMCSsE_Frontend_AvaloniaUI.Android
         ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.UiMode)]
     public class MainActivity : AvaloniaMainActivity
     {
-        //protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
-        //{
-        //    RequestedOrientation = ScreenOrientation.SensorLandscape;
-        //    return base.CustomizeAppBuilder(builder)
-        //        .WithSystemFontSource(new System.Uri("avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf"));
-
-        //}
-
         public override void OnWindowFocusChanged(bool hasFocus)
         {
             RequestedOrientation = ScreenOrientation.SensorLandscape;
@@ -125,17 +120,27 @@ namespace PMCSsE_Frontend_AvaloniaUI.Android
                 // TODO: Android 14+ (API 35+) 可用新API，待Avalonia/AndroidX支持后补充
                 Window.DecorView.SetFitsSystemWindows(true);
             }
-
-
             base.OnStart();
         }
     }
     [Application]
     public class AndroidApp : AvaloniaAndroidApplication<App>
     {
-        protected AndroidApp(IntPtr javaReference, JniHandleOwnership transfer)
-            : base(javaReference, transfer)
+        protected override AppBuilder CustomizeAppBuilder(AppBuilder builder)
         {
+            Avalonia.AppBuilder appBuilder = AppBuilder.Configure<App>()
+                .UseAndroid()
+                .WithSystemFontSource(new Uri("avares://PMCSsE_Frontend_AvaloniaUI/Fonts/SourceHanSansSC-Regular.otf#Source Han Sans SC"))
+                .LogToTrace()
+                .UseReactiveUI(rxAppBuilder =>
+                    {
+                        rxAppBuilder.RegisterView<MainView, MainViewModel>();
+                    });
+            return appBuilder;
+        }
+        protected AndroidApp(IntPtr javaReference, JniHandleOwnership transfer) : base(javaReference, transfer)
+        {
+
         }
     }
 }

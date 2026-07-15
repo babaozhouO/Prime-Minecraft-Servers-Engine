@@ -59,7 +59,8 @@ internal class SFTPClient
     internal SFTPClient(SFTPClientConfig SFTPHelperConfig)
     {
         BufferSize = SFTPHelperConfig.BufferSize * 1024 * 1024 - 1;
-        PasswordConnectionInfo passwordConnectionInfo = new(SFTPHelperConfig.Host,
+        PasswordConnectionInfo passwordConnectionInfo = new(
+            SFTPHelperConfig.Host,
             SFTPHelperConfig.Port,
             SFTPHelperConfig.UserName,
             SFTPHelperConfig.Password)
@@ -73,13 +74,13 @@ internal class SFTPClient
 
     }
 
-    internal void ConnectSFTPServer()
+    internal async Task ConnectSFTPServer()
     {
         if (!SftpClient.IsConnected)
         {
             try
             {
-                SftpClient.Connect();
+                await SftpClient.ConnectAsync(CancellationToken.None);
             }
             catch (Exception ex)
             {

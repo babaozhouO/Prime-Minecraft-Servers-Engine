@@ -25,7 +25,6 @@
 		<PackageReference Include="Avalonia" />
 		<PackageReference Include="Avalonia.AvaloniaEdit" />
 		<PackageReference Include="Avalonia.Themes.Fluent" />
-		<PackageReference Include="Avalonia.Fonts.Inter" />
 		<PackageReference Include="AvaloniaEdit.TextMate" />
 		<PackageReference Include="AvaloniaUI.DiagnosticsSupport" />
 		<!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->

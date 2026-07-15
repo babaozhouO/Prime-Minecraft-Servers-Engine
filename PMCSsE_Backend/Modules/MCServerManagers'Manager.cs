@@ -143,12 +143,12 @@ namespace PMCSsE_Backend.Modules
             if (isSucceed)
             {
                 StaticTools.HandleLog($"保存密文配置文件成功");
-                NativeServer?.RespondClient(RespondTypeEnum.MCServerManagerConfigs, new Pack_SaveCipthertextConfigSucceed());
+                NativeServer?.RespondClient(RespondTypeEnum.SaveCiptherConfigSucceed, new Pack_SaveCipthertextConfigSucceed());
             }
             else
             {
                 StaticTools.HandleLog($"保存密文配置文件失败");
-                NativeServer?.RespondClient(RespondTypeEnum.MCServerManagerConfigs, new Pack_SaveCipthertextConfigFailed());
+                NativeServer?.RespondClient(RespondTypeEnum.SaveCiptherConfigFailed, new Pack_SaveCipthertextConfigFailed());
             }
         }
         private static void HandlePack_GetMCServerManagersList(Pack_GetMCServerManagerConfigsList _)

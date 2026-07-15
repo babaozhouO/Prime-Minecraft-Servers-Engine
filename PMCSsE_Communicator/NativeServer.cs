@@ -732,7 +732,13 @@ namespace PMCSsE_Communicator
         {
             try
             {
+#if DEBUG
+                byte[] result = payloadObject.ToByteArray();
+                return (result, true);
+
+#else
                 return (payloadObject.ToByteArray(), true);
+#endif
             }
             catch (Exception ex)
             {
