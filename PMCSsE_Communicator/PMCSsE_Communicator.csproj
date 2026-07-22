@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <BaseOutputPath>.\..\生成\PMCSsE_Communicator</BaseOutputPath>
-    <Version>1.0.4.2</Version>
+    <Version>1.0.4.3</Version>
     <Authors>八宝粥</Authors>
     <Company>八宝粥</Company>
     <Copyright>八宝粥（原名:周仁杰）版权所有</Copyright>
