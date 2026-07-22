@@ -30,6 +30,27 @@ public partial class MainView : ReactiveUserControl<MainViewModel>
             var scrollViewer = ServerLogsShower.FindDescendantOfType<ScrollViewer>();
             scrollViewer?.ScrollChanged += OnEditorScrollChanged;
         };
+        ServerLogsShower.DocumentChanged += ServerLogsShower_DocumentChanged;
+        ServerLogsShower.Document.LineCountChanged += Document_LineCountChanged;
+        ServerLogsShower.Document.Changing += Document_Changing;
+    }
+
+    private void Document_Changing(object? sender, AvaloniaEdit.Document.DocumentChangeEventArgs e)
+    {
+        
+    }
+
+    private void ServerLogsShower_DocumentChanged(object? sender, AvaloniaEdit.Document.DocumentChangedEventArgs e)
+    {
+        e.OldDocument.LineCountChanged -= Document_LineCountChanged;
+        e.OldDocument.Changing -= Document_Changing;
+        e.NewDocument.LineCountChanged += Document_LineCountChanged;
+        e.NewDocument.Changing += Document_Changing;
+    }
+
+    private void Document_LineCountChanged(object? sender, System.EventArgs e)
+    {
+        
     }
 
     private void ServerLogsShower_TextChanged(object? sender, System.EventArgs e)
@@ -38,11 +59,16 @@ public partial class MainView : ReactiveUserControl<MainViewModel>
         {
             ServerLogsShower.ScrollToLine(ServerLogsShower.LineCount - 1);
         }
+        else
+        {
+
+        }
     }
     private void OnEditorScrollChanged(object? sender, ScrollChangedEventArgs e)
     {
         if (e.OffsetDelta.Y == 0)
             return;
+
         if (sender is ScrollViewer scrollViewer)
         {
             // 检查垂直偏移量是否小于或等于0，考虑到浮点数精度，使用一个小的容差进行判断。

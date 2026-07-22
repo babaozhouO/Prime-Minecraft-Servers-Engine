@@ -45,7 +45,7 @@ namespace PMCSsE_Backend.Modules
         public BackupManager(MCServerManager mCServerManagerClass)
         {
             MCServerManager = mCServerManagerClass;
-          CancellationTokenSource =new();
+            CancellationTokenSource = new();
             CountDownTimer.Elapsed += (sender, e) =>
             {
                 StopService();

@@ -145,6 +145,7 @@
         NeedAES,
         GotAES,
         Succeed,
+        KeyWrong,
         Disconnect,
         Unkonwn
     }

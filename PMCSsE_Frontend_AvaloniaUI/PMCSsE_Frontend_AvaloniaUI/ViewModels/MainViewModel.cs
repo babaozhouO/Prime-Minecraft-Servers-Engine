@@ -14,7 +14,6 @@ using ReactiveUI.Avalonia;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Reactive;
 using System.Reactive.Subjects;
 using System.Text;
@@ -126,13 +125,13 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             set => this.RaiseAndSetIfChanged(ref _keyEnterPanelVisibility, value);
         }
         private bool _keyEnterPanelVisibility = false;
-        
+
         public string? Key
         {
             get => _key;
             set => this.RaiseAndSetIfChanged(ref _key, value);
         }
-        private string? _key="";
+        private string? _key = "";
         /// <summary>
         /// 版本号
         /// </summary>
@@ -219,6 +218,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 ConnectHistory_LBItemModel model = new(item);
                 Histories_IS.Add(model);
             }
+            UpdateChartDataTimer.Tick += UpdateChartDataTimer_Tick;
             var uiScheduler = AvaloniaScheduler.Instance;
             CleanMessageCommand = ReactiveCommand.Create(CleanMessageAction, _canCleanMessage, uiScheduler);
             AddNewBackendCommand = ReactiveCommand.Create(AddNewBackendAction, _canAddNewBackend, uiScheduler);
@@ -247,6 +247,8 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             ExitManagerPanelCommand = ReactiveCommand.Create(ExitManagerPanelAction, _canExitManagerPanel, uiScheduler);
             ConnectionStateImage = DisconnectedImage;
         }
+
+
 
         #region 命令
         public void CleanMessageAction()
@@ -470,7 +472,7 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
         {
             if (string.IsNullOrEmpty(Key))
             {
-                SendMessage("密钥为空",2);
+                SendMessage("密钥为空", 2);
                 return;
             }
             byte[] keyBytes;
@@ -673,6 +675,11 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
                 _canVerify.OnNext(false);
                 _canSendPassword.OnNext(false);
                 _canDisconnect.OnNext(false);
+                AllMCServerManagers_IS.Clear();
+                LoadedMCServerManagers_IS.Clear();
+                SupportedMCServerTypes_IS.Clear();
+                CPUSeries.Clear();
+                MemorySerie.Clear();
             }, null);
             ConnectingNativeServer = null;
             if (nativeClient != null)
@@ -718,9 +725,6 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
             }
             nativeClient?.Dispose();
             nativeClient = null;
-            AllMCServerManagers_IS.Clear();
-            LoadedMCServerManagers_IS.Clear();
-            SupportedMCServerTypes_IS.Clear();
         }
 
         private void HandleConnected()

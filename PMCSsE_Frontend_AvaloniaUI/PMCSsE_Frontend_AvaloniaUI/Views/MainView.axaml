@@ -129,11 +129,11 @@
                                 <Panel>
                                     <Line Classes="sec"/>
                                     <Grid RowDefinitions="5,35,160,160,*,5"
-                                        ColumnDefinitions="5,80,*,20"
-                                        ShowGridLines="True">
-                                        <controls:MyButton Text="重置视图" Click="ResetChartZoom_Click" Grid.Row="1" Grid.Column="2" Width="105" HorizontalAlignment="Right"/>
-                                        <TextBlock Text="CPU占用率" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="2" Grid.Column="1"/>
-                                        <lvc:CartesianChart Series="{Binding CPUSeries}" SyncContext="{Binding SyncLock}" LegendPosition="Right" ZoomMode="ZoomX" Name="CPUChart" Grid.Row="2" Grid.Column="2">  
+                                        ColumnDefinitions="5,*,105,20"
+                                        ShowGridLines="False">
+                                        <CheckBox Content="轮询服务器性能信息" DataContext="{Binding #root.DataContext}" IsChecked="{Binding RequireToGetServerState}" Grid.Row="1" Grid.Column="1" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                        <controls:MyButton Text="重置视图" Click="ResetChartZoom_Click" Grid.Row="1" Grid.Column="2"/>
+                                        <lvc:CartesianChart DataContext="{Binding #root.DataContext}" SeriesSource="{Binding CPUSeries}" SyncContext="{Binding ChartSyncLock}" LegendPosition="Right" ZoomMode="X" Name="CPUChart" Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2">  
                                             <lvc:CartesianChart.XAxes>
                                                 <!-- DateTime 专用轴 -->
                                                 <lvc:XamlDateTimeAxis Interval="00:00:01" DateFormatter="{Binding DateFormatter}" />
@@ -143,9 +143,15 @@
                                                 <!-- 百分比 Y 轴 -->
                                                 <lvc:XamlAxis Labeler="{Binding PercentLabeler}" MinLimit="0" MaxLimit="100" />
                                             </lvc:CartesianChart.YAxes>
+                                            <lvc:CartesianChart.SeriesTemplate>
+                                                <DataTemplate x:DataType="vm:CPUChartData">
+                                                    <lvc:XamlLineSeries
+                                                        SeriesName="{Binding NameAndID}"
+                                                        Values="{Binding CPUPoints}"/>
+                                                </DataTemplate>
+                                            </lvc:CartesianChart.SeriesTemplate>
                                         </lvc:CartesianChart>
-                                        <TextBlock Text="内存" VerticalAlignment="Center" HorizontalAlignment="Center" Grid.Row="3" Grid.Column="1"/>
-                                        <lvc:CartesianChart LegendPosition="Right" ZoomMode="ZoomX" Name="MemoryChart" Grid.Row="3" Grid.Column="2">  
+                                        <lvc:CartesianChart DataContext="{Binding #root.DataContext}" LegendPosition="Right" ZoomMode="X" Name="MemoryChart" SyncContext="{Binding ChartSyncLock}" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2">  
                                             <lvc:CartesianChart.XAxes>
                                             <!-- DateTime 专用轴 -->
                                             <lvc:XamlDateTimeAxis Interval="00:00:01" DateFormatter="{Binding DateFormatter}" />
@@ -155,6 +161,9 @@
                                                 <!-- 内存占用量 Y 轴（GB） -->
                                                 <lvc:XamlAxis Labeler="{Binding MemoryLabeler}" MinLimit="0" MaxLimit="{Binding TotalMemory}" />
                                             </lvc:CartesianChart.YAxes>
+                                            <lvc:CartesianChart.Series>
+                                                <lvc:XamlLineSeries SeriesName="内存占用" Values="{Binding MemorySerie}"/>
+                                            </lvc:CartesianChart.Series>
                                         </lvc:CartesianChart>
                                     </Grid>
                                 </Panel>

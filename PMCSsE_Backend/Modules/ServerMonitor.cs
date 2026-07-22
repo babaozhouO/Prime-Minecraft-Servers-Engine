@@ -5,15 +5,15 @@ namespace PMCSsE_Backend.Modules
 {
     internal static class ServerMonitor
     {
-        internal static bool GotInfo=false;
+        internal static bool GotInfo = false;//windows平台上初次获取会有21s延迟
         internal static CPUInfo[] CPUs
         {
             get
             {
                 CPUInfo[] infos = new CPUInfo[HardwareInfo.CpuList.Count];
-                for (int i = 0; i < (infos.Length - 1); i++)
+                for (byte i = 0; i < infos.Length; i++)
                 {
-                    infos[i] = new(HardwareInfo.CpuList[i].Name, HardwareInfo.CpuList[i].PercentProcessorTime);
+                    infos[i] = new(HardwareInfo.CpuList[i].ProcessorId, HardwareInfo.CpuList[i].Name, HardwareInfo.CpuList[i].PercentProcessorTime);
                 }
                 return infos;
             }

@@ -18,7 +18,9 @@
         WaitingLogin,
         ReceivedLogin,
         SendingSucceed,
-        Finished
+        SendingKeyWrong,
+        Finished,
+        Failed,
     }
     public enum HandShakeProcess_Client
     {
@@ -38,7 +40,8 @@
         SendingLogin,
         SentLogin,
         WaitingSucceed,
-        Finished
+        Finished,
+        Failed
     }
 
 }

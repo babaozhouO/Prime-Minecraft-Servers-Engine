@@ -13,17 +13,47 @@ namespace PMCSsE_Frontend_AvaloniaUI.ViewModels
     {
         private void HandlePack_ServerState(Pack_ServerState pack)
         {
-            if (!ChartInitialized)
+            Dispatcher.UIThread.Post(() =>
             {
-
-            }
-            foreach (var cpu in pack.CPUs)
-            {
-                lock (SyncLock)//图表的线程锁
+                for (byte i = 0; i < pack.CPUs.Length; i++)
                 {
-
+                    CPUChartData? cPUChartData = CPUSeries.FirstOrDefault(x => x.NameAndID == $"{pack.CPUs[i].Name}-{pack.CPUs[i].ID}");
+                    if (cPUChartData == null)//热插拔CPU或初次加载
+                    {
+                        CPUSeries.Add(new($"{pack.CPUs[i].Name}-{pack.CPUs[i].ID}", new(pack.CheckTime, pack.CPUs[i].Usage)));
+                    }
+                    else
+                    {
+                        if (cPUChartData.CPUPoints.Count == 0)
+                        {
+                            cPUChartData.CPUPoints.Add(new(pack.CheckTime, pack.CPUs[i].Usage));
+                        }
+                        else
+                        {
+                            if (pack.CheckTime > cPUChartData.CPUPoints[^1].DateTime)
+                            {
+                                cPUChartData.CPUPoints.Add(new(pack.CheckTime, pack.CPUs[i].Usage));
+                            }
+                            //else无操作
+                        }
+                    }
                 }
-            }
+                double oneGB = 1024 * 1024 * 1024;
+                TotalMemory = pack.TotalMemory / oneGB;//转GB
+                if (MemorySerie.Count == 0)
+                {
+                    MemorySerie.Add(new(pack.CheckTime, pack.UsingMemory / oneGB));
+                }
+                else
+                {
+                    if (pack.CheckTime > MemorySerie[^1].DateTime)
+                    {
+                        MemorySerie.Add(new(pack.CheckTime, pack.UsingMemory / oneGB));
+                    }
+                    //else无操作
+                }
+
+            });
         }
         private void HandlePack_SaveCiphertextConfigSucceed(Pack_SaveCipthertextConfigSucceed _)
         {

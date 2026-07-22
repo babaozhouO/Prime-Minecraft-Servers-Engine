@@ -251,7 +251,7 @@ namespace PMCSsE_Communicator
             bool didWork2 = false;
             byte idleCount = 0;
             //握手循环
-            while (ClientInfo.TcpClient.Connected && !StopToken.IsCancellationRequested && HandShakeStep != HandShakeProcess_Client.Finished)
+            while (ClientInfo.TcpClient.Connected && !StopToken.IsCancellationRequested && HandShakeStep != HandShakeProcess_Client.Finished && HandShakeStep != HandShakeProcess_Client.Failed)
             {
                 try
                 {
@@ -313,7 +313,10 @@ namespace PMCSsE_Communicator
 
             if (HandShakeStep != HandShakeProcess_Client.Finished)
             {
-                Disconnected(DisconnectedReasonEnum.ConnectionUnexpectlyDisconnected);
+                if (HandShakeStep == HandShakeProcess_Client.Failed)
+                    Disconnected(DisconnectedReasonEnum.PasswordMismatch);
+                else
+                    Disconnected(DisconnectedReasonEnum.ConnectionUnexpectlyDisconnected);
                 try { ClientInfo.NetworkStream.Close(); } catch { }
                 try { ClientInfo.TcpClient.Close(); } catch { }
                 try { ClientInfo.Aes?.Dispose(); } catch { }
@@ -738,18 +741,6 @@ namespace PMCSsE_Communicator
         private void ProcessHandshakeData(byte[] data)
         {
             if (ClientInfo == null) return;
-            if (data.Length == 6)
-            {
-                ReadOnlySpan<byte> shortData = data.AsSpan();
-                if (shortData is [0, (byte)RespondTypeEnum_Private.ConnectionAlive])
-                {
-                    using (ClientInfo.TasksQueueLock.EnterScope())
-                    {
-                        ClientInfo.TasksQueue.Enqueue(ReplyHeartbeatAsync);
-                    }
-                    return;
-                }
-            }
             if (data.Length < 2) return;
             byte type1 = data[0];
             byte type2 = data[1];
@@ -850,6 +841,17 @@ namespace PMCSsE_Communicator
                     HandskakeProcessChanged(HandShakeStep);
                     ReportLog("握手完成，连接已安全建立");
                     Connected();
+                    return;
+                case RespondTypeEnum_Private.KeyWrong:
+                    if (HandShakeStep != HandShakeProcess_Client.WaitingSucceed)
+                    {
+                        ReportLog("服务器不遵循PMCSsE的握手协议，断开连接");
+                        Disconnect();
+                        return;
+                    }
+                    HandShakeStep = HandShakeProcess_Client.Failed;
+                    HandskakeProcessChanged(HandShakeStep);
+                    ReportLog("握手失败，密钥错误");
                     return;
                 default:
                     ReportLog($"握手阶段收到未知类型: {type}");

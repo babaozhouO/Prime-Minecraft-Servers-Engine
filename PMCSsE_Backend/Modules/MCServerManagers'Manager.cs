@@ -132,7 +132,7 @@ namespace PMCSsE_Backend.Modules
                 NativeServer?.RespondClient(RespondTypeEnum.ErrorInfo, new Pack_ErrorInfo("尚未获取到硬件信息"));
                 return;
             }
-            NativeServer?.RespondClient(RespondTypeEnum.ServerState, new Pack_ServerState(ServerMonitor.CPUs, ServerMonitor.TotalMemory, ServerMonitor.UsingMemory));
+            NativeServer?.RespondClient(RespondTypeEnum.ServerState, new Pack_ServerState(DateTime.Now, ServerMonitor.CPUs, ServerMonitor.TotalMemory, ServerMonitor.UsingMemory));
         }
         private static void HandlePack_SaveCipherConfig(Pack_SaveCipherConfig pack)
         {

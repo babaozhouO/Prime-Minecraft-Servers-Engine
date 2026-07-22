@@ -301,9 +301,9 @@ namespace PMCSsE_Communicator
                 bool didwork1 = false;
                 bool didwork2 = false;
                 byte didntworkTimes = 0;
-                long handshakeEndTime = Environment.TickCount64+HANDSHAKETIMEOUT;
+                long handshakeEndTime = Environment.TickCount64 + HANDSHAKETIMEOUT;
                 //握手循环
-                while (ClientInfo.TcpClient.Connected && !StopServerTokenSource.IsCancellationRequested && !ClientInfo.CloseConnectionTokenSource.IsCancellationRequested && ClientInfo.HandShakeProcess != HandShakeProcess_Server.Finished)
+                while (ClientInfo.TcpClient.Connected && !StopServerTokenSource.IsCancellationRequested && !ClientInfo.CloseConnectionTokenSource.IsCancellationRequested && ClientInfo.HandShakeProcess != HandShakeProcess_Server.Finished && ClientInfo.HandShakeProcess != HandShakeProcess_Server.Failed)
                 {
                     try
                     {
@@ -574,6 +574,19 @@ namespace PMCSsE_Communicator
             ClientInfo.HandShakeProcess = HandShakeProcess_Server.Finished;
             ClientConnected();
         }
+        private async Task SendKeyWrongAsync()
+        {
+            ClientInfo!.HandShakeProcess = HandShakeProcess_Server.SendingKeyWrong;
+            byte[] dataPack = [0, 0, 0, 2, 0, (byte)RespondTypeEnum_Private.KeyWrong];
+            if (!await SendDataPack(dataPack))
+            {
+                ReportLog("在握手流程的“服务端报告登录成功”阶段发送数据包失败");
+                try { ClientInfo.CloseConnectionTokenSource.Cancel(); } catch { }
+                return;
+            }
+            ClientInfo.HandShakeProcess = HandShakeProcess_Server.Failed;
+            ClientConnected();
+        }
         #endregion
         private async Task SendConnectionAlive()
         {
@@ -686,6 +699,11 @@ namespace PMCSsE_Communicator
                 }
                 catch { }
                 ReportLog($"前端发送过大的数据包，可能为攻击者恶意发送，长度：{dataPackContentLenght}");
+                if (dataPackContentLenght == 1397966893)
+                {
+                    ReportLog("从数据中识别出字符：SSH，极有可能为攻击者扫描端口时发送，试图使用SSH协议连接本软件");
+                    ReportLog("若不是您使用SSH客户端误连本软件，请封禁此次攻击的源IP");
+                }
                 return [];
             }//修复大数据包攻击
             byte[] dataPackContent = new byte[dataPackContentLenght];
@@ -812,7 +830,7 @@ namespace PMCSsE_Communicator
                 if (dataPack.Length == 2)//心跳包不加密
                 {
                     byte t1 = dataPack[0];
-                    int t2= dataPack[1];
+                    int t2 = dataPack[1];
                     if (t1 == 0)
                     {
                         RequestTypeEnum_Private requestTypeEnum_Private;
@@ -1108,7 +1126,11 @@ namespace PMCSsE_Communicator
                 {
                     TempBannedIP.Add(CurrentClientIP, (1, Environment.TickCount64));
                 }
-                try { ClientInfo?.CloseConnectionTokenSource.Cancel(); } catch { }
+                if (ClientInfo != null)
+                    using (ClientInfo.TasksQueueLock.EnterScope())
+                    {
+                        ClientInfo.TasksQueue.Enqueue(SendKeyWrongAsync);
+                    }
                 return;
             }
             ReportLog("客户端的访问密钥正确");
